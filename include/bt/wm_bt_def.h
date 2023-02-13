@@ -813,6 +813,8 @@ typedef enum
     WM_BLE_DM_SCAN_RES_EVT          = (0x01<<3),             /**< BLE DM scan result evt*/
 	WM_BLE_DM_SET_SCAN_PARAM_CMPL_EVT=(0x01<<4),
 	WM_BLE_DM_REPORT_RSSI_EVT       = (0x01<<5),
+	WM_BLE_DM_SCAN_RES_CMPL_EVT     = (0x01<<6),
+	
 } tls_ble_dm_evt_t;
 
 
@@ -849,6 +851,11 @@ typedef struct
 	int8_t rssi;
 	uint8_t status;
 } tls_ble_report_rssi_msg_t;
+
+typedef struct
+{
+    uint16_t num_responses;
+} tls_ble_dm_scan_res_cmpl_msg_t;
 typedef union
 {
     tls_ble_dm_set_adv_data_cmpl_msg_t   dm_set_adv_data_cmpl;
@@ -856,6 +863,7 @@ typedef union
     tls_ble_dm_evt_triger_msg_t          dm_evt_trigered;
     tls_ble_dm_scan_res_msg_t            dm_scan_result;
 	tls_ble_dm_set_scan_param_cmpl_msg_t dm_set_scan_param_cmpl;
+    tls_ble_dm_scan_res_cmpl_msg_t       dm_scan_result_cmpl;
 	tls_ble_report_rssi_msg_t            dm_report_rssi;
 } tls_ble_dm_msg_t;
 
@@ -894,6 +902,786 @@ typedef void (*tls_ble_dm_triger_callback_t)(int32_t evt_id);
 
 typedef void (*tls_ble_scan_res_notify_t)(tls_ble_dm_scan_res_msg_t *msg);
 
+/*********************************************************************************************************/
+/* Bluetooth AV connection states */
+typedef enum
+{
+    WM_BTAV_CONNECTION_STATE_DISCONNECTED = 0,
+    WM_BTAV_CONNECTION_STATE_CONNECTING,
+    WM_BTAV_CONNECTION_STATE_CONNECTED,
+    WM_BTAV_CONNECTION_STATE_DISCONNECTING
+} tls_btav_connection_state_t;
+
+/* Bluetooth AV datapath states */
+typedef enum
+{
+    WM_BTAV_AUDIO_STATE_REMOTE_SUSPEND = 0,
+    WM_BTAV_AUDIO_STATE_STOPPED,
+    WM_BTAV_AUDIO_STATE_STARTED,
+} tls_btav_audio_state_t;
+
+/** BR-EDR A2DP sink events */
+typedef enum
+{
+    WMBT_A2DP_CONNECTION_STATE_EVT,
+	WMBT_A2DP_AUDIO_STATE_EVT,
+	WMBT_A2DP_AUDIO_CONFIG_EVT,
+	WMBT_A2DP_AUDIO_PAYLOAD_EVT,
+} tls_bt_av_evt_t;
+
+typedef struct
+{
+	tls_btav_connection_state_t stat;
+	tls_bt_addr_t *bd_addr;
+} tls_bt_av_connection_state_t;
+
+typedef struct
+{
+	tls_btav_audio_state_t stat;
+	tls_bt_addr_t *bd_addr;	
+} tls_bt_av_audio_state_t;
+
+typedef struct
+{
+	tls_bt_addr_t *bd_addr;
+	uint32_t sample_rate;
+	uint8_t channel_count;
+} tls_bt_av_audio_config_t;
+
+typedef struct
+{
+	tls_bt_addr_t *bd_addr;
+	uint8_t audio_format;
+	uint8_t *payload;
+	uint16_t payload_length;
+} tls_bt_av_audio_payload_t;
+
+typedef union
+{
+	tls_bt_av_connection_state_t av_connection_state;
+	tls_bt_av_audio_state_t av_audio_state;
+	tls_bt_av_audio_config_t av_audio_config;
+	tls_bt_av_audio_payload_t av_audio_payload;
+	
+} tls_bt_av_msg_t;
+
+/** WM BT A2DP SINK callback function */
+typedef void (*tls_bt_a2dp_sink_callback_t)(tls_bt_av_evt_t event, tls_bt_av_msg_t *p_data);
+
+/**WM BT A2DP SRC callback function */
+///////////////TODO////////////////
+typedef void (*tls_bt_a2dp_src_callback_t)(tls_bt_av_evt_t event, tls_bt_av_msg_t *p_data);
+
+
+/** BR-EDR WMBT-RC Controller callback events */
+
+#define WM_BTRC_MAX_ATTR_STR_LEN       255
+#define WM_BTRC_UID_SIZE               8
+#define WM_BTRC_MAX_APP_SETTINGS       8
+#define WM_BTRC_MAX_FOLDER_DEPTH       4
+#define WM_BTRC_MAX_APP_ATTR_SIZE      16
+#define WM_BTRC_MAX_ELEM_ATTR_SIZE     7
+
+typedef uint8_t tls_btrc_uid_t[WM_BTRC_UID_SIZE];
+typedef enum
+{
+    WM_BTRC_PLAYSTATE_STOPPED = 0x00,    /* Stopped */
+    WM_BTRC_PLAYSTATE_PLAYING = 0x01,    /* Playing */
+    WM_BTRC_PLAYSTATE_PAUSED = 0x02,    /* Paused  */
+    WM_BTRC_PLAYSTATE_FWD_SEEK = 0x03,    /* Fwd Seek*/
+    WM_BTRC_PLAYSTATE_REV_SEEK = 0x04,    /* Rev Seek*/
+    WM_BTRC_PLAYSTATE_ERROR = 0xFF,    /* Error   */
+} tls_btrc_play_status_t;
+
+typedef enum
+{
+    WM_BTRC_FEAT_NONE = 0x00,    /* AVRCP 1.0 */
+    WM_BTRC_FEAT_METADATA = 0x01,    /* AVRCP 1.3 */
+    WM_BTRC_FEAT_ABSOLUTE_VOLUME = 0x02,    /* Supports TG role and volume sync */
+    WM_BTRC_FEAT_BROWSE = 0x04,    /* AVRCP 1.4 and up, with Browsing support */
+} tls_btrc_remote_features_t;
+typedef enum
+{
+    WM_BTRC_NOTIFICATION_TYPE_INTERIM = 0,
+    WM_BTRC_NOTIFICATION_TYPE_CHANGED = 1,
+} tls_btrc_notification_type_t;
+
+typedef enum
+{
+    WM_BTRC_PLAYER_ATTR_EQUALIZER = 0x01,
+    WM_BTRC_PLAYER_ATTR_REPEAT = 0x02,
+    WM_BTRC_PLAYER_ATTR_SHUFFLE = 0x03,
+    WM_BTRC_PLAYER_ATTR_SCAN = 0x04,
+} tls_btrc_player_attr_t;
+
+typedef enum
+{
+    WM_BTRC_MEDIA_ATTR_TITLE = 0x01,
+    WM_BTRC_MEDIA_ATTR_ARTIST = 0x02,
+    WM_BTRC_MEDIA_ATTR_ALBUM = 0x03,
+    WM_BTRC_MEDIA_ATTR_TRACK_NUM = 0x04,
+    WM_BTRC_MEDIA_ATTR_NUM_TRACKS = 0x05,
+    WM_BTRC_MEDIA_ATTR_GENRE = 0x06,
+    WM_BTRC_MEDIA_ATTR_PLAYING_TIME = 0x07,
+} tls_btrc_media_attr_t;
+
+typedef enum
+{
+    WM_BTRC_PLAYER_VAL_OFF_REPEAT = 0x01,
+    WM_BTRC_PLAYER_VAL_SINGLE_REPEAT = 0x02,
+    WM_BTRC_PLAYER_VAL_ALL_REPEAT = 0x03,
+    WM_BTRC_PLAYER_VAL_GROUP_REPEAT = 0x04
+} tls_btrc_player_repeat_val_t;
+
+typedef enum
+{
+    WM_BTRC_EVT_PLAY_STATUS_CHANGED = 0x01,
+    WM_BTRC_EVT_TRACK_CHANGE = 0x02,
+    WM_BTRC_EVT_TRACK_REACHED_END = 0x03,
+    WM_BTRC_EVT_TRACK_REACHED_START = 0x04,
+    WM_BTRC_EVT_PLAY_POS_CHANGED = 0x05,
+    WM_BTRC_EVT_APP_SETTINGS_CHANGED = 0x08,
+} tls_btrc_event_id_t;
+
+typedef struct
+{
+    uint8_t num_attr;
+    uint8_t attr_ids[WM_BTRC_MAX_APP_SETTINGS];
+    uint8_t attr_values[WM_BTRC_MAX_APP_SETTINGS];
+} tls_btrc_player_settings_t;
+
+typedef struct
+{
+    uint32_t attr_id;
+    uint8_t text[WM_BTRC_MAX_ATTR_STR_LEN];
+} tls_btrc_element_attr_val_t;
+
+typedef struct
+{
+    uint8_t attr_id;
+    uint8_t num_val;
+    uint8_t attr_val[WM_BTRC_MAX_APP_ATTR_SIZE];
+} tls_btrc_player_app_attr_t;
+typedef struct
+{
+    uint8_t   val;
+    uint16_t  charset_id;
+    uint16_t  str_len;
+    uint8_t   *p_str;
+} tls_btrc_player_app_ext_attr_val_t;
+
+typedef struct
+{
+    uint8_t   attr_id;
+    uint16_t  charset_id;
+    uint16_t  str_len;
+    uint8_t   *p_str;
+    uint8_t   num_val;
+    tls_btrc_player_app_ext_attr_val_t ext_attr_val[WM_BTRC_MAX_APP_ATTR_SIZE];
+} tls_btrc_player_app_ext_attr_t;
+
+typedef union
+{
+    tls_btrc_play_status_t play_status;
+    tls_btrc_uid_t track; /* queue position in NowPlaying */
+    uint32_t song_pos;
+    tls_btrc_player_settings_t player_setting;
+} tls_btrc_register_notification_t;
+
+
+
+
+
+
+
+typedef enum
+{
+	WM_BTRC_PASSTHROUGH_RSP_EVT,
+	WM_BTRC_GROUPNAVIGATION_RSP_EVT,
+	WM_BTRC_CONNECTION_STATE_EVT,
+	WM_BTRC_CTRL_GETRCFEATURES_EVT,
+	WM_BTRC_CTRL_SETPLAYERAPPLICATIONSETTING_RSP_EVT,
+	WM_BTRC_CTRL_PLAYERAPPLICATIONSETTING_EVT,
+	WM_BTRC_CTRL_PLAYERAPPLICATIONSETTING_CHANGED_EVT,
+	WM_BTRC_CTRL_SETABSVOL_CMD_EVT,
+	WM_BTRC_CTRL_REGISTERNOTIFICATION_ABS_VOL_EVT,
+	WM_BTRC_CTRL_TRACK_CHANGED_EVT,
+	WM_BTRC_CTRL_PLAY_POSITION_CHANGED_EVT,
+	WM_BTRC_CTRL_PLAY_STATUS_CHANGED_EVT,
+} tls_btrc_ctrl_evt_t;
+
+typedef struct
+{
+	int id;
+	int key_state;
+} tls_btrc_passthrough_rsp_msg_t;
+
+typedef struct
+{
+	int id;
+	int key_state;
+} tls_btrc_groupnavigation_rsp_msg_t;
+
+typedef struct
+{
+	uint8_t state;
+	tls_bt_addr_t *bd_addr;
+} tls_btrc_connection_state_msg_t;
+
+typedef struct
+{
+	tls_bt_addr_t *bd_addr;
+	int features;
+} tls_btrc_ctrl_getrcfeatures_msg_t;
+
+typedef struct
+{
+	tls_bt_addr_t *bd_addr;
+	uint8_t abs_vol;
+	uint8_t label;
+} tls_btrc_ctrl_setabsvol_msg_t;
+
+typedef struct
+{
+	tls_bt_addr_t *bd_addr;
+	uint8_t label;
+} tls_btrc_ctrl_registernotification_abs_vol_msg_t;
+
+typedef struct
+{
+	tls_bt_addr_t *bd_addr;
+	uint8_t accepted;
+} tls_btrc_ctrl_setplayerapplicationsetting_rsp_msg_t;
+
+typedef struct
+{
+	tls_bt_addr_t *bd_addr;
+	uint8_t num_attr;
+	tls_btrc_player_app_attr_t *app_attrs;
+	uint8_t num_ext_attr;
+	tls_btrc_player_app_ext_attr_t *ext_attrs;
+} tls_btrc_ctrl_playerapplicationsetting_msg_t;
+
+typedef struct
+{
+	tls_bt_addr_t *bd_addr;
+    tls_btrc_player_settings_t *p_vals;	
+} tls_btrc_ctrl_playerapplicationsetting_changed_msg_t;
+
+typedef struct
+{
+	tls_bt_addr_t *bd_addr;
+	uint8_t num_attr;
+	tls_btrc_element_attr_val_t *p_attrs;
+
+} tls_btrc_ctrl_track_changed_msg_t;
+
+typedef struct
+{
+	tls_bt_addr_t *bd_addr;
+	uint32_t song_len;
+	uint32_t song_pos;
+} tls_btrc_ctrl_play_position_changed_msg_t;
+
+typedef struct
+{
+	tls_bt_addr_t *bd_addr;
+	tls_btrc_play_status_t play_status;
+} tls_btrc_ctrl_play_status_changed_msg_t;
+
+typedef union
+{
+	tls_btrc_passthrough_rsp_msg_t				passthrough_rsp;
+	tls_btrc_groupnavigation_rsp_msg_t			groupnavigation_rsp;
+	tls_btrc_connection_state_msg_t			connection_state;
+	tls_btrc_ctrl_getrcfeatures_msg_t			getrcfeatures;
+	tls_btrc_ctrl_setabsvol_msg_t				setabsvol;
+	tls_btrc_ctrl_registernotification_abs_vol_msg_t 		registernotification_abs_vol;
+	tls_btrc_ctrl_setplayerapplicationsetting_rsp_msg_t	setplayerapplicationsetting_rsp;
+	tls_btrc_ctrl_playerapplicationsetting_msg_t			playerapplicationsetting;
+	tls_btrc_ctrl_playerapplicationsetting_changed_msg_t 	playerapplicationsetting_changed;
+	tls_btrc_ctrl_track_changed_msg_t 						track_changed;
+	tls_btrc_ctrl_play_position_changed_msg_t	play_position_changed;
+	tls_btrc_ctrl_play_status_changed_msg_t	play_status_changed;
+	
+} tls_btrc_ctrl_msg_t;
+
+/** WM BT RC CTRL callback function */
+typedef void (*tls_btrc_ctrl_callback_t)(tls_btrc_ctrl_evt_t event, tls_btrc_ctrl_msg_t *p_data);
+
+
+typedef enum
+{
+	WM_BTRC_REMOTE_FEATURE_EVT,
+	WM_BTRC_GET_PLAY_STATUS_EVT,
+	WM_BTRC_LIST_PLAYER_APP_ATTR_EVT,
+	WM_BTRC_LIST_PLAYER_APP_VALUES_EVT,
+	WM_BTRC_GET_PLAYER_APP_VALUE_EVT,
+	WM_BTRC_GET_PLAYER_APP_ATTRS_TEXT_EVT,
+	WM_BTRC_GET_PLAYER_APP_VALUES_TEXT_EVT,
+	WM_BTRC_SET_PLAYER_APP_VALUE_EVT,
+	WM_BTRC_GET_ELEMENT_ATTR_EVT,
+	WM_BTRC_REGISTER_NOTIFICATION_EVT,
+	WM_BTRC_VOLUME_CHANGED_EVT,
+	WM_BTRC_PASSTHROUGH_CMD_EVT,
+} tls_btrc_evt_t;
+
+typedef struct
+{
+	tls_bt_addr_t *bd_addr;
+    tls_btrc_remote_features_t features;	
+} tls_btrc_remote_features_msg_t;
+
+typedef struct
+{
+	void *reserved;
+} tls_btrc_get_play_status_msg_t;
+
+typedef struct
+{
+	void *reserved;
+} tls_btrc_list_player_app_attr_msg_t;
+
+typedef struct
+{
+	tls_btrc_player_attr_t attr_id;
+} tls_btrc_list_player_app_values_msg_t;
+
+typedef struct
+{
+	uint8_t num_attr;
+	tls_btrc_player_attr_t *p_attrs;
+
+} tls_btrc_get_player_app_value_msg_t;
+
+typedef struct
+{
+	uint8_t attr_id;
+	uint8_t num_val;
+	uint8_t *p_vals;
+} tls_btrc_get_player_app_attrs_text_msg_t;
+
+typedef struct
+{
+	uint8_t num_attr;
+	tls_btrc_player_attr_t *p_attrs;
+
+} tls_btrc_get_player_app_values_text_msg_t;
+
+typedef struct
+{
+	tls_btrc_player_settings_t *p_vals;
+		
+} tls_btrc_set_player_app_value_msg_t;
+
+typedef struct
+{
+	uint8_t num_attr;
+	tls_btrc_media_attr_t *p_attrs;
+		
+} tls_btrc_get_element_attr_msg_t;
+
+typedef struct
+{
+	tls_btrc_event_id_t event_id; 
+	uint32_t param;
+	
+} tls_btrc_register_notification_msg_t;
+
+typedef struct
+{
+	uint8_t volume; 
+	uint8_t ctype;
+} tls_btrc_volume_change_msg_t;
+
+typedef struct
+{
+	int id;
+	int key_state;
+
+} tls_btrc_passthrough_cmd_msg_t;
+
+typedef union
+{
+	tls_btrc_remote_features_msg_t		remote_features;
+	tls_btrc_get_play_status_msg_t  	get_play_status;
+	tls_btrc_list_player_app_attr_msg_t		list_player_app_attr;
+	tls_btrc_list_player_app_values_msg_t 	list_player_app_values;
+	tls_btrc_get_player_app_value_msg_t   	get_player_app_value;
+	tls_btrc_get_player_app_attrs_text_msg_t 	get_player_app_attrs_text;
+	tls_btrc_get_player_app_values_text_msg_t 	get_player_app_values_text;
+	tls_btrc_set_player_app_value_msg_t 	set_player_app_value;
+	tls_btrc_get_element_attr_msg_t 		get_element_attr;
+	tls_btrc_register_notification_msg_t 	register_notification;
+	tls_btrc_volume_change_msg_t 		volume_change;
+	tls_btrc_passthrough_cmd_msg_t 		passthrough_cmd;
+	
+} tls_btrc_msg_t;
+
+/** WM BT RC callback function */
+typedef void (*tls_btrc_callback_t)(tls_btrc_evt_t event, tls_btrc_msg_t *p_data);
+
+
+/*************************************************************************************************************/
+
+typedef enum
+{
+    WM_BTHF_CLIENT_CONNECTION_STATE_DISCONNECTED = 0,
+    WM_BTHF_CLIENT_CONNECTION_STATE_CONNECTING,
+    WM_BTHF_CLIENT_CONNECTION_STATE_CONNECTED,
+    WM_BTHF_CLIENT_CONNECTION_STATE_SLC_CONNECTED,
+    WM_BTHF_CLIENT_CONNECTION_STATE_DISCONNECTING
+} tls_bthf_client_connection_state_t;
+
+typedef enum
+{
+    WM_BTHF_CLIENT_AUDIO_STATE_DISCONNECTED = 0,
+    WM_BTHF_CLIENT_AUDIO_STATE_CONNECTING,
+    WM_BTHF_CLIENT_AUDIO_STATE_CONNECTED,
+    WM_BTHF_CLIENT_AUDIO_STATE_CONNECTED_MSBC,
+} tls_bthf_client_audio_state_t;
+
+typedef enum
+{
+    WM_BTHF_CLIENT_VR_STATE_STOPPED = 0,
+    WM_BTHF_CLIENT_VR_STATE_STARTED
+} tls_bthf_client_vr_state_t;
+
+typedef enum
+{
+    WM_BTHF_CLIENT_VOLUME_TYPE_SPK = 0,
+    WM_BTHF_CLIENT_VOLUME_TYPE_MIC
+} tls_bthf_client_volume_type_t;
+
+typedef enum
+{
+    WM_BTHF_CLIENT_NETWORK_STATE_NOT_AVAILABLE = 0,
+    WM_BTHF_CLIENT_NETWORK_STATE_AVAILABLE
+} tls_bthf_client_network_state_t;
+
+typedef enum
+{
+    WM_BTHF_CLIENT_SERVICE_TYPE_HOME = 0,
+    WM_BTHF_CLIENT_SERVICE_TYPE_ROAMING
+} tls_bthf_client_service_type_t;
+
+typedef enum
+{
+    WM_BTHF_CLIENT_CALL_STATE_ACTIVE = 0,
+    WM_BTHF_CLIENT_CALL_STATE_HELD,
+    WM_BTHF_CLIENT_CALL_STATE_DIALING,
+    WM_BTHF_CLIENT_CALL_STATE_ALERTING,
+    WM_BTHF_CLIENT_CALL_STATE_INCOMING,
+    WM_BTHF_CLIENT_CALL_STATE_WAITING,
+    WM_BTHF_CLIENT_CALL_STATE_HELD_BY_RESP_HOLD,
+} tls_bthf_client_call_state_t;
+
+typedef enum
+{
+    WM_BTHF_CLIENT_CALL_NO_CALLS_IN_PROGRESS = 0,
+    WM_BTHF_CLIENT_CALL_CALLS_IN_PROGRESS
+} tls_bthf_client_call_t;
+
+typedef enum
+{
+    WM_BTHF_CLIENT_CALLSETUP_NONE = 0,
+    WM_BTHF_CLIENT_CALLSETUP_INCOMING,
+    WM_BTHF_CLIENT_CALLSETUP_OUTGOING,
+    WM_BTHF_CLIENT_CALLSETUP_ALERTING
+
+} tls_bthf_client_callsetup_t;
+
+typedef enum
+{
+    WM_BTHF_CLIENT_CALLHELD_NONE = 0,
+    WM_BTHF_CLIENT_CALLHELD_HOLD_AND_ACTIVE,
+    WM_BTHF_CLIENT_CALLHELD_HOLD,
+} tls_bthf_client_callheld_t;
+
+typedef enum
+{
+    WM_BTHF_CLIENT_RESP_AND_HOLD_HELD = 0,
+    WM_BTRH_CLIENT_RESP_AND_HOLD_ACCEPT,
+    WM_BTRH_CLIENT_RESP_AND_HOLD_REJECT,
+} tls_bthf_client_resp_and_hold_t;
+
+typedef enum
+{
+    WM_BTHF_CLIENT_CALL_DIRECTION_OUTGOING = 0,
+    WM_BTHF_CLIENT_CALL_DIRECTION_INCOMING
+} tls_bthf_client_call_direction_t;
+
+typedef enum
+{
+    WM_BTHF_CLIENT_CALL_MPTY_TYPE_SINGLE = 0,
+    WM_BTHF_CLIENT_CALL_MPTY_TYPE_MULTI
+} tls_bthf_client_call_mpty_type_t;
+
+typedef enum
+{
+    WM_BTHF_CLIENT_CMD_COMPLETE_OK = 0,
+    WM_BTHF_CLIENT_CMD_COMPLETE_ERROR,
+    WM_BTHF_CLIENT_CMD_COMPLETE_ERROR_NO_CARRIER,
+    WM_BTHF_CLIENT_CMD_COMPLETE_ERROR_BUSY,
+    WM_BTHF_CLIENT_CMD_COMPLETE_ERROR_NO_ANSWER,
+    WM_BTHF_CLIENT_CMD_COMPLETE_ERROR_DELAYED,
+    WM_BTHF_CLIENT_CMD_COMPLETE_ERROR_BLACKLISTED,
+    WM_BTHF_CLIENT_CMD_COMPLETE_ERROR_CME
+} tls_bthf_client_cmd_complete_t;
+
+typedef enum
+{
+    WM_BTHF_CLIENT_CALL_ACTION_CHLD_0 = 0,
+    WM_BTHF_CLIENT_CALL_ACTION_CHLD_1,
+    WM_BTHF_CLIENT_CALL_ACTION_CHLD_2,
+    WM_BTHF_CLIENT_CALL_ACTION_CHLD_3,
+    WM_BTHF_CLIENT_CALL_ACTION_CHLD_4,
+    WM_BTHF_CLIENT_CALL_ACTION_CHLD_1x,
+    WM_BTHF_CLIENT_CALL_ACTION_CHLD_2x,
+    WM_BTHF_CLIENT_CALL_ACTION_ATA,
+    WM_BTHF_CLIENT_CALL_ACTION_CHUP,
+    WM_BTHF_CLIENT_CALL_ACTION_BTRH_0,
+    WM_BTHF_CLIENT_CALL_ACTION_BTRH_1,
+    WM_BTHF_CLIENT_CALL_ACTION_BTRH_2,
+} tls_bthf_client_call_action_t;
+
+typedef enum
+{
+    WM_BTHF_CLIENT_SERVICE_UNKNOWN = 0,
+    WM_BTHF_CLIENT_SERVICE_VOICE,
+    WM_BTHF_CLIENT_SERVICE_FAX
+} tls_bthf_client_subscriber_service_type_t;
+
+typedef enum
+{
+    WM_BTHF_CLIENT_IN_BAND_RINGTONE_NOT_PROVIDED = 0,
+    WM_BTHF_CLIENT_IN_BAND_RINGTONE_PROVIDED,
+} tls_bthf_client_in_band_ring_state_t;
+
+/* Peer features masks */
+#define WM_BTHF_CLIENT_PEER_FEAT_3WAY   0x00000001  /* Three-way calling */
+#define WM_BTHF_CLIENT_PEER_FEAT_ECNR   0x00000002  /* Echo cancellation and/or noise reduction */
+#define WM_BTHF_CLIENT_PEER_FEAT_VREC   0x00000004  /* Voice recognition */
+#define WM_BTHF_CLIENT_PEER_FEAT_INBAND 0x00000008  /* In-band ring tone */
+#define WM_BTHF_CLIENT_PEER_FEAT_VTAG   0x00000010  /* Attach a phone number to a voice tag */
+#define WM_BTHF_CLIENT_PEER_FEAT_REJECT 0x00000020  /* Ability to reject incoming call */
+#define WM_BTHF_CLIENT_PEER_FEAT_ECS    0x00000040  /* Enhanced Call Status */
+#define WM_BTHF_CLIENT_PEER_FEAT_ECC    0x00000080  /* Enhanced Call Control */
+#define WM_BTHF_CLIENT_PEER_FEAT_EXTERR 0x00000100  /* Extended error codes */
+#define WM_BTHF_CLIENT_PEER_FEAT_CODEC  0x00000200  /* Codec Negotiation */
+
+/* Peer call handling features masks */
+#define WM_BTHF_CLIENT_CHLD_FEAT_REL           0x00000001  /* 0  Release waiting call or held calls */
+#define WM_BTHF_CLIENT_CHLD_FEAT_REL_ACC       0x00000002  /* 1  Release active calls and accept other
+                                                              (waiting or held) cal */
+#define WM_BTHF_CLIENT_CHLD_FEAT_REL_X         0x00000004  /* 1x Release specified active call only */
+#define WM_BTHF_CLIENT_CHLD_FEAT_HOLD_ACC      0x00000008  /* 2  Active calls on hold and accept other
+                                                              (waiting or held) call */
+#define WM_BTHF_CLIENT_CHLD_FEAT_PRIV_X        0x00000010  /* 2x Request private mode with specified
+                                                              call (put the rest on hold) */
+#define WM_BTHF_CLIENT_CHLD_FEAT_MERGE         0x00000020  /* 3  Add held call to multiparty */
+#define WM_BTHF_CLIENT_CHLD_FEAT_MERGE_DETACH  0x00000040  /* 4  Connect two calls and leave
+                                                              (disconnect from) multiparty */
+
+
+typedef enum
+{
+	WM_BTHF_CLIENT_CONNECTION_STATE_EVT,
+	WM_BTHF_CLIENT_AUDIO_STATE_EVT,
+	WM_BTHF_CLIENT_VR_CMD_EVT,
+	WM_BTHF_CLIENT_NETWORK_STATE_EVT,
+	WM_BTHF_CLIENT_NETWORK_ROAMING_EVT,
+	WM_BTHF_CLIENT_NETWORK_SIGNAL_EVT,
+	WM_BTHF_CLIENT_BATTERY_LEVEL_EVT,
+	WM_BTHF_CLIENT_CURRENT_OPERATOR_EVT,
+	WM_BTHF_CLIENT_CALL_EVT,
+	WM_BTHF_CLIENT_CALLSETUP_EVT,
+	WM_BTHF_CLIENT_CALLHELD_EVT,
+	WM_BTHF_CLIENT_RESP_AND_HOLD_EVT,
+	WM_BTHF_CLIENT_CLIP_EVT,
+	WM_BTHF_CLIENT_CALL_WAITING_EVT,
+	WM_BTHF_CLIENT_CURRENT_CALLS_EVT,
+	WM_BTHF_CLIENT_VOLUME_CHANGE_EVT,
+	WM_BTHF_CLIENT_CMD_COMPLETE_EVT,
+	WM_BTHF_CLIENT_SUBSCRIBER_INFO_EVT,
+	WM_BTHF_CLIENT_IN_BAND_RING_TONE_EVT,
+	WM_BTHF_CLIENT_LAST_VOICE_TAG_NUMBER_EVT,
+	WM_BTHF_CLIENT_RING_INDICATION_EVT,
+	WM_BTHF_CLIENT_AUDIO_PAYLOAD_EVT,
+} tls_bthf_client_evt_t;
+
+typedef struct
+{
+	tls_bthf_client_connection_state_t state;
+	unsigned int peer_feat;
+	unsigned int chld_feat;
+	tls_bt_addr_t *bd_addr;
+} tls_bthf_client_connection_state_msg_t;
+
+typedef struct
+{
+	tls_bthf_client_audio_state_t state;
+	tls_bt_addr_t *bd_addr;	
+} tls_bthf_client_audio_state_msg_t;
+
+typedef struct
+{
+	tls_bthf_client_vr_state_t state;
+
+} tls_bthf_client_vr_cmd_msg_t;
+
+typedef struct
+{
+	tls_bthf_client_network_state_t state;
+
+} tls_bthf_client_network_state_msg_t;
+
+typedef struct
+{
+	tls_bthf_client_service_type_t type;
+
+} tls_bthf_client_network_roaming_msg_t;
+
+typedef struct
+{
+	int signal_strength;
+
+} tls_bthf_client_network_signal_msg_t;
+
+typedef struct
+{
+	int battery_level;
+
+} tls_bthf_client_battery_level_msg_t;
+
+typedef struct
+{
+	char* name;
+
+} tls_bthf_client_current_operator_msg_t;
+
+typedef struct
+{
+	tls_bthf_client_call_t call;
+
+} tls_bthf_client_call_msg_t;
+
+typedef struct
+{
+	tls_bthf_client_callsetup_t callsetup;
+
+} tls_bthf_client_callsetup_msg_t;
+
+typedef struct
+{
+	tls_bthf_client_callheld_t callheld;
+
+} tls_bthf_client_callheld_msg_t;
+
+typedef struct
+{
+	tls_bthf_client_resp_and_hold_t resp_and_hold;
+
+} tls_bthf_client_resp_and_hold_msg_t;
+
+typedef struct
+{
+	char *number;
+
+} tls_bthf_client_clip_msg_t;
+
+typedef struct
+{
+	char *number;
+
+} tls_bthf_client_call_waiting_msg_t;
+
+typedef struct
+{
+	int index;
+	tls_bthf_client_call_direction_t dir;
+	tls_bthf_client_call_state_t state;
+	tls_bthf_client_call_mpty_type_t mpty;
+	char *number;
+} tls_bthf_client_current_calls_msg_t;
+
+typedef struct
+{
+	tls_bthf_client_volume_type_t type;
+	int volume;
+
+} tls_bthf_client_volume_change_msg_t;
+
+typedef struct
+{
+	tls_bthf_client_cmd_complete_t type;
+	int cme;
+
+} tls_bthf_client_cmd_complete_msg_t;
+
+typedef struct
+{
+	const char *name;
+	tls_bthf_client_subscriber_service_type_t type;
+
+} tls_bthf_client_subscriber_info_msg_t;
+
+typedef struct
+{
+	tls_bthf_client_in_band_ring_state_t state;
+
+} tls_bthf_client_in_band_ring_tone_msg_t;
+
+typedef struct
+{
+	char *number;
+
+} tls_bthf_client_last_voice_tag_number_msg_t;
+
+typedef struct
+{
+	int ring;
+
+} tls_bthf_client_ring_indication_msg_t;
+
+typedef struct
+{
+	tls_bt_addr_t *bd_addr;
+	uint8_t audio_format;
+	uint8_t *payload;
+	uint16_t payload_length;
+} tls_bthf_audio_payload_msg_t;
+
+
+typedef union
+{
+	tls_bthf_client_connection_state_msg_t	connection_state_msg;
+	tls_bthf_client_audio_state_msg_t		audio_state_msg;
+	tls_bthf_client_vr_cmd_msg_t			vr_cmd_msg;
+	tls_bthf_client_network_state_msg_t	 	network_state_msg;
+	tls_bthf_client_network_roaming_msg_t	network_roaming_msg;
+	tls_bthf_client_network_signal_msg_t    network_signal_msg;
+	tls_bthf_client_battery_level_msg_t	    battery_level_msg;
+	tls_bthf_client_current_operator_msg_t	current_operator_msg;
+	tls_bthf_client_call_msg_t 				call_msg;
+	tls_bthf_client_callsetup_msg_t 		callsetup_msg;
+	tls_bthf_client_callheld_msg_t 			callheld_msg;
+	tls_bthf_client_resp_and_hold_msg_t 	resp_and_hold_msg;
+	tls_bthf_client_clip_msg_t 				clip_msg;
+	tls_bthf_client_call_waiting_msg_t 		call_waiting_msg;
+	tls_bthf_client_current_calls_msg_t 	current_calls_msg;
+	tls_bthf_client_volume_change_msg_t 	volume_change_msg;
+	tls_bthf_client_cmd_complete_msg_t 		cmd_complete_msg;
+	tls_bthf_client_subscriber_info_msg_t 	subscriber_info_msg;
+	tls_bthf_client_in_band_ring_tone_msg_t in_band_ring_tone_msg;
+	tls_bthf_client_last_voice_tag_number_msg_t last_voice_tag_number_msg;
+	tls_bthf_client_ring_indication_msg_t 	ring_indication_msg;
+	tls_bthf_audio_payload_msg_t            audio_payload_msg;
+
+} tls_bthf_client_msg_t;
+
+/** WM BT HFP CLIENT callback function */
+typedef void (*tls_bthf_client_callback_t)(tls_bthf_client_evt_t event, tls_bthf_client_msg_t *p_data);
 
 #define TLS_HAL_CBACK(P_CB, P_CBACK, ...)\
     if (P_CB && P_CB->P_CBACK) {            \

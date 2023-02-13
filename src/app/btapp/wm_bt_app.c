@@ -19,6 +19,7 @@
 #if (TLS_CONFIG_BLE == CFG_ON)
     #include "wm_ble_server_wifi_app.h"
     #include "wm_ble_client_huawei.h"
+    #include "wm_ble_server_api_demo.h"
 #endif
 
 #if (TLS_CONFIG_BR_EDR == CFG_ON)
@@ -43,6 +44,7 @@ static uint8_t host_enabled_by_at = 0;
 
 void app_adapter_state_changed_callback(tls_bt_state_t status)
 {
+	tls_bt_property_t btp;
 	tls_bt_host_msg_t msg;
 	msg.adapter_state_change.status = status;
 	TLS_BT_APPL_TRACE_DEBUG("adapter status = %s\r\n", status==WM_BT_STATE_ON?"bt_state_on":"bt_state_off");
@@ -55,25 +57,24 @@ void app_adapter_state_changed_callback(tls_bt_state_t status)
     if(status == WM_BT_STATE_ON)
     {
     	TLS_BT_APPL_TRACE_VERBOSE("init base application\r\n");
-        /* those funtions should be called basicly*/
+        /* those funtions should be called basiclly*/
     	wm_ble_dm_init();
 		wm_ble_client_init();
     	wm_ble_server_init(); 
 
 		//at here , user run their own applications;
 		
-        //wm_bt_wifi_cfg_init();
-        //wm_ble_client_huawei_init();
+        //application_run();
     }else
     {
         TLS_BT_APPL_TRACE_VERBOSE("deinit base application\r\n");
-    	//wm_bt_wifi_cfg_deinit();
-		
     	wm_ble_dm_deinit();
 		wm_ble_client_deinit();
         wm_ble_server_deinit();
-		
-		//tls_bt_host_cleanup();
+
+        //here, user may free their application;
+
+        //application_stop();
     }
 
     #endif
@@ -81,14 +82,32 @@ void app_adapter_state_changed_callback(tls_bt_state_t status)
 
     if(status == WM_BT_STATE_ON)
     {
-        enable_sink();
+        tls_bt_enable_a2dp_sink();
+    }else
+    {
+        tls_bt_disable_a2dp_sink();
     }
 	
     if(status == WM_BT_STATE_ON)
     {
-        enable_hfp_hsp_client();
+        tls_bt_enable_hfp_client();
+    }else
+    {
+        tls_bt_disable_hfp_client();
     }
-
+    
+	/*
+    	BT_SCAN_MODE_NONE,                     0
+    	BT_SCAN_MODE_CONNECTABLE,              1
+    	BT_SCAN_MODE_CONNECTABLE_DISCOVERABLE  2
+    	*/
+    if(status == WM_BT_STATE_ON)
+    {
+        btp.type = WM_BT_PROPERTY_ADAPTER_SCAN_MODE;
+        btp.len = 1;
+        btp.val = "2";
+    	tls_bt_set_adapter_property(&btp, 0);
+    }
     #endif
 	
 	/*Notify at level application, if registered*/
@@ -179,7 +198,7 @@ void app_ssp_request_callback(tls_bt_addr_t *remote_bd_addr,
                               uint32_t pass_key)
 {
     TLS_BT_APPL_TRACE_DEBUG("app_ssp_request_callback, attention...(%s) cod=0x%08x, ssp_variant=%d, pass_key=0x%08x\r\n", bd_name->name, cod, pairing_variant, pass_key);
-
+	
 	tls_bt_ssp_reply(remote_bd_addr, pairing_variant, 1, pass_key);
 }
 
@@ -204,7 +223,7 @@ static void tls_bt_host_callback_handler(tls_bt_host_evt_t evt, tls_bt_host_msg_
 			app_adapter_properties_callback(msg->adapter_prop.status, msg->adapter_prop.num_properties, msg->adapter_prop.properties);
 			break;
 		case WM_BT_RMT_DEVICE_PROP_EVT:
-			app_remote_device_properties_callback(msg->remote_device_prop.status, &msg->remote_device_prop.address, 
+			app_remote_device_properties_callback(msg->remote_device_prop.status, msg->remote_device_prop.address, 
 									msg->remote_device_prop.num_properties, msg->remote_device_prop.properties);
 			break;
 	   case WM_BT_DEVICE_FOUND_EVT:
@@ -214,19 +233,19 @@ static void tls_bt_host_callback_handler(tls_bt_host_evt_t evt, tls_bt_host_msg_
 			app_discovery_state_changed_callback(msg->discovery_state.state);
 			break;
 		case WM_BT_BOND_STATE_CHG_EVT:
-			app_bond_state_changed_callback(msg->bond_state.status, &msg->bond_state.remote_bd_addr, msg->bond_state.state);
+			app_bond_state_changed_callback(msg->bond_state.status, msg->bond_state.remote_bd_addr, msg->bond_state.state);
 			break;
 		case WM_BT_ACL_STATE_CHG_EVT:
-			app_acl_state_changed_callback(msg->acl_state.status, &msg->acl_state.remote_address, msg->acl_state.state);
+			app_acl_state_changed_callback(msg->acl_state.status, msg->acl_state.remote_address, msg->acl_state.state);
 			break;
 		case WM_BT_ENERGY_INFO_EVT:
 			app_energy_info_callback(msg->energy_info.energy_info);
 			break;
 		case WM_BT_SSP_REQUEST_EVT:
-			app_ssp_request_callback(&msg->ssp_request.remote_bd_addr, msg->ssp_request.bd_name, msg->ssp_request.cod, msg->ssp_request.pairing_variant, msg->ssp_request.pass_key);
+			app_ssp_request_callback(msg->ssp_request.remote_bd_addr, msg->ssp_request.bd_name, msg->ssp_request.cod, msg->ssp_request.pairing_variant, msg->ssp_request.pass_key);
 			break;
 		case WM_BT_PIN_REQUEST_EVT:
-			app_pin_request_callback(&msg->pin_request.remote_bd_addr, msg->pin_request.bd_name, msg->pin_request.cod, msg->pin_request.min_16_digit);
+			app_pin_request_callback(msg->pin_request.remote_bd_addr, msg->pin_request.bd_name, msg->pin_request.cod, msg->pin_request.min_16_digit);
 			break;
 	}
 	
@@ -393,3 +412,99 @@ void bt_clean_btc()
 	TLS_BT_APPL_TRACE_VERBOSE("cleanup controller stack\r\n");
 	tls_bt_ctrl_disable();	
 }
+
+/*
+*bluetooth api demo 
+*/
+int demo_bt_enable()
+{
+	tls_bt_status_t status;
+    uint8_t uart_no = 1;    //default we use uart 1 for testing;
+	tls_appl_trace_level = TLS_BT_LOG_VERBOSE;
+    tls_bt_hci_if_t hci_if;
+
+    if(bt_adapter_state == WM_BT_STATE_ON)
+    {
+       TLS_BT_APPL_TRACE_VERBOSE("bt system enabled already"); 
+       return TLS_BT_STATUS_SUCCESS;
+    }
+	
+	tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_BT);
+	
+	TLS_BT_APPL_TRACE_VERBOSE("bt system running, uart_no=%d, log_level=%d\r\n", uart_no, tls_appl_trace_level);
+
+	hci_if.uart_index = uart_no;
+	hci_if.band_rate = 115200;
+	hci_if.data_bit = 8;
+	hci_if.stop_bit = 1;
+	hci_if.verify_bit = 0;
+	
+	status = tls_bt_enable(tls_bt_host_callback_handler, &hci_if, TLS_BT_LOG_NONE);
+	if((status != TLS_BT_STATUS_SUCCESS) &&(status != TLS_BT_STATUS_DONE) )
+	{
+		TLS_BT_APPL_TRACE_ERROR("tls_bt_enable, ret:%s,%d\r\n", tls_bt_status_2_str(status),status);
+	}
+
+	return status;    
+}
+
+int demo_bt_destroy()
+{
+
+	tls_bt_status_t status;
+	
+	TLS_BT_APPL_TRACE_VERBOSE("bt system destroy\r\n");
+
+    if(bt_adapter_state == WM_BT_STATE_OFF)
+    {
+       TLS_BT_APPL_TRACE_VERBOSE("bt system destroyed already"); 
+       return TLS_BT_STATUS_SUCCESS;
+    }    
+	status = tls_bt_disable();
+	if((status != TLS_BT_STATUS_SUCCESS) && (status != TLS_BT_STATUS_DONE))
+	{
+		TLS_BT_APPL_TRACE_ERROR("tls_bt_disable, ret:%s,%d\r\n", tls_bt_status_2_str(status),status);
+	}
+
+	tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_BT);
+
+    while(bt_adapter_state == WM_BT_STATE_ON)
+    {
+        tls_os_time_delay(500);
+    }
+
+    TLS_BT_APPL_TRACE_VERBOSE("bt system cleanup host\r\n");
+
+    status = tls_bt_host_cleanup();
+	if(status != TLS_BT_STATUS_SUCCESS)
+	{
+		TLS_BT_APPL_TRACE_ERROR("tls_bt_host_cleanup, ret:%s,%d\r\n", tls_bt_status_2_str(status),status);
+	}
+	
+	return status;  
+}
+
+int demo_ble_server_on()
+{
+    if(bt_adapter_state == WM_BT_STATE_OFF)
+    {
+       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n"); 
+       return -1;
+    }   
+    wm_ble_server_api_demo_init(); 
+    return 0;
+}
+int demo_ble_server_off()
+{
+    if(bt_adapter_state == WM_BT_STATE_OFF)
+    {
+       TLS_BT_APPL_TRACE_VERBOSE("bluetooth system stopped\r\n"); 
+       return -1;
+    } 
+
+    wm_ble_server_api_demo_deinit(); 
+
+    return 0;
+}
+
+

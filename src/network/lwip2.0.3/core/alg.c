@@ -28,6 +28,7 @@
 #include "lwip/dns.h"
 #include "lwip/priv/tcp_priv.h"
 #include "lwip/alg.h"
+#include "lwip/timeouts.h"
 #include "netif/ethernetif.h"
 
 #if TLS_CONFIG_AP_OPT_FWD
@@ -103,15 +104,19 @@ static struct napt_table_head_4tu napt_table_4tcp;
 static struct napt_table_head_4tu napt_table_4udp;
 static struct napt_table_head_4ic napt_table_4ic;
 
-#define NAPT_TABLE_MUTEX_LOCK
+//#define NAPT_USE_HW_TIMER
+
+//#define NAPT_TABLE_MUTEX_LOCK
 #ifdef  NAPT_TABLE_MUTEX_LOCK
 static tls_os_sem_t *napt_table_lock_4tcp;
 static tls_os_sem_t *napt_table_lock_4udp;
 static tls_os_sem_t *napt_table_lock_4ic;
+#ifdef  NAPT_USE_HW_TIMER
 static bool napt_check_tcp = FALSE;
 static bool napt_check_udp = FALSE;
 static bool napt_check_ic  = FALSE;
-#endif
+#endif /* NAPT_USE_HW_TIMER */
+#endif /* NAPT_TABLE_MUTEX_LOCK */
 
 /* tcp&udp */
 static u16 napt_curr_port;
@@ -854,6 +859,7 @@ static void alg_napt_table_check_4tcp(void)
 
     /* tcp */
 #ifdef NAPT_TABLE_MUTEX_LOCK
+#ifdef NAPT_USE_HW_TIMER
     if (alg_napt_try_lock(napt_table_lock_4tcp))
     {
         //printf("## try tcp\r\n");
@@ -861,6 +867,9 @@ static void alg_napt_table_check_4tcp(void)
         return;
     }
     napt_check_tcp = FALSE;
+#else
+    alg_napt_lock(napt_table_lock_4tcp);
+#endif
 #endif
     for (napt4tcp_prev = napt_table_4tcp.next;\
          NULL != napt4tcp_prev;\
@@ -935,6 +944,7 @@ static void alg_napt_table_check_4udp(void)
 
     /* udp */
 #ifdef NAPT_TABLE_MUTEX_LOCK
+#ifdef NAPT_USE_HW_TIMER
     if (alg_napt_try_lock(napt_table_lock_4udp))
     {
         //printf("## try udp\r\n");
@@ -942,6 +952,9 @@ static void alg_napt_table_check_4udp(void)
         return;
     }
     napt_check_udp = FALSE;
+#else
+    alg_napt_lock(napt_table_lock_4udp);
+#endif
 #endif
     for (napt4udp_prev = napt_table_4udp.next;\
          NULL != napt4udp_prev;\
@@ -1016,6 +1029,7 @@ static void alg_napt_table_check_4ic(void)
 
     /* icmp */
 #ifdef NAPT_TABLE_MUTEX_LOCK
+#ifdef NAPT_USE_HW_TIMER
     if (alg_napt_try_lock(napt_table_lock_4ic))
     {
         //printf("## try ic\r\n");
@@ -1023,6 +1037,9 @@ static void alg_napt_table_check_4ic(void)
         return;
     }
     napt_check_ic = FALSE;
+#else
+    alg_napt_lock(napt_table_lock_4ic);
+#endif
 #endif
     /* skip the first item */
     for (napt4ic_prev = napt_table_4ic.next;\
@@ -1128,10 +1145,12 @@ static void alg_napt_table_check(void *arg)
     alg_napt_table_check_4ic();
     alg_napt_table_check_4gre();
 
+    sys_timeout((u32)arg, alg_napt_table_check, arg);
+
     return;
 }
 
-#ifdef NAPT_TABLE_MUTEX_LOCK
+#ifdef NAPT_USE_HW_TIMER
 static void alg_napt_table_check_try(void)
 {
     if (napt_check_tcp)
@@ -1905,7 +1924,7 @@ int alg_input(const u8 *bssid, u8 *pkt_body, u32 pkt_len)
     int err;
     struct ip_hdr *ip_hdr;
 
-#ifdef NAPT_TABLE_MUTEX_LOCK
+#ifdef NAPT_USE_HW_TIMER
     alg_napt_table_check_try();
 #endif
 
@@ -2016,7 +2035,9 @@ bool alg_napt_port_is_used(u16 port)
 int alg_napt_init(void)
 {
     int err = 0;
+#ifdef NAPT_USE_HW_TIMER
     struct tls_timer_cfg timer_cfg;
+#endif
 
     memset(&napt_table_4tcp, 0, sizeof(struct napt_table_head_4tu));
     memset(&napt_table_4udp, 0, sizeof(struct napt_table_head_4tu));
@@ -2053,6 +2074,7 @@ int alg_napt_init(void)
     napt4udp_cnt = 0;
 #endif
 
+#ifdef NAPT_USE_HW_TIMER
     memset(&timer_cfg, 0, sizeof(timer_cfg));
     timer_cfg.unit = TLS_TIMER_UNIT_MS;
     timer_cfg.timeout = NAPT_TMR_INTERVAL;
@@ -2068,6 +2090,9 @@ int alg_napt_init(void)
     {
         NAPT_PRINT("failed to init alg timer.\n");
     }
+#else
+    sys_timeout(NAPT_TMR_INTERVAL, alg_napt_table_check, (void *)NAPT_TMR_INTERVAL);
+#endif
 
     return err;
 }

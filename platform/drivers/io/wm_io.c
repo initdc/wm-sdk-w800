@@ -135,7 +135,17 @@ static void io_cfg_option6(enum tls_io_name name)
 
     tls_reg_write32(HR_GPIO_AF_SEL  + offset, tls_reg_read32(HR_GPIO_AF_SEL  + offset) & (~BIT(pin)));  /* disable gpio function */
     tls_reg_write32(HR_GPIO_DIR     + offset, tls_reg_read32(HR_GPIO_DIR     + offset) & (~BIT(pin)));
-    tls_reg_write32(HR_GPIO_PULL_EN + offset, tls_reg_read32(HR_GPIO_PULL_EN + offset) & (~BIT(pin)));
+
+	if (name >=WM_IO_PA_01 && name <= WM_IO_PA_04) /*pulldown for adc*/
+	{
+		tls_reg_write32(HR_GPIO_PULLUP_EN + offset, tls_reg_read32(HR_GPIO_PULLUP_EN + offset) | (BIT(pin)));
+		tls_reg_write32(HR_GPIO_PULLDOWN_EN + offset, tls_reg_read32(HR_GPIO_PULLDOWN_EN + offset) | (BIT(pin)));			
+	}
+	else /*pullup for lcd*/
+	{
+		tls_reg_write32(HR_GPIO_PULLUP_EN + offset, tls_reg_read32(HR_GPIO_PULLUP_EN + offset) & (~BIT(pin)));
+		tls_reg_write32(HR_GPIO_PULLDOWN_EN + offset, tls_reg_read32(HR_GPIO_PULLDOWN_EN + offset) & (~BIT(pin)));			
+	}	
 }
 
 /**
@@ -197,7 +207,7 @@ int tls_io_cfg_get(enum tls_io_name name)
 	afs1 = tls_reg_read32(HR_GPIO_AF_S1 + offset);
 	afs0 = tls_reg_read32(HR_GPIO_AF_S0 + offset);
 	dir = tls_reg_read32(HR_GPIO_DIR + offset);
-	pullen = tls_reg_read32(HR_GPIO_PULL_EN + offset);
+	pullen = tls_reg_read32(HR_GPIO_PULLUP_EN + offset);
 
 	if(afsel&BIT(pin))
 	{

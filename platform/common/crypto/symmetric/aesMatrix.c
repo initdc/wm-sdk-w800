@@ -1067,7 +1067,7 @@ static uint32 setup_mix2(uint32 temp)
 	Software implementation of AES CBC APIs
  */
 #ifndef USE_AES_CBC_EXTERNAL
-#if !TLS_CONFIG_HARD_CRYPTO
+#if 1//!TLS_CONFIG_HARD_CRYPTO
 int32 psAesInit(psAesCipherContext_t *ctx, unsigned char *IV,
 				  unsigned char *key, uint32 keylen)
 {

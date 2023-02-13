@@ -235,6 +235,7 @@ static void md5_compress(psDigestContext_t *md)
 	psBurnStack(sizeof(uint32) * 21);
 }
 #endif /* USE_BURN_STACK */
+#if !TLS_CONFIG_HARD_CRYPTO
 
 void psMd5Init(psDigestContext_t * md)
 {
@@ -354,6 +355,8 @@ int32 psMd5Final(psDigestContext_t * md, unsigned char *hash)
 	memset(md, 0x0, sizeof(psDigestContext_t));
 	return MD5_HASH_SIZE;
 }
+#endif // !TLS_CONFIG_HARD_CRYPTO
+
 #endif /* USE_MD5 */
 /******************************************************************************/
 

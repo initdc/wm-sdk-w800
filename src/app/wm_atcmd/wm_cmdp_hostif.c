@@ -61,13 +61,16 @@ extern tls_bt_status_t at_bt_destroy_host(void);
 extern tls_bt_status_t at_bt_cleanup_host(void);
 extern tls_bt_status_t at_bt_enable(int uart_no, tls_bt_log_level_t log_level, tls_bt_host_callback_t at_callback_ptr);
 extern tls_bt_status_t at_bt_destroy(void);
+
+#if TLS_CONFIG_BLE  
 tls_bt_status_t wm_ble_register_report_evt(tls_ble_dm_evt_t rpt_evt,  tls_ble_dm_callback_t rpt_callback);
 tls_bt_status_t wm_ble_deregister_report_result(tls_ble_dm_evt_t rpt_evt,  tls_ble_dm_callback_t rpt_callback);
-
 extern tls_bt_status_t wm_demo_prof_init(uint16_t uuid, tls_ble_callback_t at_cb_ptr);
 extern tls_bt_status_t wm_demo_prof_deinit(int server_if);
 extern tls_bt_status_t wm_demo_cli_init(uint16_t uuid, tls_ble_callback_t at_cb_ptr);
 extern tls_bt_status_t wm_demo_cli_deinit(int client_if);
+#endif
+
 extern tls_bt_uuid_t * app_uuid16_to_uuid128(uint16_t uuid16);
 #endif
 
@@ -3264,7 +3267,13 @@ int tem_proc(u8 set_opt, u8 update_flash, union HOSTIF_CMD_PARAMS_UNION *cmd, un
 			temp = temp - offset;
         }
         if (!ret){
-            sprintf(temperature, "%d.%d", temp/1000, (temp%1000)/100);
+			if (temp < 0)
+			{
+				temp = 0- temp;
+	            sprintf(temperature, "-%d.%d", temp/1000, (temp%1000)/100);			
+			}
+			else
+	            sprintf(temperature, "%d.%d", temp/1000, (temp%1000)/100);
             memcpy((char *)cmdrsp->tem.offset, temperature, strlen(temperature));
         }
     }
@@ -4840,6 +4849,8 @@ end_tag:
 
 }
 
+#if TLS_CONFIG_BLE
+
 int ble_adv_proc(u8 set_opt, u8 update_flash, union HOSTIF_CMD_PARAMS_UNION *cmd, union HOSTIF_CMDRSP_PARAMS_UNION * cmdrsp)
 {
     tls_bt_status_t ret;
@@ -4907,15 +4918,16 @@ int ble_scan_filter_proc(u8 set_opt, u8 update_flash, union HOSTIF_CMD_PARAMS_UN
 }
 static u8 get_valid_adv_length_and_name(uint8_t *ptr, uint8_t *pname)
 {
-	u8 ret = 0, seg_len = 0;
+	u8 ret = 0, seg_len = 0, min_len = 0;
 	if(ptr == NULL) return ret;
 	seg_len = ptr[0];
 	while(seg_len != 0)
 	{
 	    if(ptr[ret+1] == 0x09 || ptr[ret+1] == 0x08)
 	    {
-	    	memcpy(pname, ptr+ret+2, seg_len-1);
-			pname[seg_len-1] = 0;
+	    	min_len = MIN(64, seg_len-1);
+	    	memcpy(pname, ptr+ret+2, min_len);
+			pname[min_len] = 0;
 			asm("nop");asm("nop");asm("nop");asm("nop");
 	    }
 		ret += (seg_len+1); //it self 1 byte;
@@ -4925,51 +4937,20 @@ static u8 get_valid_adv_length_and_name(uint8_t *ptr, uint8_t *pname)
 	
 	return ret;
 }
+
 static void ble_report_evt_cb(tls_ble_dm_evt_t event, tls_ble_dm_msg_t *p_data)
 {
-	if(event != WM_BLE_DM_SCAN_RES_EVT) return;
-	
-	tls_ble_dm_scan_res_msg_t *msg = (tls_ble_dm_scan_res_msg_t *)&p_data->dm_scan_result;
+    if((event != WM_BLE_DM_SCAN_RES_EVT) && (event != WM_BLE_DM_SCAN_RES_CMPL_EVT)) return;
+    
 #define BLE_SCAN_RESULT_LEN 256
-    int ret;
+
+    int ret = -1, index = 0;
+    int len = 0, tmp_len= 0;
+    u16 uuid = 0, i=0;
     char *buf;
-    u8 len, valid_len;
-    u8 i;
     u8 hostif_type;
-	u8 device_name[64] = {0};
+    int passive_response = 0;
     struct tls_hostif *hif = tls_get_hostif();
-
-    buf = tls_mem_alloc(BLE_SCAN_RESULT_LEN);
-    if (!buf)
-    {
-        return;
-    }
-    
-    memset(buf, 0, BLE_SCAN_RESULT_LEN);
-	memset(device_name, 0, sizeof(device_name));
-	asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");
-	valid_len = get_valid_adv_length_and_name(msg->value, device_name);
-
-	len = sprintf(buf, "%02X%02X%02X%02X%02X%02X,%d,", 
-                  msg->address[0], msg->address[1], msg->address[2],
-                  msg->address[3], msg->address[4], msg->address[5], msg->rssi);
-
-	if(device_name[0] != 0x00)
-    {
-    	len += sprintf(buf +len, "\"%s\",", device_name);
-    }else
-    {
-    	len += sprintf(buf+len, "\"\",");
-    }
-    
-    for (i = 0; i < valid_len; i++)
-    {
-        len += sprintf(buf + len, "%02X", msg->value[i]);
-    }
-
-    len += sprintf(buf + len, "\r\n");
-	buf[len++] = '\0';
-
 #if TLS_CONFIG_RMMS
     if (hif->last_bt_cmd_mode == CMD_MODE_RMMS_ATCMD)
     {
@@ -4988,10 +4969,84 @@ static void ble_report_evt_cb(tls_ble_dm_evt_t event, tls_ble_dm_msg_t *p_data)
         }
     }
 
-	ret = tls_hostif_process_cmdrsp(hostif_type, buf, len);
+    buf = tls_mem_alloc(BLE_SCAN_RESULT_LEN);
+    if (!buf)
+    {
+        printf("alloc failed\r\n");
+        return;
+    }
 
-	if (ret)
-	    tls_mem_free(buf);
+    switch(event)
+    {
+       
+        case WM_BLE_DM_SCAN_RES_EVT:
+            {
+                tls_ble_dm_scan_res_msg_t *msg = (tls_ble_dm_scan_res_msg_t *)&p_data->dm_scan_result;
+
+                u8 valid_len;
+            	u8 device_name[64] = {0};
+                struct tls_hostif *hif = tls_get_hostif();
+                
+                memset(buf, 0, BLE_SCAN_RESULT_LEN);
+            	memset(device_name, 0, sizeof(device_name));
+            	valid_len = get_valid_adv_length_and_name(msg->value, device_name);
+                if(valid_len > 62)
+                {
+                	//printf("###warning(%d)###\r\n", valid_len);
+                	valid_len = 62;
+                }
+            	len = sprintf(buf, "%02X%02X%02X%02X%02X%02X,%d,", 
+                              msg->address[0], msg->address[1], msg->address[2],
+                              msg->address[3], msg->address[4], msg->address[5], msg->rssi);
+
+            	if(device_name[0] != 0x00)
+                {
+                	len += sprintf(buf +len, "\"%s\",", device_name);
+                }else
+                {
+                	len += sprintf(buf+len, "\"\",");
+                }
+                
+                for (i = 0; i < valid_len; i++)
+                {
+                    len += sprintf(buf + len, "%02X", msg->value[i]);
+                }
+
+                len += sprintf(buf + len, "\r\n");
+            	buf[len++] = '\0';
+
+            	ret = tls_hostif_process_cmdrsp(hostif_type, buf, len);                
+
+                passive_response =1;
+            }
+            break;  
+        case WM_BLE_DM_SCAN_RES_CMPL_EVT:
+            {
+                tls_ble_dm_scan_res_cmpl_msg_t *msg = (tls_ble_dm_scan_res_cmpl_msg_t *)&p_data->dm_scan_result_cmpl;
+                if(hif->uart_atcmd_bits & (1<<UART_ATCMD_BIT_ACTIVE_BT_DM))
+                {
+                    len = sprintf(buf, "+OK=%hhu,%hhu\r\n", 0,msg->num_responses);
+                    ret = tls_hostif_process_cmdrsp(hostif_type, buf, len);
+                    passive_response =0;
+                    hif->uart_atcmd_bits &= ~(1<<UART_ATCMD_BIT_ACTIVE_BT_DM);
+                }else
+                {
+                    passive_response =1;
+                }
+            }
+            break;  
+        default:
+            break;
+    }
+   
+    if (ret)
+        tls_mem_free(buf);
+    
+    if(passive_response == 1) {
+        return;
+    }
+    hif->uart_atcmd_bits |= (1 << UART_ATCMD_BIT_BT);
+    tls_os_sem_release(hif->uart_atcmd_sem); 
 	
 }
 
@@ -5008,21 +5063,34 @@ int ble_scan_proc(u8 set_opt, u8 update_flash, union HOSTIF_CMD_PARAMS_UNION *cm
 
 		if(ret == TLS_BT_STATUS_SUCCESS)
 		{
-			ret = wm_ble_register_report_evt(WM_BLE_DM_SCAN_RES_EVT, ble_report_evt_cb);
+			ret = wm_ble_register_report_evt(WM_BLE_DM_SCAN_RES_EVT|WM_BLE_DM_SCAN_RES_CMPL_EVT, ble_report_evt_cb);
 		}
     }
     else
     {
     	hif->last_bt_cmd_mode = cmd->blescan.cmd_mode;
+    	hif->uart_atcmd_bits &= ~(1 << UART_ATCMD_BIT_BT);
+    	hif->uart_atcmd_bits |= (1<<UART_ATCMD_BIT_ACTIVE_BT_DM);        
 		
         ret = tls_ble_scan(FALSE);
+        
+        if (ret != TLS_BT_STATUS_SUCCESS)
+        {
+		    hif->uart_atcmd_bits &= ~(1 << UART_ATCMD_BIT_ACTIVE_BT_DM);
+		    goto end_tag;
+	    }
+	
+	    ret = bt_wait_rsp_timeout(cmd->bt.cmd_mode, cmd, hif, 5);
+        
 		if(ret == TLS_BT_STATUS_SUCCESS)
 		{
-			ret = wm_ble_deregister_report_evt(WM_BLE_DM_SCAN_RES_EVT, ble_report_evt_cb);
+			ret = wm_ble_deregister_report_evt(WM_BLE_DM_SCAN_RES_EVT|WM_BLE_DM_SCAN_RES_CMPL_EVT, ble_report_evt_cb);
         }
     }
 
+end_tag:
 	return (ret == TLS_BT_STATUS_SUCCESS) ? 0 : -CMD_ERR_OPS;
+   
 }
 
 void ble_gatt_evt_cback(tls_ble_evt_t event, tls_ble_msg_t *msg)
@@ -5763,6 +5831,7 @@ int ble_client_cfg_mtu_proc(u8 set_opt, u8 update_flash, union HOSTIF_CMD_PARAMS
 end_tag:
 	return (ret == TLS_BT_STATUS_SUCCESS) ? 0 : -CMD_ERR_OPS;
 }
+#endif
 
 #endif
 
@@ -5939,6 +6008,7 @@ static struct tls_cmd_t  at_ri_cmd_tbl[] = {
 	{ "BTTEST", HOSTIF_CMD_NOP, ATCMD_OP_EQ | ATCMD_OP_EP | RICMD_OP_SET, 1, 0, bt_test_mode_proc},
     { "BTSNAME",HOSTIF_CMD_NOP, ATCMD_OP_EQ | ATCMD_OP_EP | RICMD_OP_SET, 1, 0, bt_set_name_proc},
     { "BTGNAME", HOSTIF_CMD_NOP, ATCMD_OP_NULL, 0, 0, bt_get_name_proc},
+#if TLS_CONFIG_BLE    
 	{ "BLEADV", HOSTIF_CMD_NOP, ATCMD_OP_EQ | ATCMD_OP_EP | RICMD_OP_SET, 1, 0, ble_adv_proc},
 	{ "BLEADATA", HOSTIF_CMD_NOP, ATCMD_OP_EQ | ATCMD_OP_EP | RICMD_OP_SET, 2, 0, ble_adv_data_proc},
 	{ "BLEAPRM", HOSTIF_CMD_NOP, ATCMD_OP_NULL | ATCMD_OP_EQ | ATCMD_OP_EP | ATCMD_OP_QU | RICMD_OP_SET | RICMD_OP_SET, 5, 0, ble_adv_param_proc},
@@ -5970,6 +6040,7 @@ static struct tls_cmd_t  at_ri_cmd_tbl[] = {
 	{ "BLECDIS", HOSTIF_CMD_NOP, ATCMD_OP_EQ | ATCMD_OP_EP | RICMD_OP_SET, 3, 0, ble_client_disconnect_proc},
 	{ "BLECDES", HOSTIF_CMD_NOP, ATCMD_OP_EQ | ATCMD_OP_EP | RICMD_OP_SET, 1, 0, ble_client_destory_proc},
 	{ "BLECMTU", HOSTIF_CMD_NOP, ATCMD_OP_EQ | ATCMD_OP_EP | RICMD_OP_SET, 2, 0, ble_client_cfg_mtu_proc},
+#endif	
 #endif
 
 	{ NULL, HOSTIF_CMD_NOP, 0, 0 , 0, NULL},

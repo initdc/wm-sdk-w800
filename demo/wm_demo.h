@@ -83,6 +83,11 @@
 #define DEMO_MQTT                   (DEMO_OFF && DEMO_CONSOLE)
 #define DEMO_MBEDTLS                (DEMO_OFF && DEMO_CONSOLE)
 
+
+#define DEMO_DSP					(DEMO_OFF && DEMO_CONSOLE)
+
+#define DEMO_BT                     (DEMO_OFF && DEMO_CONSOLE)
+
 ////////////////////////////////////////////////////////////////
 
 // user prio 32 - 60

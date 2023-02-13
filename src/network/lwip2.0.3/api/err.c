@@ -35,6 +35,10 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
 #include "lwip/err.h"
 #include "lwip/def.h"

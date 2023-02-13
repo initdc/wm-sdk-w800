@@ -92,8 +92,9 @@
 								<option id="ckcoregcc.link.category.other.1959706630" name="Linker flags" superClass="ckcoregcc.link.category.other" value="-Wl,-zmax-page-size=1024 -mhard-float" valueType="string"/>
 								<option id="ckcoregcc.link.option.libs.898988714" name="Libraries (-l)" superClass="ckcoregcc.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="m"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="bt"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="wlan"/>
+									<listOptionValue builtIn="false" value="dsp"/>
+									<listOptionValue builtIn="false" value="bt"/>
+									<listOptionValue builtIn="false" value="wlan"/>
 								</option>
 								<option id="ckcoregcc.link.option.paths.1718318359" name="Library search path (-L)" superClass="ckcoregcc.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="../../../../../../../lib/w800"/>
@@ -127,7 +128,6 @@
 									<listOptionValue builtIn="false" value="../../../../../../../include/arch/xt804"/>
 									<listOptionValue builtIn="false" value="../../../../../../../include/arch/xt804/csi_driver"/>
 									<listOptionValue builtIn="false" value="../../../../../../../include/arch/xt804/csi_core"/>
-									<listOptionValue builtIn="false" value="../../../../../../../include/arch/xt804/libs"/>
 									<listOptionValue builtIn="false" value="../../../../../../../include/app"/>
 									<listOptionValue builtIn="false" value="../../../../../../../include/driver"/>
 									<listOptionValue builtIn="false" value="../../../../../../../include/net"/>
@@ -166,6 +166,7 @@
 									<listOptionValue builtIn="false" value="../../../../../../../src/app/mbedtls/ports"/>
 									<listOptionValue builtIn="false" value="../../../../../../../src/app/mbedtls/include"/>
 									<listOptionValue builtIn="false" value="../../../../../../../src/app/mbedtls/include/mbedtls"/>
+									<listOptionValue builtIn="false" value="../../../../../../../include/arch/xt804/csi_dsp"/>
 								</option>
 								<inputType id="cds.managedbuild.tool.ckcoregcc.c.compiler.input.1389486564" superClass="cds.managedbuild.tool.ckcoregcc.c.compiler.input"/>
 							</tool>
@@ -455,8 +456,9 @@
 								<option id="ckcoregcc.link.category.other.1001232980" name="Linker flags" superClass="ckcoregcc.link.category.other" value="-Wl,-zmax-page-size=1024 -mhard-float" valueType="string"/>
 								<option id="ckcoregcc.link.option.libs.1402450051" name="Libraries (-l)" superClass="ckcoregcc.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="m"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="bt"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="wlan"/>
+									<listOptionValue builtIn="false" value="dsp"/>
+									<listOptionValue builtIn="false" value="bt"/>
+									<listOptionValue builtIn="false" value="wlan"/>
 								</option>
 								<option id="ckcoregcc.link.option.paths.1718318359" name="Library search path (-L)" superClass="ckcoregcc.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="../../../../../../../lib/w800"/>
@@ -477,6 +479,7 @@
 					</folderInfo>
 					<folderInfo id="cds.managedbuild.config.ckcoregcc.abiv2.exeWithoutOs.release.1526901817.856949837" name="/" resourcePath="demo">
 						<toolChain id="cds.managedbuild.toolchain.ckcoregcc.abiv2.exeWithoutOs.release.2006504613" name="CSky abiv2 Elf Toolchain" superClass="cds.managedbuild.toolchain.ckcoregcc.abiv2.exeWithoutOs.release" unusedChildren="">
+							<targetPlatform id="cds.managedbuild.target.ckcoregcc.platform.abiv2.exeWithoutOs.release" name="Debug Platform" superClass="cds.managedbuild.target.ckcoregcc.platform.abiv2.exeWithoutOs.release"/>
 							<tool id="cds.managedbuild.tool.ckcoregcc.default.abiv2.exeWithoutOs.release.669383720" name="All Tools Settings" superClass="cds.managedbuild.tool.ckcoregcc.default.abiv2.exeWithoutOs.release.1084594441"/>
 							<tool id="cds.managedbuild.tool.ckcoregcc.assembler.abiv2.exeWithoutOs.release.643911019" name="CSky Elf Assembler" superClass="cds.managedbuild.tool.ckcoregcc.assembler.abiv2.exeWithoutOs.release.1127903730">
 								<inputType id="cds.managedbuild.tool.ckcoregcc.assembler.input2.880128760" superClass="cds.managedbuild.tool.ckcoregcc.assembler.input2"/>
@@ -484,13 +487,13 @@
 							</tool>
 							<tool id="cds.managedbuild.tool.ckcoregcc.cpp.compiler.abiv2.exeWithoutOs.release.1924372181" name="CSky Elf C++ Compiler" superClass="cds.managedbuild.tool.ckcoregcc.cpp.compiler.abiv2.exeWithoutOs.release.1717268767"/>
 							<tool id="cds.managedbuild.tool.ckcoregcc.c.compiler.abiv2.exeWithoutOs.release.1626229607" name="CSky Elf C Compiler" superClass="cds.managedbuild.tool.ckcoregcc.c.compiler.abiv2.exeWithoutOs.release.1804550981">
-								<option id="ckcoregcc.c.compiler.option.include.paths.1881968700" superClass="ckcoregcc.c.compiler.option.include.paths" valueType="includePath">
+								<option id="ckcoregcc.c.compiler.option.include.paths.1881968700" name="Include paths (-I)" superClass="ckcoregcc.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="../../../../../../../demo"/>
 									<listOptionValue builtIn="false" value="../../../../../../../include"/>
 									<listOptionValue builtIn="false" value="../../../../../../../include/arch/xt804"/>
 									<listOptionValue builtIn="false" value="../../../../../../../include/arch/xt804/csi_driver"/>
 									<listOptionValue builtIn="false" value="../../../../../../../include/arch/xt804/csi_core"/>
-									<listOptionValue builtIn="false" value="../../../../../../../include/arch/xt804/libs"/>
+									<listOptionValue builtIn="false" value="../../../../../../../include/arch/xt804/csi_dsp"/>
 									<listOptionValue builtIn="false" value="../../../../../../../include/app"/>
 									<listOptionValue builtIn="false" value="../../../../../../../include/driver"/>
 									<listOptionValue builtIn="false" value="../../../../../../../include/net"/>

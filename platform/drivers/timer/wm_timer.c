@@ -12,6 +12,7 @@
 #include "wm_regs.h"
 #include "wm_irq.h"
 #include "wm_cpu.h"
+#include "wm_pmu.h"
 
 #include "tls_common.h"
 
@@ -125,6 +126,11 @@ u8 tls_timer_create(struct tls_timer_cfg *cfg)
 
     if (TLS_TIMER_ID_MAX == i)
         return WM_TIMER_ID_INVALID;
+
+	if (wm_timer_bitmap == 0)
+	{
+		tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_TIMER);
+	}
 
     wm_timer_bitmap  |= BIT(i);
     timer_context[i].callback = cfg->callback;
@@ -260,6 +266,11 @@ void tls_timer_destroy(u8 timer_id)
     timer_context[timer_id].arg      = NULL;
 
     wm_timer_bitmap &= ~BIT(timer_id);
+
+	if (wm_timer_bitmap == 0)
+	{
+		tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_TIMER);
+	}
 
     return;
 }

@@ -24,7 +24,7 @@
 
 
 /*ADC Result*/
-#define ADC_RESULT_MASK					(0x3FFFF)
+#define ADC_RESULT_MASK					(0x3FFFC)
 #define ADC_RESULT_VAL(n)				((n)&ADC_RESULT_MASK)
 
 /*ADC_ANALOG_CTRL*/
@@ -267,13 +267,13 @@ int adc_get_interTemp(void);
 /**
  * @brief           This function is used to read input voltage.
  *
- * @param[in]      	channel    adc channel,from 0 to 3 is single input;4 and 5 is differential input.
+ * @param[in]      	channel    adc channel,from 0 to 3 is single input;8 and 9 is differential input.
  *
- * @retval          voltage
+ * @retval          voltage    unit:mV
  *
  * @note            None
  */
-u16 adc_get_inputVolt(u8 channel);
+int adc_get_inputVolt(u8 channel);
 
 /**
  * @brief           This function is used to read internal voltage.

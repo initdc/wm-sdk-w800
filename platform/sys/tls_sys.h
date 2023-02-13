@@ -16,7 +16,7 @@
 #define SYS_MSG_RMMS		   8
 
 int tls_sys_init(void);
-void tls_auto_reconnect(void);
+void tls_auto_reconnect(u8 delayflag);
 
 
 #endif /* end of TLS_SYS_H */

@@ -43,6 +43,21 @@ static int pwm_demo_multiplex_config(u8 channel)
 		case 4:
 			wm_pwm4_config(WM_IO_PA_07);
 			break;
+		case 5:
+			wm_pwm0_config(WM_IO_PB_19);
+			break;
+		case 6:
+			wm_pwm1_config(WM_IO_PB_20);
+			break;
+		case 7:
+			wm_pwm2_config(WM_IO_PA_00);
+			break;
+		case 8:
+			wm_pwm3_config(WM_IO_PA_01);
+			break;
+		case 9:
+			wm_pwm4_config(WM_IO_PA_04);
+			break;			
 		default:
 			break;
 	}
@@ -240,53 +255,56 @@ void pwm_capture_mode_dma(u8 channel,u32 freq)
 int pwm_demo(u8 channel, u16 freq, u8 duty, u8 mode, u8 num)
 {
     int  ret=-1;
-
-	printf("\r\nchannel:%d, freq:%d, duty:%d, mode:%d, num:%d\r\n", channel, freq, duty, mode, num);
-    if(channel < 5)
+	u8 channel_used = 0;
+	
+	channel_used = (channel > 4)? (channel - 5):channel;
+	printf("\r\ninput num:%d, channel:%d, freq:%d, duty:%d, mode:%d, num:%d\r\n", channel, channel_used, freq, duty, mode, num);
+    if(channel < 10)
     {
         pwm_demo_multiplex_config(channel);
-        tls_pwm_stop(channel);
+		tls_pwm_stop(channel_used);
     }
     else
     {
         return WM_FAILED;
     }
-    
+
     switch (mode)
     {
         case WM_PWM_OUT_MODE_INDPT:
-            ret = tls_pwm_init(channel, freq, duty, num);
+            ret = tls_pwm_init(channel_used, freq, duty, num);
             if(ret != WM_SUCCESS)
                 return ret;
-            tls_pwm_start(channel);
+            tls_pwm_start(channel_used);
             break;
             
         case WM_PWM_OUT_MODE_ALLSYC:
-            ret = pwm_demo_allsyc_mode(channel, freq, duty, num);
+            ret = pwm_demo_allsyc_mode(channel_used, freq, duty, num);
             if(ret != WM_SUCCESS)
                 return ret;
-            tls_pwm_start(channel);
+            tls_pwm_start(channel_used);
             break;
             
         case WM_PWM_OUT_MODE_2SYC:
-            ret = pwm_demo_2syc_mode(channel, freq, duty, num);
+            ret = pwm_demo_2syc_mode(channel_used, freq, duty, num);
+	
             if(ret != WM_SUCCESS)
                 return ret;
-            tls_pwm_start(channel);
+            tls_pwm_start(channel_used);
             break;
             
         case WM_PWM_OUT_MODE_MC:
-            ret = pwm_demo_mc_mode(channel, freq, duty, num);
+            ret = pwm_demo_mc_mode(channel_used, freq, duty, num);
             if(ret != WM_SUCCESS)
                 return ret;
-            tls_pwm_start(channel);
+            tls_pwm_start(channel_used);
             break;
             
         case WM_PWM_OUT_MODE_BRAKE:
-            ret = pwm_demo_break_mode(channel, freq, duty);
+            ret = pwm_demo_break_mode(channel_used, freq, duty);
             if(ret != WM_SUCCESS)
                 return ret;
-            tls_pwm_start(channel);
+            tls_pwm_start(channel_used);
             break;
             
         default:

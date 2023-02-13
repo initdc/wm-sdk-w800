@@ -59,7 +59,8 @@ extern int http_put_demo(void *, ...);
 extern int socket_server_demo(void *, ...);
 extern int sck_s_send_data_demo(void *, ...);
 extern int CreateMCastDemoTask(void *, ...);
-extern int adc_demo(void *, ...);
+extern int adc_input_voltage_demo(void *, ...);
+extern int adc_chip_temperature_demo(void*,...);
 extern int sd_card_test(void *, ...);
 
 extern int demo_wps_pbc(void *, ...);
@@ -79,6 +80,16 @@ extern int https_demo(void *, ...);
 extern int mqtt_demo(void *, ...);
 extern int fatfs_test(void *, ...);
 extern int mbedtls_demo(void *, ...);
+
+extern int dsp_demo(void *,...);
+
+#if DEMO_BT
+extern int demo_bt_enable(void *, ...);
+extern int demo_bt_destroy(void *, ...);
+
+extern int demo_ble_server_on(void *, ...);
+extern int demo_ble_server_off(void *, ...);
+#endif
 
 /*****************************************************************
 		LOCAL FUNC
@@ -209,7 +220,8 @@ struct demo_console_info_t  console_tbl[] =
 #endif
 
 #if DEMO_ADC
-    {"t-adc",  adc_demo,   0x0,    0, "Test adc"},
+    {"t-adctemp",  adc_chip_temperature_demo,   0x0,    0, "(ADC)Test chip temperature"},
+    {"t-adcvolt",  adc_input_voltage_demo,   0x1,    1, "(ADC)Test input voltage,0-PA1(chan0), 1-PA4(chan1),8-different"},    
 #endif
 
 #if DEMO_7816
@@ -281,6 +293,17 @@ struct demo_console_info_t  console_tbl[] =
 
 #if DEMO_IPERF_AUTO_TEST
 	{"t-iperf",  demo_iperf_auto_test,	 0x7E,	  7, "Iperf auto test"},
+#endif
+
+#if DEMO_DSP
+	{"t-dsp",  dsp_demo,	 0x1,	  1, "DSP demo:0-fir,1-matrix,2-rfft,3-sin,4-variance"},
+#endif
+
+#if DEMO_BT
+    {"t-bt-on",	demo_bt_enable,	0x0,	0,                  "Test enable bt system"},
+    {"t-bt-off",	demo_bt_destroy,	0x0,	0,          "Test destroy bt system"},
+    {"t-ble-demo-on",	demo_ble_server_on,	0x0,	0,      "Test enable ble server"},
+    {"t-ble-demo-off",	demo_ble_server_off,	0x0,	0,  "Test disable ble server"},
 #endif
 
     //控制台上显示的最后一个命令，如果要让命令显示在控制台上，需要放在该行的上面

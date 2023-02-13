@@ -524,7 +524,7 @@ int tls_wifi_passive_scan(void);
 *                scan_param member
 *                    scan_times: scan times, >=0, if zero, only 1 times 
 *                    scan_chanlist: scan channel list ,[0,3FFF],per bit is one channel,if zero or above 0x3FFF, scan all channel
-*                    scan_chinterval: scan channel switch time,>=0, if zero, use default value, unit:ms 
+*                    scan_chinterval: scan channel switch time if zero, use default value. when value is non-zero,if input value >=20 use it, else input value <20  use 20, unit:ms 
 *
 * @retval        WM_SUCCESS				will start scan
 * @retval        WM_WIFI_SCANNING_BUSY 	wifi module is scanning now

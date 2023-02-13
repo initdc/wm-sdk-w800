@@ -182,7 +182,7 @@ static void sys_net_down()
     tls_netif_set_down();
 
     /* Try to reconnect if auto_connect is set*/
-    tls_auto_reconnect();
+    tls_auto_reconnect(1);
 
     return ;
 }
@@ -238,7 +238,7 @@ static void tls_auto_reconnect_softap(void)
 //-------------------------------------------------------------------------
 
 #endif
-void tls_auto_reconnect(void)
+void tls_auto_reconnect(u8 delayflag)
 {
     struct tls_param_ssid ssid;
     u8 auto_reconnect = 0xff;
@@ -266,6 +266,11 @@ void tls_auto_reconnect(void)
     	tls_wifi_auto_connect_flag(WIFI_AUTO_CNT_FLAG_SET, &auto_reconnect);
     	return ; //tmparary return, for active "DISCONNECT" , such as AT CMD
     }
+	if (delayflag)
+	{
+		tls_os_time_delay(1500);
+	}
+
     tls_param_get(TLS_PARAM_ID_WPROTOCOL, (void*) &wireless_protocol, TRUE);
     switch (wireless_protocol)
     {
@@ -371,7 +376,7 @@ void tls_sys_task(void *data)
                     break;
                 case SYS_MSG_NET2_FAIL:
                     sys_net2_down();
-                    tls_auto_reconnect();
+                    tls_auto_reconnect(1);
                     break;
 #endif
                 case SYS_MSG_NET_DOWN:
@@ -391,7 +396,7 @@ void tls_sys_task(void *data)
                             &auto_reconnect);
                     }
 
-                    tls_auto_reconnect();
+                    tls_auto_reconnect(0);
                     break;
 #if TLS_CONFIG_RMMS
                 case SYS_MSG_RMMS:

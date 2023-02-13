@@ -1620,7 +1620,7 @@ int tls_wifi_set_oneshot_flag(u8 flag)
 			tls_wifi_set_listen_mode(0);
 			tls_wl_plcp_stop();
 		}
-#if TLS_CONFIG_BT
+#if TLS_CONFIG_BLE
 		else if (4 == flag)
 		{
 			status = wm_bt_wifi_cfg_init();
@@ -1660,7 +1660,7 @@ int tls_wifi_set_oneshot_flag(u8 flag)
 			}
 #endif
 		}
-#if TLS_CONFIG_BT
+#if TLS_CONFIG_BLE
 		else if (4 == guconeshotflag)
 		{
 			status = wm_bt_wifi_cfg_deinit();

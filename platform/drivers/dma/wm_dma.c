@@ -17,9 +17,11 @@
 #include "wm_irq.h"
 #include "wm_osal.h"
 #include "core_804.h"
+#include "wm_pmu.h"
+
 
 #define  ATTRIBUTE_ISR __attribute__((isr))
-
+static u16 dma_used_bit = 0;
 struct tls_dma_channels {
 	unsigned char	channels[8];	/* list of channels */
 };
@@ -257,6 +259,10 @@ unsigned char tls_dma_start(unsigned char ch, struct tls_dma_descriptor *dma_des
 {
 	if((ch > 7) && !dma_desc) return 1;
 
+	if ((dma_used_bit &(1<<ch)) == 0)
+	{
+		dma_used_bit |= (1<<ch);
+	}
 	DMA_SRCADDR_REG(ch) = dma_desc->src_addr;
 	DMA_DESTADDR_REG(ch) = dma_desc->dest_addr;
 	DMA_CTRL_REG(ch) = ((dma_desc->dma_ctrl & 0x7fffff) << 1) | (auto_reload ? 0x1: 0x0);
@@ -342,6 +348,13 @@ unsigned char tls_dma_request(unsigned char ch, unsigned char flags)
 		channels.channels[freeCh] = flags | TLS_DMA_FLAGS_CHANNEL_VALID;
 		DMA_MODE_REG(freeCh) = flags;
 	}
+
+	if (dma_used_bit == 0)
+	{
+		tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_DMA);
+	}
+	dma_used_bit |= (1<<freeCh);
+
 	return freeCh;
 }
 
@@ -368,6 +381,11 @@ void tls_dma_free(unsigned char ch)
 		DMA_INTSRC_REG |= 0x03<<(ch*2);
 
 		channels.channels[ch] = 0x00;
+		dma_used_bit &= ~(1<<ch);
+		if (dma_used_bit == 0)
+		{
+			tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_DMA);
+		}
 	}
 }
 

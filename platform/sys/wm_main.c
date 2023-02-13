@@ -86,9 +86,9 @@ void _mutex_release (u32 *mutex)
 u32 TaskStartStk[TASK_START_STK_SIZE];
 
 
-#define FW_MAJOR_VER           0x0
+#define FW_MAJOR_VER           0x1
 #define FW_MINOR_VER           0x0
-#define FW_PATCH_VER           0x6
+#define FW_PATCH_VER           0x0
 
 const char FirmWareVer[4] =
 {
@@ -152,10 +152,10 @@ int main(void)
     value &= ~(BIT(5));
     tls_reg_write32(HR_PMU_PS_CR, value);
 
-    /*Close those not initialized clk except uart0,sdadc,gpio,dma,rfcfg,timer*/
+    /*Close those not initialized clk except uart0,sdadc,gpio,rfcfg*/
     value = tls_reg_read32(HR_CLK_BASE_ADDR);
     value &= ~0x3fffff;
-    value |= 0x1f02;
+    value |= 0x1a02;
     tls_reg_write32(HR_CLK_BASE_ADDR, value);
 
 

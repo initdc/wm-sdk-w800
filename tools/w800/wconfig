@@ -91,9 +91,10 @@ menu "Toolchain Configuration"
 
     config W800_TOOLCHAIN_PREFIX
         string "toolchain prefix"
-        default "csky-elfabiv2"
+        default "csky-abiv2-elf"
         help
-            w800 toolchain prefix, please use csky-elfabiv2 for minilibc, csky-elf-noneabiv2 for newlib.
+            w800 toolchain prefix, the common name is csky-abiv2-elf, 
+            you can also use csky-elfabiv2 for minilibc, and csky-elf-noneabiv2 for newlib.
 
     config W800_TOOLCHAIN_PATH
         string "toolchain path"

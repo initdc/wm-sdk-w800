@@ -162,7 +162,7 @@ void sha1_compress(psDigestContext_t *md)
 	psBurnStack(sizeof(uint32) * 87);
 }
 #endif /* USE_BURN_STACK */
-
+#if !TLS_CONFIG_HARD_CRYPTO
 void psSha1Init(psDigestContext_t * md)
 {
 	psAssert(md != NULL);
@@ -280,6 +280,7 @@ int32 psSha1Final(psDigestContext_t * md, unsigned char *hash)
 	memset(md, 0x0, sizeof(psDigestContext_t));
 	return SHA1_HASH_SIZE;
 }
+#endif // !TLS_CONFIG_HARD_CRYPTO
 #endif /* USE_SHA1 */
 
 /******************************************************************************/

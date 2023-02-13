@@ -1,6 +1,35 @@
  ==========================================================
 |	CHANGELOG: WinnerMicro Software Development Kit	   |
  ==========================================================
+W800 SDK v1.00.00 | 2020/08/07
+==========================
+*********
+SDK功能
+*********
+*ld调整：
+     因增加标准蓝牙BT功能，代码空间超过1MB，当前设定为1MB+128KB，相应的用户区要减少128KB
+     用户区宏调整（wm_flash_map.h）：#define USER_ADDR_START    (0x81E0000UL)
+     当前升级区针对超过1MB的情况，只能选择使用压缩的ota固件
+     如果使用的是BLE功能，则可以不调整相关的部分gcc_csky.ld和宏USER_ADDR_START。
+*蓝牙：
+     1）支持BT功能，提供Audio sink和免提电话相关的API
+     2）提供两种蓝牙的库，单独ble的lib，单独标准bt的lib，lib目下看到(libbt.a,libbt_ble.a,libbt_br_edr.a)
+        用户可根据实际需要配合wm_config.h里的TLS_CONFIG_BR_EDR和TLS_CONFIG_BLE的设置，并把相关的lib更名为libbt.a。
+     3）发布时默认使用ble的lib
+      （即当前的libbt.a和libbt_ble.a是一致的，wm_config.h里的宏定义TLS_CONFIG_BLE为CFG_ON，宏定义TLS_CONFIG_BR_EDR为CFG_OFF）
+     4）如果使用标准BT的lib，命令行编译方式，需要在设定完成相关宏和bt的lib后，编译一下libapp.a库。
+*Wi-Fi：
+    1）解决设定参数扫描，时间过长扫描个数反而少的问题
+*增加DSP功能（以lib和demo方式提供）
+*提供dsp功能的相关demo，详见DEMO_DSP宏包含的相关代码
+*增加IO下拉功能配置
+*修改GPIO demo，增加下拉功能，GPIO的输出高或低的测试
+*修改ADC功能，提供芯片温度和外部输入电压的测试，不支持芯片电源电压的检测功能。
+*修改PWM demo，支持PWM两组复用的测试demo
+*SDK提供CDK编译工程（编译限制路径长度80字符以内）
+*CDK（CSKY Development Kit）的版本：>V2.2.2，获取路径：https://occ.t-head.cn/community/download?id=575997419775328256
+*增加BLE数据通信的demo（需要wm_config.h里的宏定义TLS_CONFIG_BLE为CFG_ON，宏定义TLS_CONFIG_BR_EDR为CFG_OFF，并使用BLE的库文件）
+
 W800 SDK v0.00.06 | 2020/07/07
 ==========================
 *********

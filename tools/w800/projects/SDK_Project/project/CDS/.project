@@ -75,6 +75,11 @@
 			<locationURI>PARENT-6-PROJECT_LOC/demo/wm_demo.h</locationURI>
 		</link>
 		<link>
+			<name>demo/wm_dsp_demo.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/demo/wm_dsp_demo.c</locationURI>
+		</link>
+		<link>
 			<name>demo/wm_flash_demo.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/demo/wm_flash_demo.c</locationURI>
@@ -635,6 +640,11 @@
 			<locationURI>PARENT-6-PROJECT_LOC/lib/w800/libbt.a</locationURI>
 		</link>
 		<link>
+			<name>lib/w800/libdsp.a</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/lib/w800/libdsp.a</locationURI>
+		</link>
+		<link>
 			<name>lib/w800/libwlan.a</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/lib/w800/libwlan.a</locationURI>
@@ -956,6 +966,11 @@
 		</link>
 		<link>
 			<name>include/arch/xt804/csi_core</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>include/arch/xt804/csi_dsp</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
@@ -1353,6 +1368,16 @@
 			<name>src/app/btapp/wm_ble_server.h</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_server.h</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_server_api_demo.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_server_api_demo.c</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_server_api_demo.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_server_api_demo.h</locationURI>
 		</link>
 		<link>
 			<name>src/app/btapp/wm_ble_server_demo_prof.c</name>
@@ -2193,6 +2218,31 @@
 			<name>include/arch/xt804/csi_core/csi_gcc.h</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/include/arch/xt804/csi_core/csi_gcc.h</locationURI>
+		</link>
+		<link>
+			<name>include/arch/xt804/csi_dsp/csky_common_tables.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/include/arch/xt804/csi_dsp/csky_common_tables.h</locationURI>
+		</link>
+		<link>
+			<name>include/arch/xt804/csi_dsp/csky_const_structs.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/include/arch/xt804/csi_dsp/csky_const_structs.h</locationURI>
+		</link>
+		<link>
+			<name>include/arch/xt804/csi_dsp/csky_math.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/include/arch/xt804/csi_dsp/csky_math.h</locationURI>
+		</link>
+		<link>
+			<name>include/arch/xt804/csi_dsp/csky_vdsp2_const_structs.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/include/arch/xt804/csi_dsp/csky_vdsp2_const_structs.h</locationURI>
+		</link>
+		<link>
+			<name>include/arch/xt804/csi_dsp/csky_vdsp2_math.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/include/arch/xt804/csi_dsp/csky_vdsp2_math.h</locationURI>
 		</link>
 		<link>
 			<name>platform/arch/xt804/bsp/Makefile</name>
