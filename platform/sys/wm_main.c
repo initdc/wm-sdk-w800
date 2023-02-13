@@ -88,7 +88,7 @@ u32 TaskStartStk[TASK_START_STK_SIZE];
 
 #define FW_MAJOR_VER           0x0
 #define FW_MINOR_VER           0x0
-#define FW_PATCH_VER           0x5
+#define FW_PATCH_VER           0x6
 
 const char FirmWareVer[4] =
 {
@@ -253,7 +253,6 @@ void task_start (void *data)
 #endif
 
 #if (TLS_CONFIG_LS_SPI)
-	tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_LSPI);
     tls_spi_init();
     tls_spifls_init();
 #endif
@@ -285,7 +284,9 @@ void task_start (void *data)
     {
         TLS_DBGPRT_INFO("supplicant initial failured\n");
     }
-
+	/*wifi-temperature compensation,default:open*/
+	tls_wifi_set_tempcomp_flag(1);
+	
     tls_ethernet_init();
 
 #if TLS_CONFIG_BT

@@ -285,6 +285,45 @@ int tls_cmd_scan( enum tls_cmd_mode mode)
     return CMD_ERR_OK;
 }
 
+int tls_cmd_scan_by_param( enum tls_cmd_mode mode, u16 channellist, u32 times, u16 switchinterval)
+{
+
+    int ret=0;
+    struct tls_hostif *hif = tls_get_hostif();
+    struct tls_wifi_scan_param_t scan_param;
+
+    /* scanning not finished */
+    if (hif->last_scan )
+        return CMD_ERR_BUSY;
+
+    hif->last_scan = 1;
+    hif->last_scan_cmd_mode = mode;
+    
+    /* register scan complt callback*/
+    tls_wifi_scan_result_cb_register(hostif_wscan_cmplt);
+    
+    /* trigger the scan */
+    scan_param.scan_chanlist = channellist;
+    scan_param.scan_chinterval = switchinterval;
+    scan_param.scan_times = times;
+    ret = tls_wifi_scan_by_param(&scan_param);
+    if(ret == WM_WIFI_SCANNING_BUSY)
+    {
+    	tls_wifi_scan_result_cb_register(NULL);
+        hif->last_scan = 0;
+        return CMD_ERR_BUSY;
+    }
+    else if(ret == WM_FAILED)
+    {
+    	tls_wifi_scan_result_cb_register(NULL);
+        hif->last_scan = 0;
+        return CMD_ERR_MEM;
+    }
+
+    return CMD_ERR_OK;
+}
+
+
 int tls_cmd_join_net(void)
 {
 	struct tls_cmd_ssid_t ssid;

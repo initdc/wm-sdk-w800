@@ -22,9 +22,10 @@
 #include "iperf_locale.h"
 #include "iperf_error.h"
 #include "iperf_net.h"
+#include "wm_cpu.h"
 
 u32     iperf_debug_level = 0xf;
-
+extern int exit_last_test;
 int iperf_run(struct iperf_test *);
 
 /**************************************************************************/
@@ -57,7 +58,7 @@ tls_perf(void* data)
     }
 
     iperf_free_test(test);
-
+	tls_sys_clk_set(CPU_CLK_80M);
     IPF_DBG("\niperf Done.\n");
 	printf("\niperf Done.\n");
 
@@ -73,18 +74,20 @@ iperf_run(struct iperf_test * test)
 	
     switch (test->role) {
         case 's':
-#if !TLS_IPERF_AUTO_TEST
+            exit_last_test = 0;
             for (;;) 
-#endif 
 			{
                 if (iperf_run_server(test) < 0) {
                     iperf_error("error");
                 }
                 iperf_reset_test(test);
+                if (exit_last_test)
+                {
+                    break;
+                }
             }
-#if TLS_IPERF_AUTO_TEST
-            break;
-#endif 
+        break;
+
         case 'c':
 			while(i < 5)
 			{
@@ -111,7 +114,7 @@ iperf_run(struct iperf_test * test)
             usage();
             break;
     }
-
+	exit_last_test = 0;
     return (0);
 }
 

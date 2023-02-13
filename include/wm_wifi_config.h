@@ -38,6 +38,5 @@
 
 #define TLS_CONFIG_LOG_PRINT			    CFG_WIFI_ON
 
-#define USE_OLD_RF_PARAM	CFG_WIFI_ON
 #endif /*__WM_WIFI_CONFIG_H__*/
 

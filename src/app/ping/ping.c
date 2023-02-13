@@ -18,7 +18,11 @@
 #define         PING_TEST_START            0x1
 
 #define         TASK_PING_PRIO             35
+#if defined(_NEWLIB_VERSION_H__)
+#define         TASK_PING_STK_SIZE         512
+#else
 #define         TASK_PING_STK_SIZE         256
+#endif
 #define         PING_QUEUE_SIZE            4
 #define         PING_STOP_TIMER_DELAY      (2 * HZ)
 #define         PING_ABORT_TIMER_DELAY     (1 * HZ)
@@ -35,7 +39,6 @@ static struct ping_param g_ping_para;
 static u32 received_cnt = 0;
 static u32 send_cnt     = 0;
 static long long last_seq = -1;
-static u32 check_cnt    = 0;
 
 static void ping_print_str(const char *str)
 {
@@ -45,20 +48,11 @@ static void ping_print_str(const char *str)
         tls_uart_write(TLS_UART_0, (char *)str, strlen(str));
 }
 
-static void ping_check_status(int down, int loop)
+static void ping_check_recv(void)
 {
-    if (down)
+    if ((send_cnt - 1) != last_seq)
     {
-        ping_print_str("ping: network unreachable.\r\n");
-        check_cnt++;
-    }
-    else if (loop)
-    {
-        if ((0 != send_cnt) && ((send_cnt - 1) != last_seq) && (send_cnt != check_cnt))
-        {
-            ping_print_str("ping: network unreachable.\r\n");
-            check_cnt++;
-        }
+        //ping_print_str("ping: request timeout.\r\n");
     }
 }
 
@@ -137,7 +131,7 @@ static int ping_test_unpack(char *buf, int len, u32 tvrecv, struct sockaddr_in *
             if (0 == rtt)
                 sprintf(str, "%d byte from %s: icmp_seq=%u ttl=%d rtt<%u ms\r\n",
                         len - ICMP_HEAD_LEN, inet_ntoa(from->sin_addr),
-                        icmp->seqno, ip->_ttl, 1000/HZ);
+                        icmp->seqno, ip->_ttl, 1000 / HZ);
             else
                 sprintf(str, "%d byte from %s: icmp_seq=%u ttl=%d rtt=%d ms\r\n",
                         len - ICMP_HEAD_LEN, inet_ntoa(from->sin_addr),
@@ -163,7 +157,6 @@ static int ping_test_init(struct sockaddr_in *dest_addr)
     struct hostent *host = NULL;
     char str[256];
 
-    check_cnt = 0;
     last_seq = -1;
     send_cnt = 0;
     received_cnt = 0;
@@ -219,8 +212,8 @@ static void ping_test_stat(void)
     char str[128];
     ping_print_str("\n--------------------PING statistics-------------------\r\n");
     sprintf(str, "%u packets transmitted, %u received , %u(%.3g%%) lost.\r\n",
-            send_cnt,  received_cnt, send_cnt>=received_cnt ? send_cnt - received_cnt:0,
-            send_cnt>=received_cnt ?((double)(send_cnt - received_cnt)) / send_cnt * 100:0);
+            send_cnt,  received_cnt, send_cnt >= received_cnt ? send_cnt - received_cnt : 0,
+            send_cnt >= received_cnt ? ((double)(send_cnt - received_cnt)) / send_cnt * 100 : 0);
     ping_print_str((const char *)str);
 
     return;
@@ -279,24 +272,25 @@ static void ping_test_recv(int socket, struct sockaddr_in *dest_addr)
 static void ping_test_send(int socket, struct sockaddr_in *dest_addr)
 {
     int packetsize;
+    u32 diffTime = 0;
     char sendpacket[PACKET_SIZE];
 
 	if ((0 != g_ping_para.cnt) && (send_cnt >= g_ping_para.cnt))
 	{
-	    ping_check_status(0, 1);
+	    ping_check_recv();
 		return;
 	}
 
     memset(sendpacket, 0, PACKET_SIZE);
     packetsize = ping_test_pack(send_cnt, sendpacket);
     if (sendto(socket, sendpacket, packetsize, 0, (struct sockaddr *)dest_addr, sizeof(*dest_addr)) <= 0)
-    {    
-        //printf("%d: send icmp echo failed\r\n", send_cnt + 1);
-        ping_check_status(1, 0);
+    {
+        sprintf(sendpacket, "send seq %u error.\r\n", send_cnt);
+        ping_print_str((const char *)sendpacket);
     }
     else
     {
-        ping_check_status(0, 1);
+        ping_check_recv();
     }
 
     send_cnt++;
@@ -304,7 +298,9 @@ static void ping_test_send(int socket, struct sockaddr_in *dest_addr)
 	if ((0 != g_ping_para.cnt) && (send_cnt >= g_ping_para.cnt))
 	{
         //tls_os_timer_start(ping_test_stop_timer);
-        tls_os_timer_change(ping_test_stop_timer, g_ping_para.interval / (1000 / HZ));
+        diffTime = g_ping_para.interval / (1000 / HZ);
+        diffTime = diffTime ? diffTime : 1000 / HZ;
+        tls_os_timer_change(ping_test_stop_timer, diffTime);
     }
 
     return;
@@ -316,6 +312,9 @@ static void ping_test_run(void)
     struct sockaddr_in dest_addr;
 	u32 lastTime = 0;
 	u32 curTime = 0;
+	u32 diffTime = 0;
+
+    diffTime = g_ping_para.interval / (1000 / HZ);
 
     memset(&dest_addr, 0, sizeof(dest_addr));
     socketid = ping_test_init(&dest_addr);
@@ -333,12 +332,14 @@ static void ping_test_run(void)
         if (!ping_test_abort)
         {
         	curTime = tls_os_get_time();
-			if ((curTime-lastTime) >= (g_ping_para.interval/(1000/HZ)))
+        	diffTime = diffTime ? diffTime : 1000 / HZ;
+			if ((curTime - lastTime) >= diffTime)
 			{
 	            ping_test_send(socketid, &dest_addr);
 				lastTime = tls_os_get_time();
 			}
         }
+
         ping_test_recv(socketid, &dest_addr);
     }
 

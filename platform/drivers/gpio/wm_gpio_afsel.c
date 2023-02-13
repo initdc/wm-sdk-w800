@@ -16,7 +16,9 @@
 #include "wm_debug.h"
 #include "wm_pmu.h"
 
+#ifndef WM_SWD_ENABLE
 #define WM_SWD_ENABLE   1
+#endif
 
 void wm_spi_ck_config(enum tls_io_name io_name)
 {
@@ -459,7 +461,7 @@ void wm_i2c_sda_config(enum tls_io_name io_name)
 
 }
 
-void wm_pwm1_config(enum tls_io_name io_name)
+void wm_pwm0_config(enum tls_io_name io_name)
 {
     switch(io_name)
     {
@@ -472,14 +474,14 @@ void wm_pwm1_config(enum tls_io_name io_name)
         break;
 
     default:
-        TLS_DBGPRT_ERR("pwm1 afsel config error!");
+        TLS_DBGPRT_ERR("pwm0 afsel config error!");
         return;
     }
     tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_PWM);
 }
 
 
-void wm_pwm2_config(enum tls_io_name io_name)
+void wm_pwm1_config(enum tls_io_name io_name)
 {
     switch(io_name)
     {
@@ -489,6 +491,25 @@ void wm_pwm2_config(enum tls_io_name io_name)
 
     case WM_IO_PB_20:
         tls_io_cfg_set(io_name, WM_IO_OPTION2);
+        break;
+
+    default:
+        TLS_DBGPRT_ERR("pwm1 afsel config error!");
+        return;
+    }
+    tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_PWM);
+}
+
+void wm_pwm2_config(enum tls_io_name io_name)
+{
+    switch(io_name)
+    {
+    case WM_IO_PA_00:
+        tls_io_cfg_set(io_name, WM_IO_OPTION3);
+        break;
+
+    case WM_IO_PB_02:
+        tls_io_cfg_set(io_name, WM_IO_OPTION1);
         break;
 
     default:
@@ -502,11 +523,11 @@ void wm_pwm3_config(enum tls_io_name io_name)
 {
     switch(io_name)
     {
-    case WM_IO_PA_00:
+    case WM_IO_PA_01:
         tls_io_cfg_set(io_name, WM_IO_OPTION3);
         break;
 
-    case WM_IO_PB_02:
+    case WM_IO_PB_03:
         tls_io_cfg_set(io_name, WM_IO_OPTION1);
         break;
 
@@ -521,25 +542,6 @@ void wm_pwm4_config(enum tls_io_name io_name)
 {
     switch(io_name)
     {
-    case WM_IO_PA_01:
-        tls_io_cfg_set(io_name, WM_IO_OPTION3);
-        break;
-
-    case WM_IO_PB_03:
-        tls_io_cfg_set(io_name, WM_IO_OPTION1);
-        break;
-
-    default:
-        TLS_DBGPRT_ERR("pwm4 afsel config error!");
-        return;
-    }
-    tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_PWM);
-}
-
-void wm_pwm5_config(enum tls_io_name io_name)
-{
-    switch(io_name)
-    {
     case WM_IO_PA_04:
         tls_io_cfg_set(io_name, WM_IO_OPTION3);
         break;
@@ -549,7 +551,7 @@ void wm_pwm5_config(enum tls_io_name io_name)
         break;
 
     default:
-        TLS_DBGPRT_ERR("pwm5 afsel config error!");
+        TLS_DBGPRT_ERR("pwm4 afsel config error!");
         return;
     }
     tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_PWM);

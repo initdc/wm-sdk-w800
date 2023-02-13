@@ -160,11 +160,11 @@ tls_bt_status_t tls_ble_conn_parameter_update(const tls_bt_addr_t *bd_addr,
  *
  * @param[in]      *bd_addr         remote device address
  *
- * @return         dbm
+ * @return         @ref tls_bt_status_t
  *
  * @note           None
  */
-int8_t tls_dm_read_remote_rssi(const tls_bt_addr_t *bd_addr);
+tls_bt_status_t tls_dm_read_remote_rssi(const tls_bt_addr_t *bd_addr);
 
 
 

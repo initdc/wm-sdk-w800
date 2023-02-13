@@ -27,6 +27,7 @@
 #ifndef POLARSSL_CAMELLIA_H
 #define POLARSSL_CAMELLIA_H
 
+#include <stdint.h>
 #include <string.h>
 
 #ifdef _MSC_VER

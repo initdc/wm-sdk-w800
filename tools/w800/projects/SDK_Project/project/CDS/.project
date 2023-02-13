@@ -835,6 +835,11 @@
 			<locationURI>PARENT-6-PROJECT_LOC/src/app/mDNS/Makefile</locationURI>
 		</link>
 		<link>
+			<name>src/app/btapp</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
 			<name>src/app/cJSON</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
@@ -965,7 +970,7 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>platform/arch/xt804/minilibc</name>
+			<name>platform/arch/xt804/libc</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
@@ -1278,6 +1283,136 @@
 			<name>platform/drivers/watchdog/wm_watchdog.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/platform/drivers/watchdog/wm_watchdog.c</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/Makefile</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/Makefile</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_audio_sink.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_audio_sink.c</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_audio_sink.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_audio_sink.h</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_client.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_client.c</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_client.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_client.h</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_client_demo.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_client_demo.c</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_client_demo.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_client_demo.h</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_client_huawei.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_client_huawei.c</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_client_huawei.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_client_huawei.h</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_dm.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_dm.c</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_dm.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_dm.h</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_dm_api.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_dm_api.h</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_server.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_server.c</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_server.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_server.h</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_server_demo_prof.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_server_demo_prof.c</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_server_demo_prof.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_server_demo_prof.h</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_server_wifi_app.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_server_wifi_app.c</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_server_wifi_app.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_server_wifi_app.h</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_server_wifi_prof.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_server_wifi_prof.c</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_ble_server_wifi_prof.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_ble_server_wifi_prof.h</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_bt_app.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_bt_app.c</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_bt_app.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_bt_app.h</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_bt_util.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_bt_util.c</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_bt_util.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_bt_util.h</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_hfp_hsp_client.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_hfp_hsp_client.c</locationURI>
+		</link>
+		<link>
+			<name>src/app/btapp/wm_hfp_hsp_client.h</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/src/app/btapp/wm_hfp_hsp_client.h</locationURI>
 		</link>
 		<link>
 			<name>src/app/cJSON/Makefile</name>
@@ -2095,14 +2230,14 @@
 			<locationURI>PARENT-6-PROJECT_LOC/platform/arch/xt804/bsp/vectors.S</locationURI>
 		</link>
 		<link>
-			<name>platform/arch/xt804/minilibc/Makefile</name>
+			<name>platform/arch/xt804/libc/Makefile</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/platform/arch/xt804/minilibc/Makefile</locationURI>
+			<locationURI>PARENT-6-PROJECT_LOC/platform/arch/xt804/libc/Makefile</locationURI>
 		</link>
 		<link>
-			<name>platform/arch/xt804/minilibc/minilibc_port.c</name>
+			<name>platform/arch/xt804/libc/libc_port.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/platform/arch/xt804/minilibc/minilibc_port.c</locationURI>
+			<locationURI>PARENT-6-PROJECT_LOC/platform/arch/xt804/libc/libc_port.c</locationURI>
 		</link>
 		<link>
 			<name>platform/common/crypto/digest/digest.h</name>

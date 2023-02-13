@@ -370,6 +370,8 @@ int tls_lsd_recv(u8 *buf, u16 data_len)
 						lsd_data_cnt ++;
 						if(lsd_data_cnt >= LSD_DATA_MAX)
 						{
+							lsd_data_cnt = 0;
+							memset((u8 *)lsd_data, 0, sizeof(struct lsd_data_t));
 							return LSD_ONESHOT_ERR;
 						}
 					}
@@ -384,39 +386,49 @@ int tls_lsd_recv(u8 *buf, u16 data_len)
 				ssidLen = lsd_data->data[2];
 				if((ssidLen > 32) || (pwdLen > 64))
 				{
+					lsd_data_cnt = 0;
+					memset((u8 *)lsd_data, 0, sizeof(struct lsd_data_t));
 					return LSD_ONESHOT_ERR;
 				}
-				if((pwdLen==0) && (ssidLen==0) && (totalLen<=2))
+				if((pwdLen==0) && (ssidLen==0) && (totalLen<=2)) /*total len wrong*/
 				{
 					if(lsd_printf)
 						lsd_printf("totalLen:%d, ssidLen:%d, pwdLen:%d, err\n", totalLen, ssidLen, pwdLen);
+
+					lsd_data_cnt = 0;
 					memset((u8 *)lsd_data, 0, sizeof(struct lsd_data_t));
 					return LSD_ONESHOT_CONTINUE;					
 				}
 				else if((ssidLen>0) && (pwdLen>0))
 				{
-					if(totalLen < pwdLen + ssidLen + 5)
+					if(totalLen < pwdLen + ssidLen + 5) /*total len wrong*/
 					{
 						if(lsd_printf)
 							lsd_printf("totalLen:%d, ssidLen:%d, pwdLen:%d, err\n", totalLen, ssidLen, pwdLen);
+
+						lsd_data_cnt = 0;
 						memset((u8 *)lsd_data, 0, sizeof(struct lsd_data_t));
 						return LSD_ONESHOT_CONTINUE; 
 					}
 				}
 				else if((ssidLen>0) && (pwdLen==0))
 				{
-					if(totalLen < pwdLen + ssidLen + 4)
+					if(totalLen < pwdLen + ssidLen + 4)/*total len wrong*/
 					{
 						if(lsd_printf)
 							lsd_printf("totalLen:%d, ssidLen:%d, pwdLen:%d, err\n", totalLen, ssidLen, pwdLen);
+
+						lsd_data_cnt = 0;
 						memset((u8 *)lsd_data, 0, sizeof(struct lsd_data_t));
 						return LSD_ONESHOT_CONTINUE; 
 					}					
 				}
-				else if((ssidLen==0) && (pwdLen>0))
+				else if((ssidLen==0) && (pwdLen>0)) /*ssid len wrong*/
 				{
 					if(lsd_printf)
 						lsd_printf("ssidLen:%d, pwdLen:%d, err\n", ssidLen, pwdLen);
+
+					lsd_data_cnt = 0;
 					memset((u8 *)lsd_data, 0, sizeof(struct lsd_data_t));
 					return LSD_ONESHOT_CONTINUE;		
 				}
@@ -424,6 +436,8 @@ int tls_lsd_recv(u8 *buf, u16 data_len)
 				{
 					if(lsd_printf)
 						lsd_printf("ssidLen:%d, pwdLen:%d, err\n", ssidLen, pwdLen);
+
+					lsd_data_cnt = 0;
 					memset((u8 *)lsd_data, 0, sizeof(struct lsd_data_t));
 					return LSD_ONESHOT_CONTINUE;
 				}	
@@ -437,6 +451,8 @@ int tls_lsd_recv(u8 *buf, u16 data_len)
 					{
 						if(lsd_printf)
 							lsd_printf("totalCrc err\n");
+
+						lsd_data_cnt = 0;
 						memset((u8 *)lsd_data, 0, sizeof(struct lsd_data_t));
 						return LSD_ONESHOT_CONTINUE;
 					}
@@ -448,6 +464,8 @@ int tls_lsd_recv(u8 *buf, u16 data_len)
 						lsd_param.user_len = totalLen - 2;
 						if(lsd_param.user_len > 128)
 						{
+							lsd_data_cnt = 0;
+							memset((u8 *)lsd_data, 0, sizeof(struct lsd_data_t));
 							return LSD_ONESHOT_ERR;
 						}
 						memcpy(lsd_param.user_data, &lsd_data->data[3], lsd_param.user_len);	
@@ -465,6 +483,8 @@ int tls_lsd_recv(u8 *buf, u16 data_len)
 						lsd_param.user_len = totalLen - pwdLen - ssidLen - 5;	
 						if(lsd_param.user_len > 128)
 						{
+							lsd_data_cnt = 0;
+							memset((u8 *)lsd_data, 0, sizeof(struct lsd_data_t));
 							return LSD_ONESHOT_ERR;
 						}
 						memcpy(lsd_param.user_data, &lsd_data->data[6+ssidLen+pwdLen], lsd_param.user_len);
@@ -476,6 +496,8 @@ int tls_lsd_recv(u8 *buf, u16 data_len)
 						lsd_param.user_len = totalLen - ssidLen - 4;	
 						if(lsd_param.user_len > 128)
 						{
+							lsd_data_cnt = 0;
+							memset((u8 *)lsd_data, 0, sizeof(struct lsd_data_t));
 							return LSD_ONESHOT_ERR;
 						}
 						memcpy(lsd_param.user_data, &lsd_data->data[5+ssidLen], lsd_param.user_len);
@@ -547,6 +569,7 @@ int tls_lsd_recv(u8 *buf, u16 data_len)
 							{
 								if(lsd_printf)
 									lsd_printf("pwdCrc err\n");
+								lsd_data_cnt = 0;
 								memset((u8 *)lsd_data, 0, sizeof(struct lsd_data_t));
 								memset(lsd_param.pwd, 0, 65);
 								return LSD_ONESHOT_CONTINUE;								

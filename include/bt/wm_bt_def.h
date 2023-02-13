@@ -36,9 +36,18 @@ typedef enum
 
 typedef enum
 {
-    TLS_BT_CTRL_IDLE = 0,
-    TLS_BT_CTRL_ENABLED,
-    TLS_BT_CTRL_SLEEPING,
+    TLS_BT_CTRL_IDLE     =              (1<<0),
+    TLS_BT_CTRL_ENABLED  =              (1<<1),
+    TLS_BT_CTRL_SLEEPING =              (1<<2),
+    TLS_BT_CTRL_BLE_ROLE_MASTER =       (1<<3),
+    TLS_BT_CTRL_BLE_ROLE_SLAVE =        (1<<4),
+    TLS_BT_CTRL_BLE_ROLE_END =          (1<<5),
+    TLS_BT_CTRL_BLE_STATE_IDLE =        (1<<6),
+    TLS_BT_CTRL_BLE_STATE_ADVERTISING = (1<<7),
+    TLS_BT_CTRL_BLE_STATE_SCANNING =    (1<<8),
+    TLS_BT_CTRL_BLE_STATE_INITIATING =  (1<<9),
+    TLS_BT_CTRL_BLE_STATE_STOPPING =    (1<<10),
+    TLS_BT_CTRL_BLE_STATE_TESTING =     (1<<11),
 } tls_bt_ctrl_status_t;
 
 /** Bluetooth Adapter State */
@@ -52,7 +61,7 @@ typedef enum
 typedef enum
 {
     WM_BT_ADAPTER_STATE_CHG_EVT,        
-    WM_BT_ADAPTER_PROP_CHG_EVT,        
+    WM_BT_ADAPTER_PROP_CHG_EVT,   
     WM_BT_RMT_DEVICE_PROP_EVT,               
     WM_BT_DEVICE_FOUND_EVT, 
     WM_BT_DISCOVERY_STATE_CHG_EVT,
@@ -798,11 +807,12 @@ typedef void (*tls_ble_callback_t)(tls_ble_evt_t event, tls_ble_msg_t *p_data);
 /** BLE dm events */
 typedef enum
 {
-    WM_BLE_DM_SET_ADV_DATA_CMPL_EVT,    /**< BLE DM set advertisement data completed*/
-    WM_BLE_DM_TIMER_EXPIRED_EVT,        /**< BLE DM timer expired event. */
-    WM_BLE_DM_TRIGER_EVT,               /**< BLE DM event trigered event, async processing*/
-    WM_BLE_DM_SCAN_RES_EVT,             /**< BLE DM scan result evt*/
-	WM_BLE_DM_SET_SCAN_PARAM_CMPL_EVT,
+    WM_BLE_DM_SET_ADV_DATA_CMPL_EVT = (0x01<<0),    /**< BLE DM set advertisement data completed*/
+    WM_BLE_DM_TIMER_EXPIRED_EVT     = (0x01<<1),        /**< BLE DM timer expired event. */
+    WM_BLE_DM_TRIGER_EVT            = (0x01<<2),               /**< BLE DM event trigered event, async processing*/
+    WM_BLE_DM_SCAN_RES_EVT          = (0x01<<3),             /**< BLE DM scan result evt*/
+	WM_BLE_DM_SET_SCAN_PARAM_CMPL_EVT=(0x01<<4),
+	WM_BLE_DM_REPORT_RSSI_EVT       = (0x01<<5),
 } tls_ble_dm_evt_t;
 
 
@@ -833,6 +843,12 @@ typedef struct
     uint8_t *value; /**< adv /scan resp value */
 } tls_ble_dm_scan_res_msg_t;
 
+typedef struct
+{
+	uint8_t address[6];
+	int8_t rssi;
+	uint8_t status;
+} tls_ble_report_rssi_msg_t;
 typedef union
 {
     tls_ble_dm_set_adv_data_cmpl_msg_t   dm_set_adv_data_cmpl;
@@ -840,6 +856,7 @@ typedef union
     tls_ble_dm_evt_triger_msg_t          dm_evt_trigered;
     tls_ble_dm_scan_res_msg_t            dm_scan_result;
 	tls_ble_dm_set_scan_param_cmpl_msg_t dm_set_scan_param_cmpl;
+	tls_ble_report_rssi_msg_t            dm_report_rssi;
 } tls_ble_dm_msg_t;
 
 typedef struct
@@ -847,6 +864,7 @@ typedef struct
     bool set_scan_rsp;
     bool include_name;
     bool include_txpower;
+	bool pure_data;
     int min_interval;
     int max_interval;
     int appearance;

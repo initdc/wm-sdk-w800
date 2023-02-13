@@ -41,12 +41,12 @@
 #define CONFIG_EN_LDO_ADC_VAL(n)       	((n)<<0)	/*1:ldo work, 0: ldo shutdown*/
 
 /*PGA_CTRL*/
-#define CLK_CHOP_SEL_PGA_MASK			(0x2<<9)
-#define CLK_CHOP_SEL_PGA_VAL(n)			((n)<<9)
+#define CLK_CHOP_SEL_PGA_MASK			(0x7<<4)
+#define CLK_CHOP_SEL_PGA_VAL(n)			((n)<<4)
 
 
-#define GAIN_CTRL_PGA_MASK				(0x1F<<4)
-#define GAIN_CTRL_PGA_VAL(n)			((n)<<4)
+#define GAIN_CTRL_PGA_MASK				(0x3<<7)
+#define GAIN_CTRL_PGA_VAL(n)			((n)<<7)
 
 
 #define PGA_BYPASS_MASK					(0x1<<3)
@@ -170,7 +170,7 @@ void tls_adc_init(u8 ifusedma,u8 dmachannel);
  *
  * @note           None
  */
-void tls_adc_irq_register(int inttype, void (*callback)(u16 *buf, u16 len));
+void tls_adc_irq_register(int inttype, void (*callback)(u32 *buf, u16 len));
 
 /**
  * @brief          This function is used to clear the interrupt source.
@@ -262,7 +262,7 @@ void tls_adc_reference_sel(int ref);
  *
  * @note            None
  */
-u32 adc_get_interTemp(void);
+int adc_get_interTemp(void);
 
 /**
  * @brief           This function is used to read input voltage.
@@ -295,7 +295,7 @@ u16 adc_get_interVolt(void);
  *
  * @note            None
  */
-u32 adc_temp(void);
+int adc_temp(void);
 
 /**
  * @}

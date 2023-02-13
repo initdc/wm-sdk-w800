@@ -297,6 +297,13 @@ struct tls_wifi_tx_rate_t {
     u8 retry_times;                   /**< Wi-Fi number of retransmissions, ranging from 1 to 15. */
 };
 
+/** scan param */
+struct tls_wifi_scan_param_t{
+    u32 scan_times;        /**< Scan times, >=0, if zero, only 1 times */
+    u16 scan_chanlist;     /**< Scan channel list ,[0,3FFF],per bit is one channel,if zero or above 0x3FFF, scan all channel*/
+    u16 scan_chinterval;   /**< Scan channel switch time,>=0, if zero, use default value, unit:ms */
+};
+
 /** callback function of receive Wi-Fi data */
 typedef void (*tls_wifi_data_recv_callback)(u8* data, u32 data_len);
 
@@ -494,6 +501,39 @@ void tls_wifi_change_chanel(u32 chanid);
  *                 to trigger scan
  */
 int tls_wifi_scan(void);
+
+/**
+ * @brief          This function is used to trigger scan AP
+ *
+ * @param          None
+ *
+ * @retval         WM_SUCCESS     				start scan
+ * @retval         WM_WIFI_SCANNING_BUSY     	scanning
+ * @retval         WM_FAILED					failed
+ *
+ * @note           If not SUCCESS, user needs to call this function again
+ *                 to trigger scan
+ */
+int tls_wifi_passive_scan(void);
+
+
+/**
+* @brief         scan AP ,user can set channellist,scan times and switch interval per channel
+*
+* @param[in]     scan_param
+*                scan_param member
+*                    scan_times: scan times, >=0, if zero, only 1 times 
+*                    scan_chanlist: scan channel list ,[0,3FFF],per bit is one channel,if zero or above 0x3FFF, scan all channel
+*                    scan_chinterval: scan channel switch time,>=0, if zero, use default value, unit:ms 
+*
+* @retval        WM_SUCCESS				will start scan
+* @retval        WM_WIFI_SCANNING_BUSY 	wifi module is scanning now
+* @retval        WM_FAILED				other Error
+*
+* @note           in case not SUCCESS, user need to call this function again to trigger the scan
+*/ 
+int tls_wifi_scan_by_param(struct tls_wifi_scan_param_t *scan_param);
+
 
 /**
  * @brief          Before calling tls_wifi_scan() , application should call
@@ -1016,6 +1056,29 @@ int tls_wifi_softap_del_station(unsigned char* hwaddr);
  * @note           None
  */
 void tls_wifi_enable_log(bool enable);
+
+/**
+ * @brief          This function is used to set temperature compensation flag
+ *
+ * @param[in]      flag:0- close temperature compensation,non-zero-open temperature compensation
+ *
+ * @return         None
+ *
+ * @note           None
+ */
+void tls_wifi_set_tempcomp_flag(int flag);
+
+/**
+ * @brief          This function is used to get temperature compensation flag
+ *
+ * @param[in]      None
+ *
+ * @return         flag: 0- no temperature compensation. non zero-temperature compensation valid
+ *
+ * @note           None
+ */
+u8 tls_wifi_get_tempcomp_flag(void);
+
 
 /**
  * @}

@@ -29,19 +29,19 @@ static int pwm_demo_multiplex_config(u8 channel)
 	switch (channel)
 	{
 		case 0:
-			wm_pwm1_config(WM_IO_PB_00);
+			wm_pwm0_config(WM_IO_PB_00);
 			break;
 		case 1:
-			wm_pwm2_config(WM_IO_PB_01);
+			wm_pwm1_config(WM_IO_PB_01);
 			break;
 		case 2:
-			wm_pwm3_config(WM_IO_PB_02);
+			wm_pwm2_config(WM_IO_PB_02);
 			break;
 		case 3:
-			wm_pwm4_config(WM_IO_PB_03);
+			wm_pwm3_config(WM_IO_PB_03);
 			break;
 		case 4:
-			wm_pwm5_config(WM_IO_PA_07);
+			wm_pwm4_config(WM_IO_PA_07);
 			break;
 		default:
 			break;

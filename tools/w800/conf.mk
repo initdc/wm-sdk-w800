@@ -2,6 +2,7 @@ sinclude $(TOP_DIR)/tools/w800/.config
 CONFIG_W800_USE_LIB ?= n
 CONFIG_W800_FIRMWARE_DEBUG ?= n
 CONFIG_ARCH_TYPE ?= w800
+CONFIG_W800_TOOLCHAIN_PREFIX ?= csky-elfabiv2
 
 TARGET ?= $(subst ",,$(CONFIG_W800_TARGET_NAME))
 
@@ -42,7 +43,7 @@ SIGN_PUBKEY_SRC := $(CONFIG_W800_SIGN_PUBKEY_SRC)
 optimization ?= -O2
 
 ifeq ($(CONFIG_W800_FIRMWARE_DEBUG),y)
-optimization += -g
+optimization += -g -DWM_SWD_ENABLE=1
 endif
 
 # YES; NO
@@ -53,25 +54,26 @@ UNAME_S:=$(shell uname -s)
 
 $(shell gcc $(SDK_TOOLS)/wm_getver.c -Wall -O2 -o $(VER_TOOL))
 
+TOOL_CHAIN_PREFIX = $(CONFIG_W800_TOOLCHAIN_PREFIX)
 TOOL_CHAIN_PATH = $(subst ",,$(CONFIG_W800_TOOLCHAIN_PATH))
 
 # select which tools to use as compiler, librarian and linker
 ifeq ($(VERBOSE),YES)
-    AR = $(TOOL_CHAIN_PATH)csky-elfabiv2-ar
-    ASM = $(TOOL_CHAIN_PATH)csky-elfabiv2-gcc
-    CC = $(TOOL_CHAIN_PATH)csky-elfabiv2-gcc
-    CPP = $(TOOL_CHAIN_PATH)csky-elfabiv2-g++
-    LINK = $(TOOL_CHAIN_PATH)csky-elfabiv2-gcc
-    OBJCOPY = $(TOOL_CHAIN_PATH)csky-elfabiv2-objcopy
-    OBJDUMP = $(TOOL_CHAIN_PATH)csky-elfabiv2-objdump
+    AR = $(TOOL_CHAIN_PATH)$(TOOL_CHAIN_PREFIX)-ar
+    ASM = $(TOOL_CHAIN_PATH)$(TOOL_CHAIN_PREFIX)-gcc
+    CC = $(TOOL_CHAIN_PATH)$(TOOL_CHAIN_PREFIX)-gcc
+    CPP = $(TOOL_CHAIN_PATH)$(TOOL_CHAIN_PREFIX)-g++
+    LINK = $(TOOL_CHAIN_PATH)$(TOOL_CHAIN_PREFIX)-gcc
+    OBJCOPY = $(TOOL_CHAIN_PATH)$(TOOL_CHAIN_PREFIX)-objcopy
+    OBJDUMP = $(TOOL_CHAIN_PATH)$(TOOL_CHAIN_PREFIX)-objdump
 else
-    AR      = @echo "AR       $(notdir $@)" 2>/dev/null; $(TOOL_CHAIN_PATH)csky-elfabiv2-ar
-    ASM     = @echo "ASM      $<"; $(TOOL_CHAIN_PATH)csky-elfabiv2-gcc
-    CC      = @echo "CC       $<"; $(TOOL_CHAIN_PATH)csky-elfabiv2-gcc
-    CPP     = @echo "CPP      $<"; $(TOOL_CHAIN_PATH)csky-elfabiv2-g++
-    LINK    = @echo "LINK     $(notdir $(IMAGEODIR)/$(TARGET).elf)"; $(TOOL_CHAIN_PATH)csky-elfabiv2-gcc
-    OBJCOPY = @echo "OBJCOPY  $(notdir $(FIRMWAREDIR)/$(TARGET)/$(TARGET).bin)"; $(TOOL_CHAIN_PATH)csky-elfabiv2-objcopy
-    OBJDUMP = @echo "OBJDUMP  $<"; $(TOOL_CHAIN_PATH)csky-elfabiv2-objdump
+    AR      = @echo "AR       $(notdir $@)" 2>/dev/null; $(TOOL_CHAIN_PATH)$(TOOL_CHAIN_PREFIX)-ar
+    ASM     = @echo "ASM      $<"; $(TOOL_CHAIN_PATH)$(TOOL_CHAIN_PREFIX)-gcc
+    CC      = @echo "CC       $<"; $(TOOL_CHAIN_PATH)$(TOOL_CHAIN_PREFIX)-gcc
+    CPP     = @echo "CPP      $<"; $(TOOL_CHAIN_PATH)$(TOOL_CHAIN_PREFIX)-g++
+    LINK    = @echo "LINK     $(notdir $(IMAGEODIR)/$(TARGET).elf)"; $(TOOL_CHAIN_PATH)$(TOOL_CHAIN_PREFIX)-gcc
+    OBJCOPY = @echo "OBJCOPY  $(notdir $(FIRMWAREDIR)/$(TARGET)/$(TARGET).bin)"; $(TOOL_CHAIN_PATH)$(TOOL_CHAIN_PREFIX)-objcopy
+    OBJDUMP = @echo "OBJDUMP  $<"; $(TOOL_CHAIN_PATH)$(TOOL_CHAIN_PREFIX)-objdump
 endif
 
 LDDIR = $(TOP_DIR)/ld/$(CONFIG_ARCH_TYPE)

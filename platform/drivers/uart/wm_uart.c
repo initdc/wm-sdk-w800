@@ -75,6 +75,9 @@ static void tls_uart_tx_chars(struct tls_uart_port *port)
 			dl_list_add_tail(&port->tx_msg_to_be_freed_list, &tx_msg->list);
 			tls_os_release_critical(cpu_sr);
 
+			if (port->tx_sent_callback)
+				port->tx_sent_callback(port);
+			
 			if (port->tx_callback)
 				port->tx_callback(port);
 		}else{
@@ -501,6 +504,9 @@ void tls_uart_tx_chars_start(struct tls_uart_port *port)
             dl_list_del(&tx_msg->list);
             dl_list_add_tail(&port->tx_msg_to_be_freed_list, &tx_msg->list);
             tls_os_release_critical(cpu_sr);
+			
+			if (port->tx_sent_callback)
+				port->tx_sent_callback(port);
 
             if (port->tx_callback)
                 port->tx_callback(port);
@@ -908,6 +914,11 @@ void tls_uart_tx_callback_register(u16 uart_no, s16(*tx_callback) (struct tls_ua
 {
 	uart_port[uart_no].tx_callback = tx_callback;
 }
+void tls_uart_tx_sent_callback_register(u16 uart_no, s16(*tx_callback) (struct tls_uart_port *port))
+{
+	uart_port[uart_no].tx_sent_callback = tx_callback;
+}
+
 
 int tls_uart_try_read(u16 uart_no)
 {

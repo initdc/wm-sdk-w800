@@ -24,12 +24,12 @@ int master_spi_send_data(int clk, int type)
 	char *tx_buf = NULL;
 
 	/*MASTER SPI configuratioin*/
-	wm_spi_cs_config(WM_IO_PB_23);
-	wm_spi_ck_config(WM_IO_PB_24);
-	wm_spi_di_config(WM_IO_PB_25);
-	wm_spi_do_config(WM_IO_PB_26);
+	wm_spi_cs_config(WM_IO_PB_04);
+	wm_spi_ck_config(WM_IO_PB_02);
+	wm_spi_di_config(WM_IO_PB_03);
+	wm_spi_do_config(WM_IO_PB_05);
 	printf("\r\n");
-	printf("cs--PB23, ck--PB24, di--PB25, do--PB26;\r\n");
+	printf("cs--PB04, ck--PB02, di--PB03, do--PB05;\r\n");
 	
     if (clk < 0)
     {
@@ -88,12 +88,12 @@ int master_spi_recv_data(int clk, int type)
 	char *rx_buf = NULL;
 
 	/*MASTER SPI configuratioin*/
-	wm_spi_cs_config(WM_IO_PB_23);
-	wm_spi_ck_config(WM_IO_PB_24);
-	wm_spi_di_config(WM_IO_PB_25);
-	wm_spi_do_config(WM_IO_PB_26);
+	wm_spi_cs_config(WM_IO_PB_04);
+	wm_spi_ck_config(WM_IO_PB_02);
+	wm_spi_di_config(WM_IO_PB_03);
+	wm_spi_do_config(WM_IO_PB_05);
 	printf("\r\n");
-	printf("cs--PB23, ck--PB24, di--PB25, do--PB26;\r\n");
+	printf("cs--PB04, ck--PB02, di--PB03, do--PB05;\r\n");
 	
     if (clk < 0)
     {

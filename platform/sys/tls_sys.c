@@ -282,13 +282,19 @@ void tls_auto_reconnect(void)
 
                 if (bssid.bssid_enable)
                 {
-                    tls_wifi_connect_by_ssid_bssid(ssid.ssid, ssid.ssid_len, bssid.bssid, origin_key.psk,
-                        origin_key.key_length);
+                    if (ssid.ssid_len && (ssid.ssid_len <= 32))
+                    {
+                        tls_wifi_connect_by_ssid_bssid(ssid.ssid, ssid.ssid_len, bssid.bssid, origin_key.psk,
+                            origin_key.key_length);
+                    }
+                    else
+                    {
+                        tls_wifi_connect_by_bssid(bssid.bssid, origin_key.psk, origin_key.key_length);	
+                    }
                 }
                 else
                 {
-                    tls_wifi_connect(ssid.ssid, ssid.ssid_len, origin_key.psk,
-                        origin_key.key_length);
+                    tls_wifi_connect(ssid.ssid, ssid.ssid_len, origin_key.psk, origin_key.key_length);
                 }
             }
             break;
@@ -506,7 +512,7 @@ static void sys_net_status_changed(u8 status)
 
 #if TLS_CONFIG_TLS_DEBUG
             ethif = tls_netif_get_ethif();
-            TLS_DBGPRT_INFO("net up ==> ip = %v\n", ethif->ip_addr.addr);
+            TLS_DBGPRT_INFO("net up ==> ip = %x\n", ethif->ip_addr.addr);
 #endif
 #if TLS_CONFIG_AP
             tls_param_get(TLS_PARAM_ID_WPROTOCOL, (void*) &wireless_protocol,

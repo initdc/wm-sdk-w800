@@ -60,7 +60,6 @@ static void wm_i2s_tx_dma_enable(bool bl)
 	tls_bitband_write(HR_I2S_CTRL, 20, bl);
 }
 
-#if 0
 static void wm_i2s_rx_fifo_clear()
 {
 	tls_bitband_write(HR_I2S_CTRL, 19, 1);
@@ -71,6 +70,7 @@ static void wm_i2s_tx_fifo_clear()
 	tls_bitband_write(HR_I2S_CTRL, 18, 1);
 }
 
+#if 0
 static void wm_i2s_left_zerocross_enable(bool bl)
 {
 	tls_bitband_write(HR_I2S_CTRL, 17, bl);
@@ -316,28 +316,13 @@ ATTRIBUTE_ISR void i2s_I2S_IRQHandler(void)
 {	
 	volatile uint32_t temp;
 	volatile uint8_t fifo_level, cnt;	
-	
-	/*LZC */
-	if (tls_bitband_read(HR_I2S_INT_SRC, 9))
-	{
-        tls_reg_write32(HR_I2S_INT_SRC, 0x200);
-	}
-	/*RZC */
-	if (tls_bitband_read(HR_I2S_INT_SRC, 8) )
-	{		
-        tls_reg_write32(HR_I2S_INT_SRC, 0x100);
-	}	
-	/* Tx Done*/
-	if (tls_bitband_read(HR_I2S_INT_SRC, 7) )
-	{
-        tls_reg_write32(HR_I2S_INT_SRC, 0x80);
-	}
+
 	/* TxTH*/
-	if (tls_bitband_read(HR_I2S_INT_SRC, 6))
+	if ((M32(HR_I2S_INT_SRC) >> 6) & 0x1)
 	{	
-		for(fifo_level = ((I2S->INT_STATUS >> 4)& 0x0F),temp = 0; temp < 8-fifo_level; temp++)
+		if (wm_i2s_buf->txtail < wm_i2s_buf->txlen)
 		{
-			if (wm_i2s_buf->txtail < wm_i2s_buf->txlen)
+			for(fifo_level = ((I2S->INT_STATUS >> 4)& 0x0F),temp = 0; temp < 8-fifo_level; temp++)
 			{
 				tls_reg_write32(HR_I2S_TX, wm_i2s_buf->txbuf[wm_i2s_buf->txtail++]);
 				if (wm_i2s_buf->txtail >= wm_i2s_buf->txlen)
@@ -351,6 +336,21 @@ ATTRIBUTE_ISR void i2s_I2S_IRQHandler(void)
 		}
 		//printf("s\n");
         tls_reg_write32(HR_I2S_INT_SRC, 0x40);
+	}
+	/*LZC */
+	if (tls_bitband_read(HR_I2S_INT_SRC, 9))
+	{
+        tls_reg_write32(HR_I2S_INT_SRC, 0x200);
+	}
+	/*RZC */
+	if (tls_bitband_read(HR_I2S_INT_SRC, 8) )
+	{
+        tls_reg_write32(HR_I2S_INT_SRC, 0x100);
+	}
+	/* Tx Done*/
+	if (tls_bitband_read(HR_I2S_INT_SRC, 7) )
+	{
+        tls_reg_write32(HR_I2S_INT_SRC, 0x80);
 	}
 	/*TXOV*/
 	if (tls_bitband_read(HR_I2S_INT_SRC, 5) )
@@ -506,17 +506,17 @@ int wm_i2s_port_init(I2S_InitDef *opts)
 
 void wm_i2s_tx_rx_stop(void)
 {
-	if( I2S_MODE_MASTER==wm_i2s_get_mode() )
-	{
-		int i;
-		
-		for(i = 0; i < APPEND_NUM; i++)
-		{
-			tls_reg_write32(HR_I2S_TX, 0x00);
-		}
-		wm_i2s_tx_enable(1);
-		while( tls_reg_read32(HR_I2S_STATUS)&0xF0 );
-	}
+//	if( I2S_MODE_MASTER==wm_i2s_get_mode() )
+//	{
+//		int i;
+//
+//		for(i = 0; i < APPEND_NUM; i++)
+//		{
+//			tls_reg_write32(HR_I2S_TX, 0x00);
+//		}
+//		wm_i2s_tx_enable(1);
+//		while( tls_reg_read32(HR_I2S_STATUS)&0xF0 );
+//	}
 	wm_i2s_tx_enable(0);
 	wm_i2s_rx_enable(0);
 	
@@ -528,6 +528,9 @@ void wm_i2s_tx_rx_stop(void)
 
 int wm_i2s_tx_int(int16_t *data, uint16_t len, int16_t *next_data)
 {	
+	volatile uint32_t temp;
+	volatile uint8_t fifo_level;
+
 	if((data == NULL) || (len == 0)) {
 		return  WM_FAILED;
 	}
@@ -538,8 +541,14 @@ int wm_i2s_tx_int(int16_t *data, uint16_t len, int16_t *next_data)
 
 	wm_i2s_set_mode(I2S_MODE_MASTER);
 	wm_i2s_txth_int_mask(0);
+	wm_i2s_tx_fifo_clear();
 	tls_irq_enable(I2S_IRQn);
 	wm_i2s_tx_enable(1);
+
+	for(fifo_level = ((I2S->INT_STATUS >> 4)& 0x0F),temp = 0; temp < 8-fifo_level; temp++)
+	{
+		tls_reg_write32(HR_I2S_TX, wm_i2s_buf->txbuf[wm_i2s_buf->txtail++]);
+	}
 	wm_i2s_enable(1);
 
 	if((wm_i2s_buf->tx_callback != NULL) && (next_data != NULL))
@@ -652,6 +661,7 @@ int wm_i2s_rx_int(int16_t *data, uint16_t len)
 
     wm_i2s_set_mode(I2S_MODE_SLAVE);	
 	wm_i2s_rxth_int_mask(0);
+	wm_i2s_rx_fifo_clear();
 	tls_irq_enable(I2S_IRQn);
 	wm_i2s_rx_enable(1);	
 	wm_i2s_enable(1);

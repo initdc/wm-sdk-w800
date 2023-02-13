@@ -751,11 +751,11 @@ static __inline unsigned int tls_reg_read32(unsigned int reg)
  */
 static __inline void tls_bitband_write(volatile unsigned int addr, unsigned int bit, unsigned int val)
 {
-	uint32_t temp;
+	unsigned int temp;
 
 	temp = (M32(addr) & ~(1 << bit)) | (val << bit);
 
-	*((volatile uint32_t * )addr) = temp;
+	*((volatile unsigned int * )addr) = temp;
 }
 
 /**

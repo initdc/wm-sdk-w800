@@ -36,6 +36,7 @@
 #include "wm_sockets.h"
 #include "lwip/sockets.h"
 #include "wm_debug.h"
+extern int exit_last_test;
 
 
 int
@@ -296,6 +297,10 @@ iperf_run_server(struct iperf_test *test)
         tv.tv_usec = 0;
 
         result = select(test->max_fd + 1, &temp_read_set, &temp_write_set, NULL, &tv);
+        if ((result == 0) && exit_last_test)
+        {
+            break;
+        }
         if (result < 0 && errno != EINTR) {
             i_errno = IESELECT;
             return (-1);
@@ -304,7 +309,7 @@ iperf_run_server(struct iperf_test *test)
             if (FD_ISSET(test->listener, &temp_read_set)) {
                 if (test->state != CREATE_STREAMS) {
                     if (iperf_accept(test) < 0) {
-						cleanup_server(test);
+                        cleanup_server(test);
                         return (-1);
                     }
                     FD_CLR(test->listener, &temp_read_set);
@@ -312,8 +317,8 @@ iperf_run_server(struct iperf_test *test)
             }
             if (FD_ISSET(test->ctrl_sck, &temp_read_set)) {
                 if (iperf_handle_message_server(test) < 0){
-					cleanup_server(test);
-					return (-1);
+                    cleanup_server(test);
+                    return (-1);
                 }
                 FD_CLR(test->ctrl_sck, &temp_read_set);                
             }

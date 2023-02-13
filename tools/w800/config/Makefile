@@ -27,7 +27,7 @@ $(MENUBUILD)/%.o: %.c
 
 mconf: $(CONFBASE) \
         $(MENUBUILD)/mconf.o
-	@echo "HOSTLD   $<"; $(HOSTCC) -o $(MENUBUILD)/$@ $^ $(MENULDFLAGS)
+	@echo "HOSTLD   $@"; $(HOSTCC) -o $(MENUBUILD)/$@ $^ $(MENULDFLAGS)
 
 clean :
 	@find $(MENUBUILD) -name "*.o" -exec rm "{}" \;

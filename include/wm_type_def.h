@@ -63,17 +63,21 @@ typedef signed int           s32;
 typedef unsigned long long   u64;
 typedef long long                    s64;
 
-#if 1//(GCC_COMPILE==0)
+#if defined(_NEWLIB_VERSION_H__)
 #ifdef int32_t
 #undef int32_t
-#endif
 typedef int int32_t;
+#endif
 
 #ifdef uint32_t
 #undef uint32_t
-#endif
 typedef unsigned int uint32_t;
+#endif
+#endif
 
+#if defined(__MINILIBC__)
+typedef int int32_t;
+typedef unsigned int uint32_t;
 #endif
 
 #ifdef int32

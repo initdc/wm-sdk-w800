@@ -59,10 +59,10 @@ $(BINODIR)/%.bin: $(IMAGEODIR)/%.elf
 	$(OBJCOPY) -O binary $(IMAGEODIR)/$(TARGET).elf $(FIRMWAREDIR)/$(TARGET)/$(TARGET).bin
 
 ifeq ($(UNAME_S),Linux)
-	@gcc $(SDK_TOOLS)/wm_tool.c -lpthread -Wall -O2 -o $(WM_TOOL)
+	@gcc $(SDK_TOOLS)/wm_tool.c -lpthread -o $(WM_TOOL)
 else
 ifeq ($(UNAME_O),Darwin)
-	@gcc $(SDK_TOOLS)/wm_tool.c -lpthread -Wall -O2 -o $(WM_TOOL)
+	@gcc $(SDK_TOOLS)/wm_tool.c -lpthread -o $(WM_TOOL)
 else
 # windows, cygwin-gcc exist bug for uart rts/cts
 endif

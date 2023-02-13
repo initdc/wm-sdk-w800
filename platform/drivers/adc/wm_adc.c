@@ -62,10 +62,9 @@ static void adc_dma_isr_callbk(void)
 void tls_adc_init(u8 ifusedma,u8 dmachannel)
 {
 	tls_reg_write32(HR_SD_ADC_CTRL, ANALOG_SWITCH_TIME_VAL(0x50)|ANALOG_INIT_TIME_VAL(0x50)|ADC_IRQ_EN_VAL(0x1));
-	tls_reg_write32(HR_SD_ADC_PGA_CTRL, CLK_CHOP_SEL_PGA_VAL(1)|GAIN_CTRL_PGA_VAL(2)|PGA_BYPASS_VAL(0)|PGA_CHOP_ENP_VAL(0)|PGA_EN_VAL(1));
 	tls_irq_enable(ADC_IRQn);
 
-//注册中断和channel有关，所以需要先请求
+	//注册中断和channel有关，所以需要先请求
 	if(ifusedma)
 	{
 		gst_adc.dmachannel = tls_dma_request(dmachannel, 0);	//请求dma，不要直接指定，因为请求的dma可能会被别的任务使用
@@ -95,7 +94,7 @@ void tls_adc_clear_irq(int inttype)
 	}
 }
 
-void tls_adc_irq_register(int inttype, void (*callback)(u16 *buf, u16 len))
+void tls_adc_irq_register(int inttype, void (*callback)(u32 *buf, u16 len))
 {
 	if(ADC_INT_TYPE_ADC == inttype)
 	{
@@ -125,7 +124,7 @@ u32 tls_read_adc_result(void)
 void tls_adc_start_with_cpu(int Channel)
 {
 	u32 value;
-      
+
 	/* Stop adc first */
 	value = tls_reg_read32(HR_SD_ADC_ANA_CTRL);
 	value |= CONFIG_PD_ADC_VAL(1);
@@ -139,7 +138,6 @@ void tls_adc_start_with_cpu(int Channel)
 	value &= ~(CONFIG_PD_ADC_VAL(1));
 	value |= (CONFIG_RSTN_ADC_VAL(1)|CONFIG_EN_LDO_ADC_VAL(1));
 	tls_reg_write32(HR_SD_ADC_ANA_CTRL, value);
-
 }
 
 
@@ -286,6 +284,60 @@ void tls_adc_set_clk(int div)
     tls_reg_write32(HR_CLK_SEL_CTL, value);
 }
 
+void tls_adc_set_pga(u32 gain1, u32 gain2)
+{
+	u32 val = 0;
+	u8 gain1times = 0;
+	u8 gain2times = 0;	
+	switch(gain1)
+	{
+		case 1:
+			gain1times = 0;
+		break;
+		case 16:
+			gain1times = 1;
+		break;
+		case 32:
+			gain1times = 2;
+		break;
+		case 64:
+			gain1times = 3;
+		break;
+		case 128:
+			gain1times = 4;
+		break;
+		case 256:
+			gain1times = 5;
+		break;
+		default:
+			gain1times = 0;
+			break;
+	}
+	
+	switch(gain2)
+	{
+		case 1:
+			gain2times = 0;
+			break;
+		case 2:
+			gain2times = 1;
+			break;
+		case 3:
+			gain2times = 2;
+			break;
+		case 4:
+			gain2times = 3;
+			break;
+		default:
+			gain2times = 0;
+			break;
+	}
+
+	val = tls_reg_read32(HR_SD_ADC_PGA_CTRL);
+	val = GAIN_CTRL_PGA_VAL(gain2times)|CLK_CHOP_SEL_PGA_VAL(gain1times)|PGA_BYPASS_VAL(0)|PGA_CHOP_ENP_VAL(1)|PGA_EN_VAL(1);
+	tls_reg_write32(HR_SD_ADC_PGA_CTRL, val);
+}
+
 void signedToUnsignedData(u32 *adcValue)
 {
 	if (*adcValue &0x20000)
@@ -300,21 +352,26 @@ void signedToUnsignedData(u32 *adcValue)
 
 static void waitForAdcDone(void)
 {
-    while(1)
+	int cnt = 2;
+    while(cnt--)
     {
+#if 0    
         int reg = tls_reg_read32(HR_SD_ADC_INT_STATUS);
 		//printf("reg:%x\r\n", reg);
         if(reg & ADC_INT_MASK)      //ADC中断
         {
             tls_adc_clear_irq(ADC_INT_TYPE_ADC);
-            break;
+            //break;
         }
 
         if(reg & CMP_INT_MASK)      //ADC中断
         {
             tls_adc_clear_irq(ADC_INT_TYPE_ADC_COMP);
-            break;
+           // break;
         }		
+#else
+		tls_os_time_delay(1);
+#endif
     }
 }
 
@@ -323,53 +380,47 @@ u32 adc_get_offset(void)
     tls_adc_init(0, 0); 
 	tls_adc_reference_sel(ADC_REFERENCE_INTERNAL);
 	tls_adc_start_with_cpu(CONFIG_ADC_CHL_OFFSET);	
+	tls_adc_set_pga(1,1);
+	tls_adc_set_clk(0x28);		
 
     waitForAdcDone();
 	adc_offset = tls_read_adc_result(); //获取adc转换结果
+	signedToUnsignedData(&adc_offset);
+	adc_offset = adc_offset>>2;
 	tls_adc_stop(0);
 
-	printf("\r\noffset:%d\r\n", adc_offset);
+	//printf("\r\noffset:%d\r\n", adc_offset);
     return adc_offset;
 }
 
-u32 adc_get_interTemp(void)
+int adc_get_interTemp(void)
 {
-	u32 code1 = 0, code2 = 0;
-    u32 tem;
-	
-	adc_get_offset();
-
-    tls_adc_init(0, 0); 
-	tls_adc_reference_sel(ADC_REFERENCE_INTERNAL);
-	tls_adc_start_with_cpu(CONFIG_ADC_CHL_TEMP);
-	tls_adc_set_clk(0x28);
-	tls_reg_write32(HR_SD_ADC_TEMP_CTRL, ~(TEMP_CAL_OFFSET_MASK)|TEMP_EN_VAL(1));
-    waitForAdcDone();
-    code1 = tls_read_adc_result(); 
-
-	tls_reg_write32(HR_SD_ADC_TEMP_CTRL, TEMP_CAL_OFFSET_MASK|TEMP_EN_VAL(1));
-    waitForAdcDone();
-    code2 = tls_read_adc_result(); 
-
-    tls_adc_stop(0);
-	//printf("\r\ncode:%x", (code2 - code1)/2 - adc_offset);
-	tem = code1 - code2;
-    return tem;
+	return adc_temp();
 }
 
 u16 adc_get_inputVolt(u8 channel)
 {
     u32 average = 0;
-    
-    tls_adc_init(0, 0);
+	int i = 0;
+   	adc_get_offset();
+
+    tls_adc_init(0, 0); 
 	tls_adc_reference_sel(ADC_REFERENCE_INTERNAL);
 	tls_adc_start_with_cpu(channel);
+	tls_adc_set_pga(1,1);
 	tls_adc_set_clk(0x28);	
-    waitForAdcDone();
-    average = tls_read_adc_result();
+	for (i = 0;i < 10 ;i++)
+	{
+	    waitForAdcDone();
+	    average += tls_read_adc_result();
+	}
+	average = average/10;
+	signedToUnsignedData(&average);
+	average = average>>2;
     tls_adc_stop(0);
 
-	printf("\r\nch:%d,inputVolt:%d", channel, average);
+	average = ((average - adc_offset)*685 + 13110000)/10;
+	printf("\r\nch:%d,inputVolt:%d.%d", channel, average/1000000,(average%1000000)/1000);
 
     return average;
 }
@@ -377,18 +428,25 @@ u16 adc_get_inputVolt(u8 channel)
 u16 adc_get_interVolt(void)
 {
 	u32 voltValue;
+	int i = 0;
 	adc_get_offset();
 
     tls_adc_init(0, 0); 
 	tls_adc_reference_sel(ADC_REFERENCE_INTERNAL);
 	tls_adc_start_with_cpu(CONFIG_ADC_CHL_VOLT);
-	waitForAdcDone();
-	voltValue = tls_read_adc_result();
+	tls_adc_set_pga(1,3);
+	tls_adc_set_clk(0x28);	
+	for (i = 0;i < 10; i++)
+	{
+		waitForAdcDone();
+		voltValue += tls_read_adc_result();
+	}
+	voltValue = voltValue/10;
+	signedToUnsignedData(&voltValue);
+	voltValue = voltValue>>2;
 	tls_adc_stop(0);
-	printf("\r\ninterVolt:%d", voltValue);
-
-
-
+	voltValue = (voltValue - adc_offset)*685/20+1200000;
+	printf("\r\ninterVolt:%d.%d", voltValue/1000000, (voltValue%1000000)/1000);
 
     return voltValue;
 }
@@ -400,79 +458,39 @@ u16 adc_get_interVolt(void)
  *
  * @note           Only use to get chip's internal work temperature.
  */
-u32 adc_temp(void)
+int adc_temp(void)
 {
 	u32 code1 = 0, code2 = 0;
 	u32 val = 0;
-	int i = 0;
-	u32 temptimes = 0;
-	u32 gaintimes = 0;
-	u32 average = 0;
-	u32 averagecode1 = 0;
-	u32 averagecode2 = 0;
 	int temperature = 0;
-	u32 temp_pga = 2;
-	u32 gain_pga = 4;
-	u32 num = 10;
 
-	//printf("temp_pga:%d, gain_pga:%d, num:%d\r\n", temp_pga, gain_pga, num);
-	if (temp_pga == 0)
-	{
-		temp_pga = 1;
-	}
-	if (gain_pga == 0)
-	{
-		gain_pga = 1;
-	}
-	
-	temptimes = temp_pga/2 - 1;
-
-	if (gain_pga < 16)
-	{
-		gaintimes = (gain_pga - 1)<<3;
-	}
-
-	tls_reg_write32(HR_SD_ADC_PGA_CTRL, CLK_CHOP_SEL_PGA_VAL(0)|GAIN_CTRL_PGA_VAL(gaintimes)|PGA_BYPASS_VAL(0)|PGA_CHOP_ENP_VAL(1)|PGA_EN_VAL(1));
+    tls_adc_init(0, 0); 
 	tls_adc_reference_sel(ADC_REFERENCE_INTERNAL);
+	tls_adc_set_pga(1,4);
 	tls_adc_start_with_cpu(CONFIG_ADC_CHL_TEMP);
 	tls_adc_set_clk(0x28);
 	val = tls_reg_read32(HR_SD_ADC_TEMP_CTRL);
 	val &= ~TEMP_GAIN_MASK;
-	val |= TEMP_GAIN_VAL(temptimes);
+	val |= TEMP_GAIN_VAL(0);
 	val |= TEMP_EN_VAL(1);
 
-	for (i = 0; i < num; i++)
-	{
-		tls_adc_clear_irq(ADC_INT_TYPE_ADC);
-		tls_reg_write32(HR_SD_ADC_CTRL, ANALOG_SWITCH_TIME_VAL(0x50)|ANALOG_INIT_TIME_VAL(0x50)|ADC_IRQ_EN_VAL(0x1));	
-		val &= (~(TEMP_CAL_OFFSET_MASK));
-		tls_reg_write32(HR_SD_ADC_TEMP_CTRL, val);		
-	    tls_adc_clear_irq(ADC_INT_TYPE_ADC);
-		tls_reg_write32(HR_SD_ADC_CTRL, ANALOG_SWITCH_TIME_VAL(0x50)|ANALOG_INIT_TIME_VAL(0x50));	
-		tls_os_time_delay(2);
-	    code1 = tls_read_adc_result(); 
-		signedToUnsignedData(&code1);
+	val &= (~(TEMP_CAL_OFFSET_MASK));
+	tls_reg_write32(HR_SD_ADC_TEMP_CTRL, val);		
+	waitForAdcDone();
+    code1 = tls_read_adc_result(); 
+	signedToUnsignedData(&code1);
 
-		tls_adc_clear_irq(ADC_INT_TYPE_ADC);
-		tls_reg_write32(HR_SD_ADC_CTRL, ANALOG_SWITCH_TIME_VAL(0x50)|ANALOG_INIT_TIME_VAL(0x50)|ADC_IRQ_EN_VAL(0x1));
-		val |= TEMP_CAL_OFFSET_MASK;
-		tls_reg_write32(HR_SD_ADC_TEMP_CTRL, val);
-
-	    tls_adc_clear_irq(ADC_INT_TYPE_ADC);
-		tls_reg_write32(HR_SD_ADC_CTRL, ANALOG_SWITCH_TIME_VAL(0x50)|ANALOG_INIT_TIME_VAL(0x50));	
-		tls_os_time_delay(2);
-
-	    code2 = tls_read_adc_result(); 
-		signedToUnsignedData(&code2);
-
-		averagecode1 = (code1 + averagecode1 *i)/(i+1);
-		averagecode2 = (code2 + averagecode2 *i)/(i+1);
-	}
+	val |= TEMP_CAL_OFFSET_MASK;
+	tls_reg_write32(HR_SD_ADC_TEMP_CTRL, val);
+	waitForAdcDone();
+    code2 = tls_read_adc_result(); 
+	signedToUnsignedData(&code2);
 
 	tls_adc_stop(0);
 
-	temperature = ((int)averagecode1 - (int)averagecode2);
-	temperature = ((temperature*1000/(int)(2*temp_pga*gain_pga)-4444100)*1000/15548);
+	temperature = ((int)code1 - (int)code2);
+	temperature = ((temperature*1000/(int)(2*2*4)-4444100)*1000/15548);
+//	printf("average temperaure:%d\r\n", temperature);
 
 	return temperature;
 }

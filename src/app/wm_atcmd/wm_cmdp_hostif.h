@@ -525,7 +525,7 @@ typedef __packed struct HOSTIF_CMD_PARAMS_TXGR{
  }	HOSTIF_CMD_PARAMS_LPCHL;
 
  typedef __packed struct HOSTIF_CMD_PARAMS_LPTSTR {
-	u32      channel;
+	u32      tempcomp;
 	u32      packetcount;
 	u32      psdulen;
 	u32      txgain;
@@ -1330,6 +1330,8 @@ typedef void  (*hostif_send_tx_msg_callback)(u8 hostif_mode, struct tls_hostif_t
 #define UART_ATCMD_BIT_BT        (3)
 #define UART_ATCMD_BIT_ACTIVE_BT (4)
 #define UART_ATCMD_BIT_ACTIVE_BT_DM (5)
+#define UART_ATCMD_BIT_ACTIVE_BT_DM_EXT (6)
+
 
 
 

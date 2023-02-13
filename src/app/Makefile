@@ -21,7 +21,8 @@ COMPONENTS_libapp = cjson/libcjson$(LIB_EXT) 	\
 					sslserver/libsslserver$(LIB_EXT) 	\
 					web/libweb$(LIB_EXT) 	\
 					wm_atcmd/libwm_atcmd$(LIB_EXT) \
-					mbedtls/libmbedtls$(LIB_EXT)
+					mbedtls/libmbedtls$(LIB_EXT) \
+					btapp/libbtapp$(LIB_EXT)
 endif
 
 #DEFINES +=

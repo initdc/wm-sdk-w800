@@ -92,12 +92,13 @@ tls_bt_status_t tls_bt_ssp_reply(const tls_bt_addr_t *bd_addr, tls_bt_ssp_varian
  * @brief          set the adapter property
  *
  * @param[in]      *property         remote device address
+ * @param[in]      update_to_flash  save the property to flash or not
  *
  * @return	       @ref tls_bt_status_t
  *
  * @note           None
  */
-tls_bt_status_t tls_bt_set_adapter_property(const tls_bt_property_t *property);
+tls_bt_status_t tls_bt_set_adapter_property(const tls_bt_property_t *property, uint8_t update_to_flash);
 
 /**
  * @brief          get the adapter property
@@ -336,6 +337,19 @@ tls_bt_status_t tls_bt_vuart_host_send_packet( uint8_t *data, uint16_t len);
 tls_bt_status_t tls_bt_ctrl_if_register(const tls_bt_host_if_t *p_host_if);
 
 /**
+ * @brief          this function unregister the host stack receive message function 
+ *                 and indication the controller receive hci command avaiable
+ *
+ * @param     None
+ *
+ * @retval         @ref tls_bt_ctrl_status_t
+ *
+ * @note           None
+ */
+tls_bt_status_t tls_bt_ctrl_if_unregister();
+
+
+/**
  * @brief          this function configure the controller enter into sleep mode when controller
  *                 is in idle mode
  *
@@ -370,6 +384,19 @@ bool  tls_bt_ctrl_is_sleep(void);
  * @note           None
  */
 tls_bt_status_t tls_bt_ctrl_wakeup(void);
+
+/**
+ * @brief          this function check controller can handle hci commands yes or no
+ *
+ * @param          None
+ *
+ * @retval         @ref bool TRUE or FALSE
+ *
+ * @note           None
+ */
+
+bool tls_bt_vuart_host_check_send_available();
+
 
 /**
  * @}

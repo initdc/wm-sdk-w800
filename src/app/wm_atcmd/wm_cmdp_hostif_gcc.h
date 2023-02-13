@@ -309,6 +309,12 @@ typedef  struct _HOSTIF_CMD_PARAMS_BTCTRL {
 	enum    tls_cmd_mode cmd_mode;
 }__attribute__((packed))HOSTIF_CMD_PARAMS_BTCTRL;
 
+typedef  struct _HOSTIF_CMD_PARAMS_BTNAME {
+    char    name[16];
+    u8      len;
+    enum    tls_cmd_mode cmd_mode;
+}__attribute__((packed))HOSTIF_CMD_PARAMS_BTNAME;
+
 typedef  struct _HOSTIF_CMD_PARAMS_BLEADV {
     u8      len;
     u8      data[21];
@@ -365,6 +371,7 @@ typedef  struct _HOSTIF_CMD_PARAMS_BLESTT {
     u8      tran_type;
     enum    tls_cmd_mode cmd_mode;
 }__attribute__((packed))HOSTIF_CMD_PARAMS_BLESTT;
+
 typedef  struct _HOSTIF_CMD_PARAMS_BLESNDIND {
     u8      server_if;
     u16     attr_handle;
@@ -380,7 +387,6 @@ typedef  struct _HOSTIF_CMD_PARAMS_BLESNDRSP {
 	u8      value[21];
 	enum    tls_cmd_mode cmd_mode;
 }__attribute__((packed))HOSTIF_CMD_PARAMS_BLESNDRSP;
-
 
 typedef struct _HOSTIF_CMD_PARAMS_BLECONN {
     u8      server_if;
@@ -640,7 +646,7 @@ typedef struct HOSTIF_CMD_PARAMS_TXGR{
  }__attribute__((packed))HOSTIF_CMD_PARAMS_LPCHL;
 
  typedef struct HOSTIF_CMD_PARAMS_LPTSTR {
- 	u32      channel;
+ 	u32      tempcomp;
     u32      packetcount;
     u32      psdulen;
     u32      txgain;
@@ -693,6 +699,12 @@ typedef struct HOSTIF_CMD_PARAMS_TXGR{
     int vcg;
  }__attribute__((packed))HOSTIF_CMD_PARAMS_VCGCTRL;
 
+ typedef  struct _HOSTIF_CMD_PARAMS_SCANPARAM{
+    enum tls_cmd_mode mode;
+	u32 scantimes;
+	u16 chlist;
+	u16 switchinterval;
+ }__attribute__((packed))HOSTIF_CMD_PARAMS_SCANPARAM;
 
 
  union HOSTIF_CMD_PARAMS_UNION{
@@ -738,6 +750,8 @@ typedef struct HOSTIF_CMD_PARAMS_TXGR{
         HOSTIF_CMD_PARAMS_BT bt;
 
         HOSTIF_CMD_PARAMS_BTCTRL btctrl;
+
+        HOSTIF_CMD_PARAMS_BTNAME btname;
 
         HOSTIF_CMD_PARAMS_BLEADV bleadv;
 
@@ -868,6 +882,7 @@ typedef struct HOSTIF_CMD_PARAMS_TXGR{
 	HOSTIF_CMD_PARAMS_VCGCTRL vcgCtrl;
 	HOSTIF_CMD_PARAMS_PING  ping;
 	HOSTIF_CMD_PARAMS_THT	tht;
+	HOSTIF_CMD_PARAMS_SCANPARAM scanparam;
     }; 
 struct tls_hostif_cmd {
     struct tls_hostif_cmd_hdr cmd_hdr;
@@ -1501,6 +1516,8 @@ typedef void  (*hostif_send_tx_msg_callback)(u8 hostif_mode, struct tls_hostif_t
 #define UART_ATCMD_BIT_BT        (3)
 #define UART_ATCMD_BIT_ACTIVE_BT (4)
 #define UART_ATCMD_BIT_ACTIVE_BT_DM (5)
+#define UART_ATCMD_BIT_ACTIVE_BT_DM_EXT (6)
+
 
 struct tls_hostif {
     tls_os_timer_t          *tx_timer;

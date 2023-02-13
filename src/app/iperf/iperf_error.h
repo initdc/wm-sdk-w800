@@ -16,6 +16,7 @@
 #define __IPERF_ERROR_H
 
 #include "wm_osal.h"
+#include "wm_debug.h"
 
 void iperf_error(char *);
 

@@ -166,18 +166,21 @@ s8 RMMS_Init(const struct netif *Netif)
 		return RMMS_ERR_LINKDOWN;
 	}
 
-    pcb = udp_new();
-    if (pcb)
-    {
-        rmms_pcb = pcb;
-        udp_bind(pcb, IP_ADDR_ANY, RMMS_LISTERN_PORT);
-        udp_recv(pcb, rmms_recv, NULL);
-        RMMS_PRINT("Remote manager server start (udp:%d)\n\r", RMMS_LISTERN_PORT);
-    }
-    else
-    {
-        return RMMS_ERR_MEM;
-    }
+	if (rmms_pcb == NULL)
+	{
+	    pcb = udp_new();
+	    if (pcb)
+	    {
+	        rmms_pcb = pcb;
+	        udp_bind(pcb, IP_ADDR_ANY, RMMS_LISTERN_PORT);
+	        udp_recv(pcb, rmms_recv, NULL);
+	        RMMS_PRINT("Remote manager server start (udp:%d)\n\r", RMMS_LISTERN_PORT);
+	    }
+	    else
+	    {
+	        return RMMS_ERR_MEM;
+	    }
+	}
 
     return RMMS_ERR_SUCCESS;
 }

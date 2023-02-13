@@ -38,8 +38,8 @@ int gpio_demo(void)
 	u16 gpio_pin;
 	u16 ret;
 
-	//≤‚ ‘gpioB 13,14
-	for(gpio_pin = WM_IO_PB_13; gpio_pin < WM_IO_PB_15; gpio_pin ++)
+	//≤‚ ‘gpioB 6,7
+	for(gpio_pin = WM_IO_PB_06; gpio_pin < WM_IO_PB_07; gpio_pin ++)
 	{
 		tls_gpio_cfg(gpio_pin, WM_GPIO_DIR_INPUT, WM_GPIO_ATTR_FLOATING);
 		ret = tls_gpio_read(gpio_pin);	/*œ»∂¡ƒ¨»œ◊¥Ã¨*/

@@ -10,19 +10,19 @@ menu "Firmware Configuration"
 
     config W800_IMAGE_TYPE
         int "image type"
-        default 0
+        default 1
         help
             w80 image type.
 
     config W800_IMAGE_HEADER
         hex "image header address"
-        default 80d0000
+        default 80D0000
         help
             w80 image header address.
 
     config W800_RUN_ADDRESS
         hex "image run address"
-        default 80d0400
+        default 80D0400
         help
             w80 image run address.
 
@@ -81,17 +81,23 @@ menu "Compile Configuration"
             w800 sdk use lib.
 
     config W800_FIRMWARE_DEBUG
-        bool "enable firmware debug"
-        default n
+        bool "enable JTAG debug"
+        default y
         help
-            w800 enable firmware debug.
+            w800 enable JTAG debug.
 endmenu
 
 menu "Toolchain Configuration"
 
+    config W800_TOOLCHAIN_PREFIX
+        string "toolchain prefix"
+        default "csky-elfabiv2"
+        help
+            w800 toolchain prefix, please use csky-elfabiv2 for minilibc, csky-elf-noneabiv2 for newlib.
+
     config W800_TOOLCHAIN_PATH
-        string "toolchain path prefix"
+        string "toolchain path"
         default ""
         help
-            w80 toolchain path prefix.
+            w800 toolchain path, please add / at the end of the path.
 endmenu

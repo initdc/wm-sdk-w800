@@ -268,6 +268,7 @@ int tls_i2s_demo(s8  format,
 	        {
 	        	if(g_recv_state == 1)
 	        	{
+		        	g_recv_state = 0;
 	        		count = 0;
 	        		i = 1;
 	        		for(; i < DEMO_DATA_SIZE/2; i++)
@@ -285,6 +286,7 @@ int tls_i2s_demo(s8  format,
 	        	}
 	        	else if(g_recv_state == 2)
 	        	{
+		        	g_recv_state = 0;
 		        	if(g_recv_count>0 && g_recv_count % 100 == 0)
 		        	{
 		        		printf("\n[%d]total receive %d*4KB bytes\n\n", tls_os_get_time(), g_recv_count);
@@ -305,7 +307,6 @@ int tls_i2s_demo(s8  format,
 	        			printf("%d all %X-%X, err %d\n", g_recv_count, i2s_demo_rx[DEMO_DATA_SIZE/2], i2s_demo_rx[i - 1], count);
 	        		}
 	        	}
-	        	g_recv_state = 0;
 	        }
 	    }
 	}

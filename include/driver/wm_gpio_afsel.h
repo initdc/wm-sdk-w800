@@ -278,7 +278,7 @@ void wm_i2c_scl_config(enum tls_io_name io_name);
 void wm_i2c_sda_config(enum tls_io_name io_name);
 
 /**
- * @brief  config the pins used for pwm1
+ * @brief  config the pins used for pwm0
  * @param  io_name: config pwm1 pins name
  *			WM_IO_PA_00
  *			WM_IO_PB_00
@@ -286,7 +286,7 @@ void wm_i2c_sda_config(enum tls_io_name io_name);
  *				
  * @return None
  */
-void wm_pwm1_config(enum tls_io_name io_name);
+void wm_pwm0_config(enum tls_io_name io_name);
 
 /**
  * @brief  config the pins used for pwm1
@@ -297,12 +297,21 @@ void wm_pwm1_config(enum tls_io_name io_name);
  *				
  * @return None
  */
+void wm_pwm1_config(enum tls_io_name io_name);
+
+/**
+ * @brief  config the pins used for pwm2
+ * @param  io_name: config pwm3 pins name
+ *			WM_IO_PB_02
+ *				
+ * @return None
+ */
 void wm_pwm2_config(enum tls_io_name io_name);
 
 /**
  * @brief  config the pins used for pwm3
- * @param  io_name: config pwm3 pins name
- *			WM_IO_PB_02
+ * @param  io_name: config pwm4 pins name
+ *			WM_IO_PB_03
  *				
  * @return None
  */
@@ -310,21 +319,12 @@ void wm_pwm3_config(enum tls_io_name io_name);
 
 /**
  * @brief  config the pins used for pwm4
- * @param  io_name: config pwm4 pins name
- *			WM_IO_PB_03
- *				
- * @return None
- */
-void wm_pwm4_config(enum tls_io_name io_name);
-
-/**
- * @brief  config the pins used for pwm5
  * @param  io_name: config pwm5 pins name
  *			WM_IO_PA_04
  *				
  * @return None
  */
-void wm_pwm5_config(enum tls_io_name io_name);
+void wm_pwm4_config(enum tls_io_name io_name);
 
 /**
  * @brief  config the pins used for pwm break

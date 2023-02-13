@@ -287,7 +287,7 @@ typedef struct tls_uart_port
     s16(*rx_callback) (u16 len, void* priv_data);
 
     s16(*tx_callback) (struct tls_uart_port * port);
-    s16(*tx_free_callback) (struct tls_uart_port * port);
+    s16(*tx_sent_callback) (struct tls_uart_port * port);
 
     bool tx_dma_on;
 	bool rx_dma_on;
@@ -461,7 +461,33 @@ int tls_uart_set_stop_bits(u16 uart_no, TLS_UART_STOPBITS_T stopbits);
  */
 void tls_uart_push(int uart_no, u8* data, int length);
 
+
+/**
+ * @brief          This function is used to transfer data asynchronously.
+ *
+ * @param[in]      uart_no      is the uart number
+ * @param[in]      buf            is a buf for saving user data
+ * @param[in]      writesize    is the user data length
+ *
+ * @retval         WM_SUCCESS    tx success
+ * @retval         WM_FAILED       tx failed
+ *
+ * @note           None
+ */
+
 int tls_uart_write_async(u16 uart_no, char *buf, u16 writesize);
+
+/**
+ * @brief	This function is used to register uart tx sent callback function.
+ *
+ * @param[in] uart_no: is the uart numer.
+ * @param[in] callback: is the uart tx sent out call back function.
+ *
+ * @retval
+ */
+
+void tls_uart_tx_sent_callback_register(u16 uart_no, s16(*tx_callback) (struct tls_uart_port *port));
+
 
 
 #endif /* WM_UART_H */

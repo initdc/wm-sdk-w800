@@ -77,7 +77,7 @@ extern const unsigned int hed_bbp_value[];
 void tls_litepoint_start(void);
 void tls_tx_send_litepoint(void);
 void tls_set_test_channel(u8 channel, u8 bandwidth);
-void tls_tx_litepoint_test_start(u32 Packetcnt, u16 Psdulen, u32 Gain, u32 TxRate, u8 GiMode, u8 Gf, u8 Rifs);
+void tls_tx_litepoint_test_start(u32 tempcomp,u32 Packetcnt, u16 Psdulen, u32 Gain, u32 TxRate, u8 GiMode, u8 Gf, u8 Rifs);
 void tls_txrx_litepoint_test_stop(void);
 void tls_txrx_litepoint_clear_data(void);
 int tls_tx_litepoint_test_get_totalsnd(void);
