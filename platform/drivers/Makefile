@@ -26,7 +26,8 @@ COMPONENTS_libdrivers = 7816/lib7816$(LIB_EXT) 	\
 						timer/libtimer$(LIB_EXT) \
 						uart/libuart$(LIB_EXT) \
 						watchdog/libwatchdog$(LIB_EXT) \
-						sdio_host/libsdio_host$(LIB_EXT)
+						sdio_host/libsdio_host$(LIB_EXT) \
+						touchsensor/libwmtouchsensor$(LIB_EXT)
 endif
 
 #DEFINES +=

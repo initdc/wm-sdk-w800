@@ -104,6 +104,10 @@ extern int demo_bt_app_off(void *, ...);
 
 #endif
 
+#if DEMO_TOUCHSENSOR
+extern int demo_touchsensor(void *, ...);
+#endif
+
 /*****************************************************************
 		LOCAL FUNC
 *****************************************************************/
@@ -329,6 +333,10 @@ struct demo_console_info_t  console_tbl[] =
     {"t-bt-demo-off",	demo_bt_app_off,	0x0,	0,  "Test disable bt app off"},
 #endif 
 
+#endif
+
+#if DEMO_TOUCHSENSOR
+	{"t-touch", demo_touchsensor, 0x1, 1, "Test Touch sensor function,0:all, 1:touch sensor 1... 15:touch sensor 15"},
 #endif
 
     //控制台上显示的最后一个命令，如果要让命令显示在控制台上，需要放在该行的上面

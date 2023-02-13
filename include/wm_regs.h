@@ -41,6 +41,7 @@ typedef enum IRQn
   GPIOB_IRQn                  = 15,     /*!< GPIO B Interrupt                                     */
   UART0_IRQn                  = 16,     /*!< UART0 Interrupts                                     */
   UART1_IRQn               	  = 17,     /*!< UART1 Interrupt                                      */
+  TOUCH_IRQn                  = 18,     /*!< Touch Sensor Iterrupt                                */
   UART24_IRQn                 = 19,     /*!< UART2/3/4 Interrupt                                  */
   BLE_IRQn                    = 20,     /*!< BLE Interrupt                                        */
   BT_IRQn                     = 21,     /*!< BT Interrupt                                         */
@@ -797,6 +798,71 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define HR_PWM_CH4_REG2                 (HR_PWM_REG_BASE+0x0030)
 #define HR_PWM_CAP2DAT                  (HR_PWM_REG_BASE+0x0034)
 #define HR_PWM_CAP2CTL                  (HR_PWM_REG_BASE+0x0038)
+
+
+/******************************************************************************/
+/*                                                                            */
+/*                        TOUCH SENSOR                                        */
+/*                                                                            */
+/******************************************************************************/
+#define HR_TC_REG_BASE                 (HR_APB_BASE_ADDR+0x2400)
+
+#define HR_TC_CONFIG                    (HR_TC_REG_BASE+0x0000)
+#define SCAN_PERID_SHIFT_BIT            (26)
+#define CAPDET_CNT_SHIFT_BIT            (20)
+#define TOUCH_SENSOR_SEL_SHIFT_BIT      (4)
+#define TOUCH_SENSOR_EN_BIT             (0)
+
+#define HR_TC1_TRESHOLD_REG              (HR_TC_REG_BASE+0x0004)
+#define HR_TC1_COUNT_REG                 (HR_TC_REG_BASE+0x0004)
+
+#define HR_TC2_TRESHOLD_REG              (HR_TC_REG_BASE+0x0008)
+#define HR_TC2_COUNT_REG                 (HR_TC_REG_BASE+0x0008)
+
+#define HR_TC3_TRESHOLD_REG              (HR_TC_REG_BASE+0x000C)
+#define HR_TC3_COUNT_REG                 (HR_TC_REG_BASE+0x000C)
+
+#define HR_TC4_TRESHOLD_REG              (HR_TC_REG_BASE+0x0010)
+#define HR_TC4_COUNT_REG                 (HR_TC_REG_BASE+0x0010)
+
+#define HR_TC5_TRESHOLD_REG              (HR_TC_REG_BASE+0x0014)
+#define HR_TC5_COUNT_REG                 (HR_TC_REG_BASE+0x0014)
+
+#define HR_TC6_TRESHOLD_REG              (HR_TC_REG_BASE+0x0018)
+#define HR_TC6_COUNT_REG                 (HR_TC_REG_BASE+0x0018)
+
+#define HR_TC7_TRESHOLD_REG              (HR_TC_REG_BASE+0x001C)
+#define HR_TC7_COUNT_REG                 (HR_TC_REG_BASE+0x001C)
+
+#define HR_TC8_TRESHOLD_REG              (HR_TC_REG_BASE+0x0020)
+#define HR_TC8_COUNT_REG                 (HR_TC_REG_BASE+0x0020)
+
+#define HR_TC9_TRESHOLD_REG              (HR_TC_REG_BASE+0x0024)
+#define HR_TC9_COUNT_REG                 (HR_TC_REG_BASE+0x0024)
+
+#define HR_TC10_TRESHOLD_REG             (HR_TC_REG_BASE+0x0028)
+#define HR_TC10_COUNT_REG                (HR_TC_REG_BASE+0x0028)
+
+#define HR_TC11_TRESHOLD_REG             (HR_TC_REG_BASE+0x002C)
+#define HR_TC11_COUNT_REG                (HR_TC_REG_BASE+0x002C)
+
+#define HR_TC12_TRESHOLD_REG             (HR_TC_REG_BASE+0x0030)
+#define HR_TC12_COUNT_REG                (HR_TC_REG_BASE+0x0030)
+
+#define HR_TC13_TRESHOLD_REG             (HR_TC_REG_BASE+0x0034)
+#define HR_TC13_COUNT_REG                (HR_TC_REG_BASE+0x0034)
+
+#define HR_TC14_TRESHOLD_REG             (HR_TC_REG_BASE+0x0038)
+#define HR_TC14_COUNT_REG                (HR_TC_REG_BASE+0x0038)
+
+#define HR_TC15_TRESHOLD_REG             (HR_TC_REG_BASE+0x003C)
+#define HR_TC15_COUNT_REG                (HR_TC_REG_BASE+0x003C)
+
+#define HR_TC16_TRESHOLD_REG             (HR_TC_REG_BASE+0x0040)
+#define HR_TC16_COUNT_REG                (HR_TC_REG_BASE+0x0040)
+
+#define HR_TC_INT_EN	                 (HR_TC_REG_BASE+0x0044) /*bit 31:16*/
+#define HR_TC_INT_STATUS                 (HR_TC_REG_BASE+0x0044) /*bit 15:0*/ 
 
 
 /**

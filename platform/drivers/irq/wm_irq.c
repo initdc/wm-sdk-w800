@@ -33,6 +33,7 @@ extern ATTRIBUTE_ISR void DMA_Channel2_IRQHandler(void);
 extern ATTRIBUTE_ISR void DMA_Channel3_IRQHandler(void);
 extern ATTRIBUTE_ISR void DMA_Channel4_7_IRQHandler(void);
 extern ATTRIBUTE_ISR void ADC_IRQHandler(void);
+extern ATTRIBUTE_ISR void tls_touchsensor_irq_handler(void);
 
 static u32 irqen_status = 0;
 
@@ -71,6 +72,7 @@ void tls_irq_init(void)
 	csi_vic_set_vector(DMA_Channel2_IRQn, (uint32_t)DMA_Channel2_IRQHandler);
 	csi_vic_set_vector(DMA_Channel3_IRQn, (uint32_t)DMA_Channel3_IRQHandler);
 	csi_vic_set_vector(DMA_Channel4_7_IRQn, (uint32_t)DMA_Channel4_7_IRQHandler);
+	csi_vic_set_vector(TOUCH_IRQn, (uint32_t)tls_touchsensor_irq_handler);
 }
 
 

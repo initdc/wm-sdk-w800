@@ -75,6 +75,9 @@
 //7816
 #define DEMO_7816					(DEMO_OFF && DEMO_CONSOLE)
 
+//touch sensor
+#define DEMO_TOUCHSENSOR           (DEMO_OFF && DEMO_CONSOLE)
+
 //ssl server demo
 #define DEMO_SSL_SERVER				(DEMO_OFF && DEMO_CONSOLE)
 

@@ -1069,14 +1069,6 @@ void wm_touch_sensor_config(enum tls_io_name io_name)
 		case WM_IO_PB_09: /*touch sensor 13*/
 		case WM_IO_PA_12: /*touch sensor 14*/
 		case WM_IO_PA_14: /*touch sensor 15*/
-		case WM_IO_PB_29: /*touch sensor 16*/
-			/*When touch sensor pin validate, 
-			touch senor1 must be configured. 
-			*/
-			if (io_name != WM_IO_PA_07)
-			{
-				tls_io_cfg_set(WM_IO_PA_07, WM_IO_OPTION7);
-			}
 			tls_io_cfg_set(io_name, WM_IO_OPTION7);
 			break;
 		default:

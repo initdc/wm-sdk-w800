@@ -183,8 +183,8 @@ void tls_pmu_clk_select(u8 bypass)
 	else
 	{
 		val &= ~BIT(4);
-		val |= BIT(3);
 	}
+	val |= BIT(3);	
 	tls_reg_write32(HR_PMU_PS_CR, val);	
 }
 

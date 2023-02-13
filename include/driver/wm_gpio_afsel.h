@@ -562,10 +562,9 @@ void wm_adc_config(u8 Channel);
  *			WM_IO_PA_10 only for 56pin
  *			WM_IO_PA_12 only for 56pin
  *			WM_IO_PA_14 only for 56pin
- *			WM_IO_PB_29 only for 56pin 
  *				
  * @return None
- * @note  WM_IO_PA_07 MUST BE TOUCH SENSOR WHEN TOUCH SENSOR FUNCTION VALIDATE.
+ * @note  If user use touch sensor function, firstly consider using WM_IO_PA_07 as TOUCH SENSOR pin.
  */
  void wm_touch_sensor_config(enum tls_io_name io_name);
 
@@ -574,7 +573,7 @@ void wm_adc_config(u8 Channel);
  *				
  * @return None
  *
- * @note  This function must call before anyothers for configure 
+ * @note  This function must call before any others for configure 
  * 		  gpio Alternate functions
  */
 void wm_gpio_af_disable(void);
