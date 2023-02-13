@@ -14,11 +14,15 @@
 #include <stddef.h>
 #include <stdarg.h>
 
+#include "wm_bt_config.h"
+
+#if (WM_BT_INCLUDED == CFG_ON || WM_BLE_INCLUDED == CFG_ON)
+
 #include "wm_bt_def.h"
 
 #include "wm_bt_util.h"
 #include "wm_dbg.h"
-
+#include "wm_mem.h"
 
 tls_bt_log_level_t tls_appl_trace_level =  TLS_BT_LOG_DEBUG;
 
@@ -119,6 +123,9 @@ const char *tls_dm_evt_2_str(uint32_t event)
 		CASE_RETURN_STR(WM_BLE_DM_SET_SCAN_PARAM_CMPL_EVT)
 		CASE_RETURN_STR(WM_BLE_DM_SCAN_RES_CMPL_EVT)
 		CASE_RETURN_STR(WM_BLE_DM_REPORT_RSSI_EVT)
+		CASE_RETURN_STR(WM_BLE_DM_SEC_EVT)
+		CASE_RETURN_STR(WM_BLE_DM_ADV_STARTED_EVT)
+		CASE_RETURN_STR(WM_BLE_DM_ADV_STOPPED_EVT)
 		default:
 			return "unkown dm evt";
 	}
@@ -216,6 +223,124 @@ const char *tls_spp_evt_2_str(uint32_t event)
         	return "unknown spp evt";
     }
 }
+ringbuffer_t *bt_ringbuffer_init(const size_t size)
+{
+    ringbuffer_t *p = tls_mem_alloc(sizeof(ringbuffer_t));
+    p->base = tls_mem_alloc(size);
+    p->head = p->tail = p->base;
+    p->total = p->available = size;
+    return p;
+}
 
+void bt_ringbuffer_free(ringbuffer_t *rb)
+{
+    if(rb != NULL)
+    {
+        tls_mem_free(rb->base);
+    }
+
+    tls_mem_free(rb);
+}
+uint32_t bt_ringbuffer_available(const ringbuffer_t *rb)
+{
+    assert(rb);
+    return rb->available;
+}
+uint32_t bt_ringbuffer_size(const ringbuffer_t *rb)
+{
+    assert(rb);
+    return rb->total - rb->available;
+}
+
+uint32_t bt_ringbuffer_insert(ringbuffer_t *rb, const uint8_t *p, uint32_t length)
+{
+    assert(rb);
+    assert(p);
+    uint32_t cpu_sr = tls_os_set_critical();
+
+    if(length > bt_ringbuffer_available(rb))
+    {
+        length = bt_ringbuffer_available(rb);
+    }
+
+    for(size_t i = 0; i != length; ++i)
+    {
+        *rb->tail++ = *p++;
+
+        if(rb->tail >= (rb->base + rb->total))
+        {
+            rb->tail = rb->base;
+        }
+    }
+
+    rb->available -= length;
+    tls_os_release_critical(cpu_sr);
+    return length;
+}
+
+uint32_t bt_ringbuffer_delete(ringbuffer_t *rb, uint32_t length)
+{
+    assert(rb);
+    uint32_t cpu_sr = tls_os_set_critical();
+
+    if(length > bt_ringbuffer_size(rb))
+    {
+        length = bt_ringbuffer_size(rb);
+    }
+
+    rb->head += length;
+
+    if(rb->head >= (rb->base + rb->total))
+    {
+        rb->head -= rb->total;
+    }
+
+    rb->available += length;
+    tls_os_release_critical(cpu_sr);
+    return length;
+}
+
+uint32_t bt_ringbuffer_peek(const ringbuffer_t *rb, int offset, uint8_t *p, uint32_t length)
+{
+    assert(rb);
+    assert(p);
+    assert(offset >= 0);
+    uint32_t cpu_sr = tls_os_set_critical();
+    assert((uint32_t)offset <= ringbuffer_size(rb));
+    uint8_t *b = ((rb->head - rb->base + offset) % rb->total) + rb->base;
+    const size_t bytes_to_copy = (offset + length > ringbuffer_size(rb)) ? ringbuffer_size(rb) - offset : length;
+
+    for(size_t copied = 0; copied < bytes_to_copy; ++copied)
+    {
+        *p++ = *b++;
+
+        if(b >= (rb->base + rb->total))
+        {
+            b = rb->base;
+        }
+    }
+    tls_os_release_critical(cpu_sr);
+    return bytes_to_copy;
+}
+
+uint32_t bt_ringbuffer_pop(ringbuffer_t *rb, uint8_t *p, uint32_t length)
+{
+    assert(rb);
+    assert(p);
+    uint32_t cpu_sr = tls_os_set_critical();  
+    const uint32_t copied = bt_ringbuffer_peek(rb, 0, p, length);
+    
+    rb->head += copied;
+
+    if(rb->head >= (rb->base + rb->total))
+    {
+        rb->head -= rb->total;
+    }
+
+    rb->available += copied;
+    tls_os_release_critical(cpu_sr);
+    return copied;
+}
+#endif
 
 

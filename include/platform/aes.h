@@ -18,7 +18,6 @@
 
 #include <stddef.h>
 #include "wm_type_def.h"
-# include "cryptoApi.h"
 
 
 int  aes_128_cbc_encrypt(const u8 *key, const u8 *iv, u8 *data,

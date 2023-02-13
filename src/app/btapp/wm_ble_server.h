@@ -105,13 +105,15 @@ typedef struct
 } wm_ble_server_callbacks_t;
 
 /*Init the GATT server application*/
-tls_bt_status_t wm_ble_server_init();
+int tls_ble_server_init();
+int tls_ble_server_deinit();
+
 
 /** Registers a GATT server application with the stack */
-tls_bt_status_t wm_ble_server_register_server(uint16_t app_uuid, wm_ble_server_callbacks_t *callback);
+int tls_ble_server_register_server(uint16_t app_uuid, wm_ble_server_callbacks_t *callback);
 
 /** Unregister a server application from the stack */
-tls_bt_status_t wm_ble_server_unregister_server(int server_if);
+int tls_ble_server_unregister_server(int server_if);
 
 #endif
 

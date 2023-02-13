@@ -290,7 +290,7 @@ static int ssl_client_demo(void)
 
         if( ret < 0 )
         {
-            mbedtls_printf( "failed\n  ! mbedtls_ssl_read returned %d\n\n", ret );
+            //mbedtls_printf( "failed\n  ! mbedtls_ssl_read returned %d\n\n", ret );
             break;
         }
 

@@ -614,10 +614,6 @@ int rsa_pkcs1_sign( rsa_context *ctx,
     olen = ctx->len;
 
     switch( ctx->padding )
-#else
-	olen = ctx->size;
-
-    switch( RSA_PKCS_V15 )
 #endif
     {
         case RSA_PKCS_V15:
@@ -845,8 +841,6 @@ int rsa_pkcs1_verify( rsa_context *ctx,
 
 #ifdef POLARSSL_RSA_C
 	siglen = ctx->len;
-#else
-	siglen = ctx->size;
 #endif
 
 
@@ -864,8 +858,6 @@ int rsa_pkcs1_verify( rsa_context *ctx,
 
 #ifdef POLARSSL_RSA_C
     switch( ctx->padding )
-#else
-	switch( RSA_PKCS_V15 )
 #endif
     {
         case RSA_PKCS_V15:

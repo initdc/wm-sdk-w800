@@ -166,7 +166,7 @@ void ble_server_service_stopped_cb(int status, int server_if, int srvc_handle)
 
 void ble_server_service_deleted_cb(int status, int server_if, int srvc_handle)
 {
-	wm_ble_server_unregister_server(g_server_if);;
+	tls_ble_server_unregister_server(g_server_if);;
 }
 
 void ble_server_request_read_cb(int conn_id, int trans_id, tls_bt_addr_t *bda,
@@ -215,6 +215,7 @@ void ble_server_congestion_cb(int conn_id, bool congested)
 void ble_server_mtu_changed_cb(int conn_id, int mtu)
 {
 	TLS_BT_APPL_TRACE_DEBUG("ble_server_mtu_changed_cb, conn_id=%d, mtu=%d\r\n", conn_id, mtu);
+    TLS_HAL_CBACK(ps_wifi_prof_callback, mtu_changed_cb, mtu);
 }
 
 static const wm_ble_server_callbacks_t servercb =
@@ -238,13 +239,13 @@ static const wm_ble_server_callbacks_t servercb =
     ble_server_mtu_changed_cb
 };
 
-tls_bt_status_t wm_wifi_prof_init(wm_ble_wifi_prof_callbacks_t *callback)
+int tls_ble_wifi_prof_init(wm_ble_wifi_prof_callbacks_t *callback)
 {
 	tls_bt_status_t status;
     if(ps_wifi_prof_callback == NULL)
     {
     	ps_wifi_prof_callback = callback;
-        status = wm_ble_server_register_server(0x1234, &servercb);
+        status = tls_ble_server_register_server(0x1234, &servercb);
 
 		if(status == TLS_BT_STATUS_SUCCESS)
 		{	
@@ -264,13 +265,13 @@ tls_bt_status_t wm_wifi_prof_init(wm_ble_wifi_prof_callbacks_t *callback)
 	
 	return status;
 }
-tls_bt_status_t wm_wifi_prof_deinit()
+int tls_ble_wifi_prof_deinit()
 {
 	tls_bt_status_t status;
     if(ps_wifi_prof_callback)
     {
         //ps_wifi_prof_callback = NULL;   //this ptr will be cleared, when got deregister event
-		status = wm_ble_server_unregister_server(g_server_if);
+		status = tls_ble_server_unregister_server(g_server_if);
 		if(status != TLS_BT_STATUS_SUCCESS)
 		{
 			TLS_BT_APPL_TRACE_ERROR("wm_wifi_prof_deinit failed\r\n");
@@ -283,33 +284,33 @@ tls_bt_status_t wm_wifi_prof_deinit()
 
     return status;
 }
-tls_bt_status_t wm_wifi_prof_connect(int status)
+int tls_ble_wifi_prof_connect(int status)
 {
     return tls_ble_server_connect(g_server_if, (tls_bt_addr_t *)&g_addr, 1, 0);
 }
 
-tls_bt_status_t wm_wifi_prof_disconnect(int status)
+int tls_ble_wifi_prof_disconnect(int status)
 {
     return tls_ble_server_disconnect(g_server_if, (tls_bt_addr_t *)&g_addr, g_conn_id);
 }
 
-tls_bt_status_t wm_wifi_prof_send_msg(uint8_t *ptr, int length)
+int tls_ble_wifi_prof_send_msg(uint8_t *ptr, int length)
 {
     return tls_ble_server_send_indication(g_server_if, gatt_uuid[WM_WIFI_CHARC_INDEX].attr_handle, g_conn_id, length, 1, ptr);
 }
 
-tls_bt_status_t wm_wifi_prof_send_response(uint8_t *ptr, int length)
+int tls_ble_wifi_prof_send_response(uint8_t *ptr, int length)
 {
     return tls_ble_server_send_response(g_conn_id, g_trans_id,0, g_offset, gatt_uuid[WM_WIFI_CHARC_INDEX].attr_handle, 0, ptr, length);
 }
 
 
-tls_bt_status_t wm_wifi_prof_clean_up(int status)
+int tls_ble_wifi_prof_clean_up(int status)
 {
     return tls_ble_server_delete_service(g_server_if, gatt_uuid[WM_WIFI_SERVICE_INDEX].attr_handle);
 }
 
-tls_bt_status_t wm_wifi_prof_disable(int status)
+int tls_ble_wifi_prof_disable(int status)
 {
     return tls_ble_server_stop_service(g_server_if, gatt_uuid[WM_WIFI_SERVICE_INDEX].attr_handle);
 }

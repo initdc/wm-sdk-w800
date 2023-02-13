@@ -42,10 +42,29 @@
 
 
 #if (WM_BLE_PERIPHERAL_INCLUDED == CFG_ON) || (WM_BLE_CENTRAL_INCLUDED == CFG_ON)
-    #define WM_BLE_INCLUDED                CFG_ON
+#if NIMBLE_FTR
+    #define WM_BLE_INCLUDED                 CFG_OFF
+    #define WM_NIMBLE_INCLUDED              CFG_ON
+#else
+    #define WM_BLE_INCLUDED                 CFG_ON
+    #define WM_NIMBLE_INCLUDED              CFG_OFF
+#endif
 #else
     #define WM_BLE_INCLUDED                CFG_OFF
+    #define WM_NIMBLE_INCLUDE              CFG_OFF
 #endif
+
+#if (WM_BLE_CENTRAL_INCLUDED == CFG_ON)
+    #if (WM_BT_INCLUDED == CFG_ON)
+    #define WM_BLE_MAX_CONNECTION       1
+    #else
+    #define WM_BLE_MAX_CONNECTION       7
+    #endif
+#else
+    #define WM_BLE_MAX_CONNECTION       1 
+#endif
+
+
 
 #endif /*__WM_WIFI_CONFIG_H__*/
 

@@ -7,6 +7,7 @@
 #include "wm_uart.h"
 #include "wm_osal.h"
 #include "wm_demo.h"
+#include "wm_pmu.h"
 
 #if DEMO_7816
 
@@ -60,12 +61,13 @@ void wm_sc_atr_test()
 	char  test[32];
 
 	uint16_t sc_state = 0;
-	
-	sc_io.clk_pin_num = WM_IO_PA_02;
+	/*open 7816 clk*/
+	tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_UART2);
+	sc_io.clk_pin_num = WM_IO_PB_04;
 	sc_io.clk_opt = WM_IO_OPTION2;
 
-	sc_io.io_pin_num = WM_IO_PA_05;
-	sc_io.io_opt = WM_IO_OPTION2;
+	sc_io.io_pin_num = WM_IO_PB_02;
+	sc_io.io_opt = WM_IO_OPTION3;
 	sc_io.initialed = 1;
 
 	sc_rx.buf = test;

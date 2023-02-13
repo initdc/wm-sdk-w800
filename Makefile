@@ -18,7 +18,14 @@ SUBDIRS += \
     $(TOP_DIR)/platform/sys         \
     $(TOP_DIR)/src/network          \
     $(TOP_DIR)/src/os               \
-    $(TOP_DIR)/src/app
+	$(TOP_DIR)/src/app
+ifeq ($(USE_NIMBLE), 1)
+SUBDIRS += \
+    $(TOP_DIR)/src/bt/blehost
+else
+SUBDIRS += \
+    $(TOP_DIR)/src/bt/host
+endif
 endif
 endif
 
@@ -35,12 +42,19 @@ COMPONENTS_$(TARGET) += \
     $(TOP_DIR)/src/network/libnetwork$(LIB_EXT)         \
     $(TOP_DIR)/src/os/libos$(LIB_EXT)                   \
     $(TOP_DIR)/src/app/libapp$(LIB_EXT)
+ifeq ($(USE_NIMBLE), 1)
+COMPONENTS_$(TARGET) += \
+	$(TOP_DIR)/src/bt/libblehost$(LIB_EXT) 
+else
+COMPONENTS_$(TARGET) += \
+	$(TOP_DIR)/src/bt/libbthost$(LIB_EXT)
+endif	
 endif
 
 
 LINKLIB = 	\
     $(TOP_DIR)/lib/$(CONFIG_ARCH_TYPE)/libwlan$(LIB_EXT) \
-    $(TOP_DIR)/lib/$(CONFIG_ARCH_TYPE)/libbt$(LIB_EXT)	\
+    $(TOP_DIR)/lib/$(CONFIG_ARCH_TYPE)/libbtcontroller$(LIB_EXT)	\
     $(TOP_DIR)/lib/$(CONFIG_ARCH_TYPE)/libdsp$(LIB_EXT)	
 
 
@@ -53,6 +67,13 @@ LINKLIB += \
     $(TOP_DIR)/lib/$(CONFIG_ARCH_TYPE)/libnetwork$(LIB_EXT)     \
     $(TOP_DIR)/lib/$(CONFIG_ARCH_TYPE)/libos$(LIB_EXT)          \
     $(TOP_DIR)/lib/$(CONFIG_ARCH_TYPE)/libwmsys$(LIB_EXT)
+ifeq ($(USE_NIMBLE), 1)
+LINKLIB += \
+	$(TOP_DIR)/lib/$(CONFIG_ARCH_TYPE)/libblehost$(LIB_EXT)
+else
+LINKLIB += \
+	$(TOP_DIR)/lib/$(CONFIG_ARCH_TYPE)/libbthost$(LIB_EXT)
+endif	
 endif
 
 LINKFLAGS_$(TARGET) =  \

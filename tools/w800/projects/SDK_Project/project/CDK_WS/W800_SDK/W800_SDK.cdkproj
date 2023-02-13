@@ -1026,1494 +1026,6 @@
           <FileOption/>
         </File>
       </VirtualDirectory>
-      <VirtualDirectory Name="btapp">
-        <File Name="../../../../../../../src/app/btapp/wm_audio_sink.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_audio_sink.h">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_client.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_client.h">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_client_demo.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_client_demo.h">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_client_huawei.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_client_huawei.h">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_dm.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_dm.h">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_dm_api.h">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_server.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_server.h">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_server_demo_prof.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_server_demo_prof.h">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_server_wifi_app.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_server_wifi_app.h">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_server_wifi_prof.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_server_wifi_prof.h">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_bt_app.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_bt_app.h">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_bt_util.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_bt_util.h">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_hfp_hsp_client.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_hfp_hsp_client.h">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_server_api_demo.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_server_api_demo.h">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_client_api_demo.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_client_api_demo.h">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_ble_uart_if.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_bt_spp_client.c">
-          <FileOption/>
-        </File>
-        <File Name="../../../../../../../src/app/btapp/wm_bt_spp_server.c"/>
-      </VirtualDirectory>
-      <VirtualDirectory Name="matrixssl-4-3-0-open">
-        <VirtualDirectory Name="core">
-          <VirtualDirectory Name="config">
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/config/cfg_pkcslib.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/config/cfg_spal.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/config/cf_impldefs.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/config/coreConfig.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/config/sl_chacha20poly1305ietf_config.h">
-              <FileOption/>
-            </File>
-          </VirtualDirectory>
-          <VirtualDirectory Name="include">
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/cl_basic.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/cl_header_begin.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/cl_header_end.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/cl_types_base.h">
-              <FileOption/>
-            </File>
-            <VirtualDirectory Name="core">
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/core/coreApi.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/core/osdep.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/core/psUtil.h">
-                <FileOption/>
-              </File>
-            </VirtualDirectory>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/coreApi.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/c_lib.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/export.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/implementation_defs.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/implementation_defs_log.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/list.h">
-              <FileOption/>
-            </File>
-            <VirtualDirectory Name="private">
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/private/common.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/private/coreApiExt.h">
-                <FileOption/>
-              </File>
-            </VirtualDirectory>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/psbuf.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/pscompilerdep.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/pscompilerwarning.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/pslist.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/psLog.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/psmalloc.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/psnet.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/psPrnf.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/psreadwriteutil.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/psStat.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/psunreachable_begin.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/psunreachable_end.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/psUtil.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/public_defs.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/runtime.h">
-              <FileOption/>
-            </File>
-            <VirtualDirectory Name="sfzcl">
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl/sfzclbase64.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl/sfzclbuffer.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl/sfzcldsprintf.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl/sfzclenum.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl/sfzclfastalloc.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl/sfzclfileio.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl/sfzclgetput.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl/sfzclglobals.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl/sfzclincludes.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl/sfzclmalloc.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl/sfzclmemparser.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl/sfzclobstack.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl/sfzclsnprintf.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl/sfzclstr.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl/sfzcltime.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl/sfzcltimemeasure.h">
-                <FileOption/>
-              </File>
-            </VirtualDirectory>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sodium_utils.h">
-              <FileOption/>
-            </File>
-            <VirtualDirectory Name="testsupp">
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/testsupp/info.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/testsupp/sfzutf-perf.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/testsupp/sfzutf-utils.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/testsupp/sfzutf.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/testsupp/testsupp.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/testsupp/testsupp.hpp">
-                <FileOption/>
-              </File>
-              <VirtualDirectory Name="thirdparty">
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/testsupp/thirdparty/catch.hpp">
-                  <FileOption/>
-                </File>
-              </VirtualDirectory>
-            </VirtualDirectory>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/include/utils.h">
-              <FileOption/>
-            </File>
-          </VirtualDirectory>
-          <VirtualDirectory Name="osdep">
-            <VirtualDirectory Name="ANSI">
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/ANSI/osdep_break.c">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/ANSI/spal_memory_ansi.c">
-                <FileOption/>
-              </File>
-            </VirtualDirectory>
-            <VirtualDirectory Name="include">
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep-types.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_arm_acle.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_arm_neon.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_assert.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_cpu-features.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_ctype.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_dlfcn.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_emmintrin.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_errno.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_fcntl.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_immintrin.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_intrin.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_inttypes.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_libc-version.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_limits.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_malloc.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_math.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_netdb.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_netinet_in.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_netinet_tcp.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_nmmintrin.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_pthread.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_sched.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_semaphore.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_setjmp.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_signal.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_smmintrin.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_stdarg.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_stdbool.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_stddef.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_stdint.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_stdio.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_stdlib.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_strict.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_string.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_strings.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_sys_auxv.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_sys_ioctl.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_sys_mman.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_sys_random.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_sys_socket.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_sys_time.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_sys_types.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_termios.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_time.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_time_gmtime_r.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_tmmintrin.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_unistd.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_wchar.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_wincrypt.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_windows.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_wmmintrin.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_x86intrin.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/osdep_zmmintrin.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/spal_memory.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/spal_mutex.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/spal_result.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/spal_semaphore.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/spal_thread.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include/template.h">
-                <FileOption/>
-              </File>
-            </VirtualDirectory>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/osdep.c">
-              <FileOption/>
-            </File>
-            <VirtualDirectory Name="src">
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/src/cl_memset.c">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/src/runtime.c">
-                <FileOption/>
-              </File>
-            </VirtualDirectory>
-          </VirtualDirectory>
-          <VirtualDirectory Name="src">
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/bmp.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/cl_basic.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/corelib_date.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/corelib_list.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/corelib_main.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/corelib_main.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/corelib_strings.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/corelib_trace.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/c_lib.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/debug_abort.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/debug_printf.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/memset_s.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/psbuf.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/psmalloc.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/psmalloc_ext.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/psprintf.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/psprintf.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/psStat.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/psUtil.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/sfzclbase64.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/sfzclbuffer.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/sfzclcalendar.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/sfzclfastalloc.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/sfzclfileio.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/sfzclmalloc.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/sfzclmemparser.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/sfzclobstack.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/sfzclsnprintf.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/sfzclstr.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/sfzcltime.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/sfzcltimemeasure.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/sl_cpu.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/sl_neon.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/src/utils.c">
-              <FileOption/>
-            </File>
-          </VirtualDirectory>
-          <VirtualDirectory Name="wrapper">
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/wrapper/wrap-malloc.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/core/wrapper/wrap-malloc.h">
-              <FileOption/>
-            </File>
-          </VirtualDirectory>
-        </VirtualDirectory>
-        <VirtualDirectory Name="crypto">
-          <VirtualDirectory Name="aead">
-            <VirtualDirectory Name="chacha20poly1305ietf">
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/aead_chacha20poly1305.c">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/crypto_aead_chacha20poly1305.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/crypto_onetimeauth_poly1305.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/crypto_stream_chacha20.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/crypto_verify_16.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/crypto_verify_32.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/crypto_verify_64.h">
-                <FileOption/>
-              </File>
-              <VirtualDirectory Name="dolbeau">
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/dolbeau/chacha20_dolbeau-avx2.c">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/dolbeau/chacha20_dolbeau-avx2.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/dolbeau/chacha20_dolbeau-ssse3.c">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/dolbeau/chacha20_dolbeau-ssse3.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/dolbeau/u0.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/dolbeau/u1.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/dolbeau/u4.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/dolbeau/u8.h">
-                  <FileOption/>
-                </File>
-              </VirtualDirectory>
-              <VirtualDirectory Name="donna">
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/donna/poly1305_donna.c">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/donna/poly1305_donna.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/donna/poly1305_donna32.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/donna/poly1305_donna64.h">
-                  <FileOption/>
-                </File>
-              </VirtualDirectory>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/export.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/onetimeauth_poly1305.c">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/onetimeauth_poly1305.h">
-                <FileOption/>
-              </File>
-              <VirtualDirectory Name="private">
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/private/common.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/private/sse2_64_32.h">
-                  <FileOption/>
-                </File>
-              </VirtualDirectory>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/ps_chacha20poly1305ietf.c">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/ps_chacha20poly1305ietf_config.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/randombytes.h">
-                <FileOption/>
-              </File>
-              <VirtualDirectory Name="ref">
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/ref/chacha20_ref.c">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/ref/chacha20_ref.h">
-                  <FileOption/>
-                </File>
-              </VirtualDirectory>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/runtime.c">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/runtime.h">
-                <FileOption/>
-              </File>
-              <VirtualDirectory Name="sse2">
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/sse2/poly1305_sse2.c">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/sse2/poly1305_sse2.h">
-                  <FileOption/>
-                </File>
-              </VirtualDirectory>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/stream_chacha20.c">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/stream_chacha20.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/utils.c">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/utils.h">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf/verify.c">
-                <FileOption/>
-              </File>
-            </VirtualDirectory>
-          </VirtualDirectory>
-          <VirtualDirectory Name="common">
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/common/alg_info.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/common/digest_info.c">
-              <FileOption/>
-            </File>
-          </VirtualDirectory>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/common.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/cryptoApi.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/cryptoCheck.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/cryptoConfig.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/cryptoImpl.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/cryptolib.h">
-            <FileOption/>
-          </File>
-          <VirtualDirectory Name="crypto_sign">
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/crypto_sign/crypto_sign.c">
-              <FileOption/>
-            </File>
-            <VirtualDirectory Name="ed25519">
-              <VirtualDirectory Name="ref10">
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/crypto_sign/ed25519/ref10/open.c">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/crypto_sign/ed25519/ref10/sign.c">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/crypto_sign/ed25519/ref10/sign_ed25519_ref10.h">
-                  <FileOption/>
-                </File>
-              </VirtualDirectory>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/crypto_sign/ed25519/sign_ed25519.c">
-                <FileOption/>
-              </File>
-            </VirtualDirectory>
-            <VirtualDirectory Name="include">
-              <VirtualDirectory Name="sodium">
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/crypto_sign/include/sodium/crypto_sign.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/crypto_sign/include/sodium/crypto_sign_ed25519.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/crypto_sign/include/sodium/export.h">
-                  <FileOption/>
-                </File>
-              </VirtualDirectory>
-            </VirtualDirectory>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/crypto_sign/ps_ed25519.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/crypto_sign/ps_ed25519.h">
-              <FileOption/>
-            </File>
-          </VirtualDirectory>
-          <VirtualDirectory Name="digest">
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/digest.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/digest_libsodium.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/digest_libsodium.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/digest_matrix.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/digest_openssl.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/digest_openssl.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/hash.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/hkdf.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/hmac.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/md2.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/md4.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/md5.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/md5sha1.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/sha1.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/sha256.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/sha256_standalone.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/sha256_standalone.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/digest/sha512.c">
-              <FileOption/>
-            </File>
-          </VirtualDirectory>
-          <VirtualDirectory Name="keyformat">
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/keyformat/asn1.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/keyformat/asn1.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/keyformat/asn1fmt.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/keyformat/base64.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/keyformat/crl.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/keyformat/pem_decode_file.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/keyformat/pem_decode_mem.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/keyformat/pkcs.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/keyformat/x509.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/keyformat/x509.h">
-              <FileOption/>
-            </File>
-          </VirtualDirectory>
-          <VirtualDirectory Name="layer">
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/layer/layer.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/layer/matrix.c">
-              <FileOption/>
-            </File>
-          </VirtualDirectory>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/libtommath.h">
-            <FileOption/>
-          </File>
-          <VirtualDirectory Name="math">
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/math/pstm.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/math/pstm.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/math/pstmnt.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/math/pstmnt.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/math/pstm_montgomery_reduce.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/math/pstm_mul_comba.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/math/pstm_sqr_comba.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/math/pstm_str.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/math/pstm_str.h">
-              <FileOption/>
-            </File>
-          </VirtualDirectory>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/md5.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/os.h">
-            <FileOption/>
-          </File>
-          <VirtualDirectory Name="prng">
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/prng/prng.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/prng/prng.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/prng/yarrow.c">
-              <FileOption/>
-            </File>
-          </VirtualDirectory>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/ps_chacha20poly1305ietf.h">
-            <FileOption/>
-          </File>
-          <VirtualDirectory Name="pubkey">
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/dh.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/dh_export.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/dh_gen_key.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/dh_gen_secret.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/dh_import.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/dh_import_priv.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/dh_params.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/ecc.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/ecc_curve.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/ecc_curve_config.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/ecc_curve_data.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/ecc_export.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/ecc_gen_shared.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/ecc_import.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/ecc_keygen.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/ecc_math.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/ecc_parse_file.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/ecc_parse_mem.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/ecc_priv.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/ecc_priv_el_gamal.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/ecc_pub.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/ecc_write_file.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/ecc_write_mem.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/pubkey.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/pubkey.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/pubkey_matrix.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/pubkey_openssl.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/pubkey_parse_file.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/pubkey_parse_mem.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/pubkey_sign.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/pubkey_verify.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/mrsa.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/mrsa_keygen.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/mrsa_openssl.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/mrsa_parse_file.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/mrsa_parse_mem.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/mrsa_priv.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/mrsa_pub.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/mrsa_write_file.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/pubkey/mrsa_write_mem.c">
-              <FileOption/>
-            </File>
-          </VirtualDirectory>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/rc4.h">
-            <FileOption/>
-          </File>
-          <VirtualDirectory Name="scalarmult">
-            <VirtualDirectory Name="crypto_core">
-              <VirtualDirectory Name="ed25519">
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/crypto_core/ed25519/core_ed25519.c">
-                  <FileOption/>
-                </File>
-                <VirtualDirectory Name="ref10">
-                  <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/crypto_core/ed25519/ref10/ed25519_ref10.c">
-                    <FileOption/>
-                  </File>
-                  <VirtualDirectory Name="fe_25_5">
-                    <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/crypto_core/ed25519/ref10/fe_25_5/base.h">
-                      <FileOption/>
-                    </File>
-                    <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/crypto_core/ed25519/ref10/fe_25_5/base2.h">
-                      <FileOption/>
-                    </File>
-                    <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/crypto_core/ed25519/ref10/fe_25_5/constants.h">
-                      <FileOption/>
-                    </File>
-                    <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/crypto_core/ed25519/ref10/fe_25_5/fe.h">
-                      <FileOption/>
-                    </File>
-                  </VirtualDirectory>
-                  <VirtualDirectory Name="fe_51">
-                    <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/crypto_core/ed25519/ref10/fe_51/base.h">
-                      <FileOption/>
-                    </File>
-                    <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/crypto_core/ed25519/ref10/fe_51/base2.h">
-                      <FileOption/>
-                    </File>
-                    <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/crypto_core/ed25519/ref10/fe_51/constants.h">
-                      <FileOption/>
-                    </File>
-                    <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/crypto_core/ed25519/ref10/fe_51/fe.h">
-                      <FileOption/>
-                    </File>
-                  </VirtualDirectory>
-                </VirtualDirectory>
-              </VirtualDirectory>
-            </VirtualDirectory>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/crypto_scalarmult.c">
-              <FileOption/>
-            </File>
-            <VirtualDirectory Name="curve25519">
-              <VirtualDirectory Name="ref10">
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/ref10/x25519_ref10.c">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/ref10/x25519_ref10.h">
-                  <FileOption/>
-                </File>
-              </VirtualDirectory>
-              <VirtualDirectory Name="sandy2x">
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/consts.S">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/consts_namespace.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/curve25519_sandy2x.c">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/curve25519_sandy2x.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/fe.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/fe51.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/fe51_invert.c">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/fe51_mul.S">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/fe51_namespace.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/fe51_nsquare.S">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/fe51_pack.S">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/fe_frombytes_sandy2x.c">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/ladder.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/ladder.S">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/ladder_base.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/ladder_base.S">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/ladder_base_namespace.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/ladder_namespace.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/sandy2x/sandy2x.S">
-                  <FileOption/>
-                </File>
-              </VirtualDirectory>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/scalarmult_curve25519.c">
-                <FileOption/>
-              </File>
-              <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/curve25519/scalarmult_curve25519.h">
-                <FileOption/>
-              </File>
-            </VirtualDirectory>
-            <VirtualDirectory Name="ed25519">
-              <VirtualDirectory Name="ref10">
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/ed25519/ref10/scalarmult_ed25519_ref10.c">
-                  <FileOption/>
-                </File>
-              </VirtualDirectory>
-            </VirtualDirectory>
-            <VirtualDirectory Name="include">
-              <VirtualDirectory Name="sodium">
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/include/sodium/crypto_core_ed25519.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/include/sodium/crypto_scalarmult.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/include/sodium/crypto_scalarmult_curve25519.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/include/sodium/crypto_scalarmult_ed25519.h">
-                  <FileOption/>
-                </File>
-                <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/include/sodium/crypto_verify_32.h">
-                  <FileOption/>
-                </File>
-                <VirtualDirectory Name="private">
-                  <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/include/sodium/private/ed25519_ref10.h">
-                    <FileOption/>
-                  </File>
-                  <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/include/sodium/private/ed25519_ref10_fe_25_5.h">
-                    <FileOption/>
-                  </File>
-                  <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/include/sodium/private/implementations.h">
-                    <FileOption/>
-                  </File>
-                </VirtualDirectory>
-              </VirtualDirectory>
-            </VirtualDirectory>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/ps_x25519.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/ps_x25519.h">
-              <FileOption/>
-            </File>
-          </VirtualDirectory>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/sha1.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/sha256.h">
-            <FileOption/>
-          </File>
-          <VirtualDirectory Name="symmetric">
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/symmetric/aes.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/symmetric/aesCBC.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/symmetric/aesGCM.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/symmetric/aes_aesni.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/symmetric/aes_aesni.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/symmetric/aes_matrix.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/symmetric/arc4.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/symmetric/des3.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/symmetric/idea.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/symmetric/rc2.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/symmetric/seed.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/symmetric/symmetric.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/symmetric/symmetric_libsodium.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/symmetric/symmetric_libsodium.h">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/symmetric/symmetric_openssl.c">
-              <FileOption/>
-            </File>
-            <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/crypto/symmetric/symmetric_openssl.h">
-              <FileOption/>
-            </File>
-          </VirtualDirectory>
-        </VirtualDirectory>
-        <VirtualDirectory Name="matrixssl">
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/cipherSuite.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/dtls.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/extDecode.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/hsDecode.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/hsHash.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/hsHashBuffered.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/hsNegotiateVersion.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixssl.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslApi.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslApi.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslApiAlert.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslApiCipher.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslApiExt.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslApiLimits.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslApiPre.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslApiRet.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslApiTypes.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslApiVer.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslCheck.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslConfig.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslConfigStr.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslGetSet.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslGetSet.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslImpl.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslInitVer.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslKeys.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixssllib.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixssllib_secconfig.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixssllib_version.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslNet.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslNet.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslSecConfig.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslSocket.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/matrixsslSocket.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/prf.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/psExt.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/psk.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/sslDecode.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/sslEncode.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/sslv3.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls13Adapter.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls13Authenticate.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls13CipherSuite.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls13Decode.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls13DecodeExt.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls13DhGroups.h">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls13Encode.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls13EncodeExt.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls13KeyAgree.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls13KeySchedule.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls13Negotiate.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls13Psk.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls13Resume.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls13SigVer.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls13TrHash.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tls13TrHashBuffered.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tlsDefaults.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tlsSelectKeys.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tlsSigVer.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/tlsTrace.c">
-            <FileOption/>
-          </File>
-          <File Name="../../../../../../../src/app/matrixssl-4-3-0-open/matrixssl/version.h">
-            <FileOption/>
-          </File>
-        </VirtualDirectory>
-      </VirtualDirectory>
       <VirtualDirectory Name="fatfs">
         <File Name="../../../../../../../src/app/fatfs/diskio.c">
           <FileOption/>
@@ -2534,6 +1046,77 @@
           <FileOption/>
         </File>
         <File Name="../../../../../../../src/app/fatfs/ffunicode.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="bleapp">
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_client_api_demo.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_client_api_demo.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_client_api_multi_conn_demo.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_client_api_multi_conn_demo.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_client_peer_manager.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_client_util.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_client_util.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_gap.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_gap.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_server_api_demo.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_server_api_demo.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_server_wifi_app.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_server_wifi_app.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_server_wifi_prof.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_server_wifi_prof.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_uart_if.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_uart_if.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_bt_app.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_bt_app.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_bt_storage.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_bt_storage.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_bt_util.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_bt_util.h">
           <FileOption/>
         </File>
       </VirtualDirectory>
@@ -3152,6 +1735,807 @@
     <File Name="../../../../../../../app/main.c">
       <FileOption/>
     </File>
+    <VirtualDirectory Name="bt">
+      <VirtualDirectory Name="blehost">
+        <VirtualDirectory Name="docs">
+          <VirtualDirectory Name="ble_hs"/>
+          <VirtualDirectory Name="ble_setup"/>
+          <VirtualDirectory Name="btshell"/>
+          <VirtualDirectory Name="mesh"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="ext">
+          <VirtualDirectory Name="tinycrypt">
+            <VirtualDirectory Name="include">
+              <VirtualDirectory Name="tinycrypt">
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/aes.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/cbc_mode.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/ccm_mode.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/cmac_mode.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/constants.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/ctr_mode.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/ctr_prng.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/ecc.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/ecc_dh.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/ecc_dsa.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/ecc_platform_specific.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/hmac.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/hmac_prng.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/sha256.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/utils.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+            </VirtualDirectory>
+            <VirtualDirectory Name="src">
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/aes_decrypt.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/aes_encrypt.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/bleutils.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/cbc_mode.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/ccm_mode.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/cmac_mode.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/ctr_mode.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/ctr_prng.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/ecc.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/ecc_dh.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/ecc_dsa.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/ecc_platform_specific.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/hmac.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/hmac_prng.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/sha256.c">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="nimble">
+          <VirtualDirectory Name="host">
+            <VirtualDirectory Name="include">
+              <VirtualDirectory Name="host">
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_att.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_eddystone.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_gap.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_gatt.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_hs.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_hs_adv.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_hs_hci.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_hs_id.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_hs_log.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_hs_mbuf.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_hs_stop.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_ibeacon.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_l2cap.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_monitor.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_sm.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_store.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_uuid.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+            </VirtualDirectory>
+            <VirtualDirectory Name="mesh">
+              <VirtualDirectory Name="include">
+                <VirtualDirectory Name="mesh">
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/access.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/cfg_cli.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/cfg_srv.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/glue.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/health_cli.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/health_srv.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/main.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/mesh.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/model_cli.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/model_srv.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/porting.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/proxy.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/slist.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/testing.h">
+                    <FileOption/>
+                  </File>
+                </VirtualDirectory>
+              </VirtualDirectory>
+              <VirtualDirectory Name="src">
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/access.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/access.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/adv.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/adv.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/atomic.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/beacon.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/beacon.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/cfg_cli.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/cfg_srv.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/crypto.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/crypto.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/foundation.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/friend.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/friend.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/glue.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/health_cli.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/health_srv.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/light_model.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/light_model.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/lpn.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/lpn.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/mesh.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/mesh_priv.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/model_cli.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/model_srv.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/net.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/net.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/nodes.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/nodes.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/prov.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/prov.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/proxy.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/proxy.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/settings.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/settings.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/shell.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/shell.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/testing.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/testing.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/transport.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/transport.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+            </VirtualDirectory>
+            <VirtualDirectory Name="services">
+              <VirtualDirectory Name="gap">
+                <VirtualDirectory Name="include">
+                  <VirtualDirectory Name="services">
+                    <VirtualDirectory Name="gap">
+                      <File Name="../../../../../../../src/bt/blehost/nimble/host/services/gap/include/services/gap/ble_svc_gap.h">
+                        <FileOption/>
+                      </File>
+                    </VirtualDirectory>
+                  </VirtualDirectory>
+                </VirtualDirectory>
+                <VirtualDirectory Name="src">
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/services/gap/src/ble_svc_gap.c">
+                    <FileOption/>
+                  </File>
+                </VirtualDirectory>
+              </VirtualDirectory>
+              <VirtualDirectory Name="gatt">
+                <VirtualDirectory Name="include">
+                  <VirtualDirectory Name="services">
+                    <VirtualDirectory Name="gatt">
+                      <File Name="../../../../../../../src/bt/blehost/nimble/host/services/gatt/include/services/gatt/ble_svc_gatt.h">
+                        <FileOption/>
+                      </File>
+                    </VirtualDirectory>
+                  </VirtualDirectory>
+                </VirtualDirectory>
+                <VirtualDirectory Name="src">
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/services/gatt/src/ble_svc_gatt.c">
+                    <FileOption/>
+                  </File>
+                </VirtualDirectory>
+              </VirtualDirectory>
+            </VirtualDirectory>
+            <VirtualDirectory Name="src">
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_att.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_att_clt.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_att_cmd.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_att_cmd_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_att_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_att_svr.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_eddystone.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_gap.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_gap_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_gattc.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_gatts.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_gatts_lcl.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_gatt_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_adv.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_adv_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_atomic.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_atomic_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_cfg.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_conn.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_conn_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_flow.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_flow_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_hci.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_hci_cmd.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_hci_evt.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_hci_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_hci_util.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_id.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_id_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_log.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_mbuf.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_mbuf_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_misc.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_mqueue.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_periodic_sync.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_periodic_sync_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_pvcy.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_pvcy_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_shutdown.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_startup.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_startup_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_stop.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_ibeacon.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_l2cap.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_l2cap_coc.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_l2cap_coc_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_l2cap_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_l2cap_sig.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_l2cap_sig_cmd.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_l2cap_sig_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_monitor.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_monitor_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_sm.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_sm_alg.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_sm_cmd.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_sm_lgcy.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_sm_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_sm_sc.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_store.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_store_util.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_uuid.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_uuid_priv.h">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+            <VirtualDirectory Name="store">
+              <VirtualDirectory Name="config">
+                <VirtualDirectory Name="include">
+                  <VirtualDirectory Name="store">
+                    <VirtualDirectory Name="config">
+                      <File Name="../../../../../../../src/bt/blehost/nimble/host/store/config/include/store/config/ble_store_config.h">
+                        <FileOption/>
+                      </File>
+                    </VirtualDirectory>
+                  </VirtualDirectory>
+                </VirtualDirectory>
+                <VirtualDirectory Name="src">
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/store/config/src/ble_store_config.c">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/store/config/src/ble_store_config_priv.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/store/config/src/ble_store_nvram.c"/>
+                </VirtualDirectory>
+              </VirtualDirectory>
+              <VirtualDirectory Name="ram">
+                <VirtualDirectory Name="include">
+                  <VirtualDirectory Name="store">
+                    <VirtualDirectory Name="ram">
+                      <File Name="../../../../../../../src/bt/blehost/nimble/host/store/ram/include/store/ram/ble_store_ram.h">
+                        <FileOption/>
+                      </File>
+                    </VirtualDirectory>
+                  </VirtualDirectory>
+                </VirtualDirectory>
+                <VirtualDirectory Name="src">
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/store/ram/src/ble_store_ram.c">
+                    <FileOption/>
+                  </File>
+                </VirtualDirectory>
+              </VirtualDirectory>
+            </VirtualDirectory>
+            <VirtualDirectory Name="util">
+              <VirtualDirectory Name="include">
+                <VirtualDirectory Name="host">
+                  <VirtualDirectory Name="util">
+                    <File Name="../../../../../../../src/bt/blehost/nimble/host/util/include/host/util/util.h">
+                      <FileOption/>
+                    </File>
+                  </VirtualDirectory>
+                </VirtualDirectory>
+              </VirtualDirectory>
+              <VirtualDirectory Name="src">
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/util/src/addr.c">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+            </VirtualDirectory>
+          </VirtualDirectory>
+          <VirtualDirectory Name="include">
+            <VirtualDirectory Name="nimble">
+              <File Name="../../../../../../../src/bt/blehost/nimble/include/nimble/ble.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/include/nimble/ble_hci_trans.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/include/nimble/hci_common.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/include/nimble/nimble_npl.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/include/nimble/nimble_opt.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/include/nimble/nimble_opt_auto.h">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+          </VirtualDirectory>
+          <VirtualDirectory Name="transport">
+            <VirtualDirectory Name="uart">
+              <VirtualDirectory Name="include">
+                <VirtualDirectory Name="transport">
+                  <VirtualDirectory Name="uart">
+                    <File Name="../../../../../../../src/bt/blehost/nimble/transport/uart/include/transport/uart/ble_hci_uart.h">
+                      <FileOption/>
+                    </File>
+                  </VirtualDirectory>
+                </VirtualDirectory>
+              </VirtualDirectory>
+              <VirtualDirectory Name="src">
+                <File Name="../../../../../../../src/bt/blehost/nimble/transport/uart/src/ble_hci_uart.c">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+            </VirtualDirectory>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="porting">
+          <VirtualDirectory Name="w800">
+            <VirtualDirectory Name="include">
+              <VirtualDirectory Name="hal">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/hal/hal_timer.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/hal/hal_uart.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="log">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/log/log.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="logcfg">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/logcfg/logcfg.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="log_common">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/log_common/ignore.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/log_common/log_common.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="mem">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/mem/mem.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="modlog">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/modlog/modlog.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="nimble">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/nimble/nimble_npl_os.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/nimble/nimble_port.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/nimble/nimble_port_freertos.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/nimble/tls_nimble.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="os">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/endian.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/npl_freertos.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/os.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/os_cputime.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/os_error.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/os_mbuf.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/os_mempool.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/os_trace_api.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/queue.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/util.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="stats">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/stats/stats.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="syscfg">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/syscfg/syscfg.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="sysflash">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/sysflash/sysflash.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="sysinit">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/sysinit/sysinit.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+            </VirtualDirectory>
+            <VirtualDirectory Name="src">
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/endian.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/mem.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/nimble_port.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/nimble_port_freertos.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/npl_os_freertos.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/os_mbuf.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/os_mempool.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/os_msys_init.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/tls_nimble.c">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+          </VirtualDirectory>
+        </VirtualDirectory>
+      </VirtualDirectory>
+    </VirtualDirectory>
   </VirtualDirectory>
   <VirtualDirectory Name="platform">
     <VirtualDirectory Name="arch">
@@ -3220,6 +2604,9 @@
       </VirtualDirectory>
       <VirtualDirectory Name="crypto">
         <File Name="../../../../../../../platform/common/crypto/wm_crypto_hard.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/common/crypto/wm_crypto_hard_mbed.c">
           <FileOption/>
         </File>
       </VirtualDirectory>
@@ -3565,6 +2952,9 @@
       <File Name="../../../../../../../include/platform/wm_wl_timers.h">
         <FileOption/>
       </File>
+      <File Name="../../../../../../../include/platform/wm_crypto_hard_mbed.h">
+        <FileOption/>
+      </File>
     </VirtualDirectory>
     <VirtualDirectory Name="wifi">
       <File Name="../../../../../../../include/wifi/litepoint.h">
@@ -3790,6 +3180,7 @@
     <debugLayout/>
     <memoryTabColSizeExpressions/>
   </DebugSessions>
+  <Dependencies Name="BuildSet"/>
   <BuildConfigs>
     <BuildConfig Name="BuildSet">
       <Target>
@@ -3885,11 +3276,11 @@
         </AfterMake>
       </User>
       <Compiler>
-        <Define>GCC_COMPILE=1;TLS_CONFIG_CPU_XT804=1</Define>
+        <Define>GCC_COMPILE=1;TLS_CONFIG_CPU_XT804=1;NIMBLE_FTR=1</Define>
         <Undefine/>
         <Optim>Optimize more (-O2)</Optim>
         <DebugLevel>Maximum (-g3)</DebugLevel>
-        <IncludePath>$(CDKPath)/CSKY/MinGW/csky-abiv2-elf-toolchain/csky-elfabiv2/include;$(ProjectPath);$(ProjectPath)/../../../../../../../demo;$(ProjectPath)/../../../../../../../include;$(ProjectPath)/../../../../../../../include/app;$(ProjectPath)/../../../../../../../include/arch/xt804;$(ProjectPath)/../../../../../../../include/arch/xt804/csi_core;$(ProjectPath)/../../../../../../../include/arch/xt804/csi_dsp;$(ProjectPath)/../../../../../../../include/bt;$(ProjectPath)/../../../../../../../include/driver;$(ProjectPath)/../../../../../../../include/net;$(ProjectPath)/../../../../../../../include/os;$(ProjectPath)/../../../../../../../include/platform;$(ProjectPath)/../../../../../../../include/wifi;$(ProjectPath)/../../../../../../../platform/common/params;$(ProjectPath)/../../../../../../../platform/drivers/spi;$(ProjectPath)/../../../../../../../platform/inc;$(ProjectPath)/../../../../../../../platform/sys;$(ProjectPath)/../../../../../../../src/app;$(ProjectPath)/../../../../../../../src/app/btapp;$(ProjectPath)/../../../../../../../src/app/cJSON;$(ProjectPath)/../../../../../../../src/app/dhcpserver;$(ProjectPath)/../../../../../../../src/app/dnsserver;$(ProjectPath)/../../../../../../../src/app/fatfs;$(ProjectPath)/../../../../../../../src/app/httpclient;$(ProjectPath)/../../../../../../../src/app/iperf;$(ProjectPath)/../../../../../../../src/app/libcoap/include;$(ProjectPath)/../../../../../../../src/app/libwebsockets-2.1-stable;$(ProjectPath)/../../../../../../../src/app/mDNS/mDNSCore;$(ProjectPath)/../../../../../../../src/app/mDNS/mDNSPosix;$(ProjectPath)/../../../../../../../src/app/matrixssl-4-3-0-open;$(ProjectPath)/../../../../../../../src/app/matrixssl-4-3-0-open/core/config;$(ProjectPath)/../../../../../../../src/app/matrixssl-4-3-0-open/core/include;$(ProjectPath)/../../../../../../../src/app/matrixssl-4-3-0-open/core/include/sfzcl;$(ProjectPath)/../../../../../../../src/app/matrixssl-4-3-0-open/core/osdep/include;$(ProjectPath)/../../../../../../../src/app/matrixssl-4-3-0-open/crypto;$(ProjectPath)/../../../../../../../src/app/matrixssl-4-3-0-open/crypto/aead/chacha20poly1305ietf;$(ProjectPath)/../../../../../../../src/app/matrixssl-4-3-0-open/crypto/crypto_sign/include/sodium;$(ProjectPath)/../../../../../../../src/app/matrixssl-4-3-0-open/crypto/scalarmult/include/sodium;$(ProjectPath)/../../../../../../../src/app/mbedtls/include;$(ProjectPath)/../../../../../../../src/app/mbedtls/include/mbedtls;$(ProjectPath)/../../../../../../../src/app/mbedtls/ports;$(ProjectPath)/../../../../../../../src/app/mqtt;$(ProjectPath)/../../../../../../../src/app/oneshotconfig;$(ProjectPath)/../../../../../../../src/app/ota;$(ProjectPath)/../../../../../../../src/app/ping;$(ProjectPath)/../../../../../../../src/app/polarssl/include;$(ProjectPath)/../../../../../../../src/app/web;$(ProjectPath)/../../../../../../../src/app/wm_atcmd;$(ProjectPath)/../../../../../../../src/network/api2.0.3;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/apps/httpd;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/apps/snmp;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/include;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/include/arch;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/include/lwip;$(ProjectPath)/../../../../../../../src/os/rtos/include</IncludePath>
+        <IncludePath>$(CDKPath)/CSKY/MinGW/csky-abiv2-elf-toolchain/csky-elfabiv2/include;$(ProjectPath);$(ProjectPath)/../../../../../../../demo;$(ProjectPath)/../../../../../../../include;$(ProjectPath)/../../../../../../../include/app;$(ProjectPath)/../../../../../../../include/arch/xt804;$(ProjectPath)/../../../../../../../include/arch/xt804/csi_core;$(ProjectPath)/../../../../../../../include/arch/xt804/csi_dsp;$(ProjectPath)/../../../../../../../include/bt;$(ProjectPath)/../../../../../../../include/driver;$(ProjectPath)/../../../../../../../include/net;$(ProjectPath)/../../../../../../../include/os;$(ProjectPath)/../../../../../../../include/platform;$(ProjectPath)/../../../../../../../include/wifi;$(ProjectPath)/../../../../../../../platform/common/params;$(ProjectPath)/../../../../../../../platform/drivers/spi;$(ProjectPath)/../../../../../../../platform/inc;$(ProjectPath)/../../../../../../../platform/sys;$(ProjectPath)/../../../../../../../src/app;$(ProjectPath)/../../../../../../../src/app/bleapp;$(ProjectPath)/../../../../../../../src/app/btapp;$(ProjectPath)/../../../../../../../src/app/cJSON;$(ProjectPath)/../../../../../../../src/app/dhcpserver;$(ProjectPath)/../../../../../../../src/app/dnsserver;$(ProjectPath)/../../../../../../../src/app/fatfs;$(ProjectPath)/../../../../../../../src/app/httpclient;$(ProjectPath)/../../../../../../../src/app/iperf;$(ProjectPath)/../../../../../../../src/app/libcoap/include;$(ProjectPath)/../../../../../../../src/app/libwebsockets-2.1-stable;$(ProjectPath)/../../../../../../../src/app/mDNS/mDNSCore;$(ProjectPath)/../../../../../../../src/app/mDNS/mDNSPosix;$(ProjectPath)/../../../../../../../src/app/mbedtls/include;$(ProjectPath)/../../../../../../../src/app/mbedtls/include/mbedtls;$(ProjectPath)/../../../../../../../src/app/mbedtls/ports;$(ProjectPath)/../../../../../../../src/app/mqtt;$(ProjectPath)/../../../../../../../src/app/oneshotconfig;$(ProjectPath)/../../../../../../../src/app/ota;$(ProjectPath)/../../../../../../../src/app/ping;$(ProjectPath)/../../../../../../../src/app/polarssl/include;$(ProjectPath)/../../../../../../../src/app/web;$(ProjectPath)/../../../../../../../src/app/wm_atcmd;$(ProjectPath)/../../../../../../../src/bt/blehost/ext/tinycrypt/include;$(ProjectPath)/../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/include/host;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/mesh/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/mesh/src;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/porting/w800/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/services/gap/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/services/gap/include/services/gap;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/services/gatt/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/services/gatt/include/services/gatt;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/src;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/store/config/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/store/config/include/store/config;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/store/config/src;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/store/ram/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/store/ram/include/store/ram;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/util/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/util/include/host/util;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/include/nimble;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/transport/uart/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/transport/uart/include/transport/uart;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/hal;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/log;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/log_common;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/logcfg;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/mem;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/modlog;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/nimble;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/os;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/stats;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/syscfg;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/sysflash;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/sysinit;$(ProjectPath)/../../../../../../../src/network/api2.0.3;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/apps/httpd;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/apps/snmp;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/include;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/include/arch;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/include/lwip;$(ProjectPath)/../../../../../../../src/os/rtos/include</IncludePath>
         <OtherFlags>-fdata-sections -c</OtherFlags>
         <Verbose>no</Verbose>
         <Ansi>no</Ansi>
@@ -3905,14 +3296,14 @@
       <Asm>
         <Define/>
         <Undefine/>
-        <IncludePath>$(CDKPath)/CSKY/csi/csi_core/csi_cdk/;$(CDKPath)/CSKY/csi/csi_core/include/;$(CDKPath)/CSKY/csi/csi_driver/include/;$(ProjectPath);$(ProjectPath)/../../../../../../../include;$(ProjectPath)/../../../../../../../include/arch/xt804;$(ProjectPath)/../../../../../../../include/arch/xt804/csi_core;$(ProjectPath)/../../../../../../../include/arch/xt804/csi_dsp;$(ProjectPath)/../../../../../../../include/os;$(ProjectPath)/../../../../../../../include/platform;$(ProjectPath)/../../../../../../../src/app/fatfs;$(ProjectPath)/../../../../../../../src/os/rtos/include</IncludePath>
+        <IncludePath>$(CDKPath)/CSKY/csi/csi_core/csi_cdk/;$(CDKPath)/CSKY/csi/csi_core/include/;$(CDKPath)/CSKY/csi/csi_driver/include/;$(ProjectPath);$(ProjectPath)/../../../../../../../include;$(ProjectPath)/../../../../../../../include/arch/xt804;$(ProjectPath)/../../../../../../../include/arch/xt804/csi_core;$(ProjectPath)/../../../../../../../include/arch/xt804/csi_dsp;$(ProjectPath)/../../../../../../../include/os;$(ProjectPath)/../../../../../../../include/platform;$(ProjectPath)/../../../../../../../src/app/bleapp;$(ProjectPath)/../../../../../../../src/app/btapp;$(ProjectPath)/../../../../../../../src/app/fatfs;$(ProjectPath)/../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/include/host;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/mesh/src;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/services/gap/include/services/gap;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/services/gatt/include/services/gatt;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/src;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/store/config/include/store/config;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/store/config/src;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/store/ram/include/store/ram;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/util/include/host/util;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/include/nimble;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/transport/uart/include/transport/uart;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/hal;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/log;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/log_common;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/logcfg;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/mem;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/modlog;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/nimble;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/os;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/stats;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/syscfg;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/sysflash;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/sysinit;$(ProjectPath)/../../../../../../../src/os/rtos/include</IncludePath>
         <OtherFlags/>
         <DebugLevel>gdwarf2</DebugLevel>
       </Asm>
       <Linker>
         <Garbage>yes</Garbage>
         <LDFile>$(ProjectPath)..\..\..\..\..\..\..\ld\w800\gcc_csky.ld</LDFile>
-        <LibName>bt;wlan;dsp</LibName>
+        <LibName>btcontroller;wlan;dsp</LibName>
         <LibPath>..\..\..\..\..\..\..\lib\w800</LibPath>
         <OtherFlags>-Wl,-zmax-page-size=1024 -mhard-float</OtherFlags>
         <AutoLDFile>no</AutoLDFile>

@@ -122,6 +122,7 @@ typedef struct tskTaskControlBlock
 	#if ( configGENERATE_RUN_TIME_STATS == 1 )
 		unsigned long ulRunTimeCounter;		/*< Used for calculating how much CPU time each task is utilising. */
 	#endif
+	void (*freeStackfunc)(void);
 
 } tskTCB;
 
@@ -656,7 +657,7 @@ tskTCB * pxNewTCB;
 	}
 
 tskTCB * vTaskGetTaskByPriority(unsigned long priority);
-unsigned portBASE_TYPE vTaskDeleteByPriority(unsigned portBASE_TYPE prio)
+unsigned portBASE_TYPE vTaskDeleteByPriority(unsigned portBASE_TYPE prio,void (*freeStackfunc)(void))
 {
 	tskTCB *pxTCB;
 	tskTCB *pxTaskToDelete = NULL;
@@ -678,6 +679,8 @@ unsigned portBASE_TYPE vTaskDeleteByPriority(unsigned portBASE_TYPE prio)
 
 		/* If null is passed in here then we are deleting ourselves. */
 		pxTCB = prvGetTCBFromHandle( pxTaskToDelete );
+
+		pxTCB->freeStackfunc = freeStackfunc;
 
 		/* Remove task from the ready list and place in the	termination list.
 		This will stop the task from be scheduled.  The idle task will check
@@ -716,6 +719,60 @@ unsigned portBASE_TYPE vTaskDeleteByPriority(unsigned portBASE_TYPE prio)
 	}
 
 	return 0;
+}
+
+void vTaskDeleteByHandle( void* pxTaskToDelete, void (*freeStackfunc)(void))
+{
+tskTCB *pxTCB;
+
+	taskENTER_CRITICAL();
+	{
+		/* Ensure a yield is performed if the current task is being
+		deleted. */
+		if( pxTaskToDelete == pxCurrentTCB )
+		{
+			pxTaskToDelete = NULL;
+		}
+
+		/* If null is passed in here then we are deleting ourselves. */
+		pxTCB = prvGetTCBFromHandle( pxTaskToDelete );
+		pxTCB->freeStackfunc = freeStackfunc;
+
+		/* Remove task from the ready list and place in the termination list.
+		This will stop the task from be scheduled.	The idle task will check
+		the termination list and free up any memory allocated by the
+		scheduler for the TCB and stack. */
+		vListRemove( &( pxTCB->xGenericListItem ) );
+
+		/* Is the task waiting on an event also? */
+		if( pxTCB->xEventListItem.pvContainer != NULL )
+		{
+			vListRemove( &( pxTCB->xEventListItem ) );
+		}
+
+		vListInsertEnd( ( xList * ) &xTasksWaitingTermination, &( pxTCB->xGenericListItem ) );
+
+		/* Increment the ucTasksDeleted variable so the idle task knows
+		there is a task that has been deleted and that it should therefore
+		check the xTasksWaitingTermination list. */
+		++uxTasksDeleted;
+
+		/* Increment the uxTaskNumberVariable also so kernel aware debuggers
+		can detect that the task lists need re-generating. */
+		uxTaskNumber++;
+
+		traceTASK_DELETE( pxTCB );
+	}
+	taskEXIT_CRITICAL();
+
+	/* Force a reschedule if we have just deleted the current task. */
+	if( xSchedulerRunning != pdFALSE )
+	{
+		if( ( void * ) pxTaskToDelete == NULL )
+		{
+			portYIELD_WITHIN_API();
+		}
+	}
 }
 #endif
 
@@ -1580,7 +1637,7 @@ tskTCB * pxTCB;
 	tasks to be unblocked. */
 	if( uxSchedulerSuspended == ( unsigned portBASE_TYPE ) pdFALSE )
 	{
-		++xTickCount;
+			++xTickCount;
 		if( xTickCount == ( portTickType ) 0U )
 		{
 			xList *pxTemp;
@@ -2195,6 +2252,11 @@ static void prvCheckTasksWaitingTermination( void )
 				{
 					pxTCB = ( tskTCB * ) listGET_OWNER_OF_HEAD_ENTRY( ( ( xList * ) &xTasksWaitingTermination ) );
 					vListRemove( &( pxTCB->xGenericListItem ) );
+					if(pxTCB->freeStackfunc)
+					{
+						//printf("freeStackfunc %x \r\n", pxTCB->freeStackfunc);
+						pxTCB->freeStackfunc();
+					}
 					--uxCurrentNumberOfTasks;
 					--uxTasksDeleted;
 				}
@@ -2266,6 +2328,8 @@ tskTCB *pxNewTCB;
 			pxNewTCB->stacksize = ( size_t ) usStackDepth * sizeof( portSTACK_TYPE );
 			/* Just to help debugging. */
 			memset( pxNewTCB->pxStack, ( int ) tskSTACK_FILL_BYTE, ( size_t ) usStackDepth * sizeof( portSTACK_TYPE ) );
+
+			pxNewTCB->freeStackfunc = NULL;
 		}
 	}
 

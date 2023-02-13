@@ -8,6 +8,15 @@
 #define TLS_TRACE_TYPE_EVENT            0x00000003
 #define TLS_TRACE_TYPE_DEBUG            0x00000004
 
+typedef struct 
+{
+    uint32_t total;
+    uint32_t available;
+    uint8_t *base;
+    uint8_t *head;
+    uint8_t *tail;
+} ringbuffer_t;
+
 uint16_t app_uuid128_to_uuid16(tls_bt_uuid_t *uuid);
 
 tls_bt_uuid_t * app_uuid16_to_uuid128(uint16_t uuid16);
@@ -44,6 +53,13 @@ const char *tls_gatt_evt_2_str(uint32_t event);
 const char *tls_spp_evt_2_str(uint32_t event);
 
 
+extern void bt_ringbuffer_free(ringbuffer_t *rb);
+extern uint32_t bt_ringbuffer_available(const ringbuffer_t *rb);
+extern uint32_t bt_ringbuffer_size(const ringbuffer_t *rb);
+extern uint32_t bt_ringbuffer_insert(ringbuffer_t *rb, const uint8_t *p, uint32_t length);
+extern uint32_t bt_ringbuffer_delete(ringbuffer_t *rb, uint32_t length);
+extern uint32_t bt_ringbuffer_peek(const ringbuffer_t *rb, int offset, uint8_t *p, uint32_t length);
+extern uint32_t bt_ringbuffer_pop(ringbuffer_t *rb, uint8_t *p, uint32_t length);
 
 
 #endif

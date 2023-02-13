@@ -110,13 +110,13 @@ typedef struct
 /** Represents the standard BT-GATT client interface. */
 
 /** Registers a wm GATT client application with the interface with stack */
-tls_bt_status_t wm_ble_client_register_client(uint16_t app_uuid, wm_ble_client_callbacks_t *client_callback);
+tls_bt_status_t tls_ble_client_register_client(uint16_t app_uuid, wm_ble_client_callbacks_t *client_callback);
 
 /** Unregister a client application from the stack */
-tls_bt_status_t wm_ble_client_unregister_client(int client_if);
+tls_bt_status_t tls_ble_client_unregister_client(int client_if);
 
-tls_bt_status_t wm_ble_client_init();
-tls_bt_status_t wm_ble_client_deinit();
+tls_bt_status_t tls_ble_client_init();
+tls_bt_status_t tls_ble_client_deinit();
 
 
 #endif

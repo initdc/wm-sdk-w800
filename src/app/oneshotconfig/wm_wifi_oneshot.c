@@ -30,6 +30,7 @@
 #include "wm_cpu.h"
 #include "wm_oneshot_lsd.h"
 #include "wm_efuse.h"
+#include "wm_bt_config.h"
 
 #ifndef ETH_ALEN
 #define ETH_ALEN 6
@@ -137,10 +138,10 @@ extern void tls_wl_plcp_stop(void);
 extern void tls_wl_plcp_start(void);
 
 
-#if TLS_CONFIG_BT
+#if (WM_BLE_INCLUDED == CFG_ON || WM_NIMBLE_INCLUDED == CFG_ON)
 #include "wm_bt_def.h"
-extern tls_bt_status_t wm_bt_wifi_cfg_init(void);
-extern tls_bt_status_t wm_bt_wifi_cfg_deinit(void);
+extern tls_bt_status_t tls_ble_wifi_cfg_init(void);
+extern tls_bt_status_t tls_ble_wifi_cfg_deinit(int reason);
 #endif
 
 #if (CONFIG_ONESHOT_MAC_FILTER || TLS_CONFIG_AP_MODE_ONESHOT)
@@ -698,8 +699,9 @@ u8 tls_wifi_dataframe_recv(struct ieee80211_hdr *hdr, u32 data_len)
 	if (0 == ieee80211_is_data(hdr->frame_control)){
 		return 1;
 	}
-
+#if TLS_CONFIG_UDP_ONE_SHOT
 	tls_os_sem_acquire(gWifiRecvSem, 0);
+#endif
 
 #if TLS_CONFIG_AIRKISS_MODE_ONESHOT
     tls_airkiss_recv((u8 *)hdr, data_len);
@@ -708,9 +710,10 @@ u8 tls_wifi_dataframe_recv(struct ieee80211_hdr *hdr, u32 data_len)
 #if TLS_CONFIG_UDP_LSD_SPECIAL
 	tls_wifi_lsd_oneshot_special((u8 *)hdr, data_len);
 #endif
-    
-	tls_os_sem_release(gWifiRecvSem);
 
+#if TLS_CONFIG_UDP_ONE_SHOT    
+	tls_os_sem_release(gWifiRecvSem);
+#endif
 	return 1;
 }
 
@@ -1585,7 +1588,7 @@ void tls_wifi_start_oneshot(void)
 int tls_wifi_set_oneshot_flag(u8 flag)
 {
     bool enable = FALSE;
-#if TLS_CONFIG_BT
+#if (WM_BLE_INCLUDED == CFG_ON || WM_NIMBLE_INCLUDED == CFG_ON)
 	tls_bt_status_t status;
     if (flag > 4)
 #else
@@ -1620,10 +1623,10 @@ int tls_wifi_set_oneshot_flag(u8 flag)
 			tls_wifi_set_listen_mode(0);
 			tls_wl_plcp_stop();
 		}
-#if TLS_CONFIG_BLE
+#if (WM_BLE_INCLUDED == CFG_ON || WM_NIMBLE_INCLUDED == CFG_ON)
 		else if (4 == flag)
 		{
-			status = wm_bt_wifi_cfg_init();
+			status = tls_ble_wifi_cfg_init();
 			if(status != TLS_BT_STATUS_SUCCESS)
 			{
 			    if (gucOneshotPsFlag)
@@ -1660,10 +1663,11 @@ int tls_wifi_set_oneshot_flag(u8 flag)
 			}
 #endif
 		}
-#if TLS_CONFIG_BLE
+#if (WM_BLE_INCLUDED == CFG_ON || WM_NIMBLE_INCLUDED == CFG_ON)
+
 		else if (4 == guconeshotflag)
 		{
-			status = wm_bt_wifi_cfg_deinit();
+			status = tls_ble_wifi_cfg_deinit(1);
 		    if (gucOneshotPsFlag)
 		    {
                 gucOneshotPsFlag = 0;
@@ -1672,7 +1676,7 @@ int tls_wifi_set_oneshot_flag(u8 flag)
 		            tls_wl_if_ps(0);
 		    }
             guconeshotflag = flag;
-            if(status != TLS_BT_STATUS_SUCCESS)
+            if(status != TLS_BT_STATUS_SUCCESS && status != 2 /*BLE_HS_EALREADY*/)
             {
             	return -1;
             }

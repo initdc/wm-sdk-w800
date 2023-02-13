@@ -17,8 +17,8 @@
 
 #define HSPI_TX_MEM_MALLOC			0		/** tx mem dynamic malloc*/
 
-#define HSPI_IO_REUSE_NUM			0
-#define SDIO_IO_REUSE_NUM			2
+
+
 #define HSPI_INTERFACE_SPI			2		/** spi interface*/
 #define HSPI_INTERFACE_SDIO			3		/** sdio interface*/
 
@@ -26,10 +26,10 @@
 #define HSPI_RX_CMD_MSG     1
 #define HSPI_RX_DATA_MSG    2
 
-/**spi/sdio buffer£¬Wraper controller can only access the address after the 0x60000*/
+/**spi/sdio buffer*/
 #define HSPI_TXBUF_NUM              2
 #define HSPI_TX_DESC_NUM            HSPI_TXBUF_NUM
-#define HSPI_RXBUF_NUM              3//10
+#define HSPI_RXBUF_NUM              3
 #define HSPI_RX_DESC_NUM            HSPI_RXBUF_NUM
 #define HSPI_TXBUF_SIZE             1500
 #define HSPI_RXBUF_SIZE             1500
@@ -39,7 +39,6 @@
 
 /*****************************************************************************
  * sdio/hspi sram partition
- * total size : 0x61800 - 0x67FFFF   (26KB)
  ******************************************************************************/
 /* HSPI txbuf zone */
 #define HSPI_TXBUF_BASE_ADDR        ((u32)(SLAVE_HSPI_SDIO_ADDR))
@@ -59,19 +58,17 @@
 #define HSPI_RX_DESC_BASE_ADDR      ((u32)(HSPI_RXBUF_BASE_ADDR + HSPI_RXBUF_TOTAL_SIZE))
 #define HSPI_RX_DESC_TOTAL_SIZE     (HSPI_RX_DESC_SIZE * HSPI_RX_DESC_NUM)	//36
 
-#if 0
-#define SDIO_CMD_RXBUF_SIZE          (0x100)
-#define SDIO_CMD_RXBUF_ADDR          (0x00068000 -  SDIO_CMD_RXBUF_SIZE)
-#define SDIO_CIS1_ADDR              (SDIO_CMD_RXBUF_ADDR - 0x80)
-#define SDIO_CIS0_ADDR              (SDIO_CIS1_ADDR - 0x80)
-#else
+#define SDIO_CIS_SIZE (0x80)
+#define SDIO_CMD_RXBUF_SIZE          256
+
+
 #define SDIO_CIS0_ADDR              (HSPI_RX_DESC_BASE_ADDR + HSPI_RX_DESC_TOTAL_SIZE)	//128
-#define SDIO_CIS1_ADDR              (SDIO_CIS0_ADDR + 0x80)						//128
-#define SDIO_CMD_RXBUF_ADDR          (SDIO_CIS1_ADDR + 0x80)
-#define SDIO_CMD_RXBUF_SIZE          256//(1500)				//256
-#endif
-#define CIS_FUN0_ADDR	SDIO_CIS0_ADDR
-#define CIS_FUN1_ADDR	SDIO_CIS1_ADDR
+#define SDIO_CIS1_ADDR              (SDIO_CIS0_ADDR + SDIO_CIS_SIZE)						//128
+#define SDIO_CMD_RXBUF_ADDR          (SDIO_CIS1_ADDR + SDIO_CIS_SIZE)
+
+
+#define CIS_FUN0_ADDR				((u32)SDIO_CIS0_ADDR)
+#define CIS_FUN1_ADDR				((u32)SDIO_CIS1_ADDR)
 
 #define FN0_TPL_FUNCID				(CIS_FUN0_ADDR + 0x00)
 #define FN0_TPL_FUNCE				(CIS_FUN0_ADDR + 0x04)
@@ -92,14 +89,6 @@
 #define FN1_TPL_FUNCE_AVGPWR		(CIS_FUN1_ADDR + 0x28)
 #define FN1_TPL_END					(CIS_FUN1_ADDR + 0x30)
 
-/**Definition of SDIO interrupt in the system*/
-//#define SDIO_RX_DATA_INT            (0UL)
-//#define SDIO_TX_DATA_INT          	(1UL)
-//#define SDIO_RX_CMD_INT             (2UL)
-//#define SDIO_TX_CMD_INT             (3UL)
-
-/**IO control register*/
-#define HR_IOCTL_GP_SDIO       HR_IOCTL_GP_SDIO_I2C
 
 
 /** SDIO interrupt bit definition */

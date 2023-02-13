@@ -386,6 +386,7 @@ static void ping_test_abort_timeout(void *ptmr, void *parg)
 
 void ping_test_create_task(void)
 {
+	tls_os_status_t err = TLS_OS_ERROR;
     if (ping_task_running)
         return;
 
@@ -398,15 +399,28 @@ void ping_test_create_task(void)
     TaskPingStk = (u32 *)tls_mem_alloc(TASK_PING_STK_SIZE * sizeof(u32));
     if (TaskPingStk)
     {
-        tls_os_task_create(NULL, NULL, ping_test_task,
+        err = tls_os_task_create(NULL, NULL, ping_test_task,
                            (void *)0, (void *)TaskPingStk,
                            TASK_PING_STK_SIZE * sizeof(u32),
                            TASK_PING_PRIO, 0);
-        ping_task_running = TRUE;
+		if (err == TLS_OS_SUCCESS)
+		{
+			ping_task_running = TRUE;
+		}
+		else
+		{
+			tls_mem_free(pingusedbuf);
+			pingusedbuf = NULL;
+			tls_mem_free(TaskPingStk);
+			TaskPingStk = NULL;
+			ping_task_running = FALSE;
+			return; 
+		}
     }
     else
     {
         tls_mem_free(pingusedbuf);
+		pingusedbuf = NULL;
         ping_task_running = FALSE;
         return;
     }

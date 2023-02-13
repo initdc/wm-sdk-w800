@@ -295,24 +295,24 @@ static const wm_ble_server_callbacks_t servercb =
 };
 
 
-tls_bt_status_t wm_demo_prof_init(uint16_t demo_uuid,tls_ble_callback_t at_cb_ptr )
+int tls_ble_demo_prof_init(uint16_t demo_uuid,tls_ble_callback_t at_cb_ptr )
 {
 	tls_bt_status_t status;
 	if(tls_demo_at_cb_ptr) return TLS_BT_STATUS_BUSY;
 	
 	tls_demo_at_cb_ptr = at_cb_ptr;
-    status = wm_ble_server_register_server(demo_uuid, &servercb);
+    status = tls_ble_server_register_server(demo_uuid, &servercb);
 	if(status != TLS_BT_STATUS_SUCCESS)
 	{
 		tls_demo_at_cb_ptr = NULL;
 	}
 	return status;
 }
-tls_bt_status_t wm_demo_prof_deinit(int server_if)
+int tls_ble_demo_prof_deinit(int server_if)
 {
 	if(tls_demo_at_cb_ptr== NULL) return TLS_BT_STATUS_DONE; 
 	
-	return wm_ble_server_unregister_server(server_if);
+	return tls_ble_server_unregister_server(server_if);
 }
 
 #endif

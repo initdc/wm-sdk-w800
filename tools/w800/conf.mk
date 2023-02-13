@@ -3,6 +3,7 @@ CONFIG_W800_USE_LIB ?= n
 CONFIG_W800_FIRMWARE_DEBUG ?= n
 CONFIG_ARCH_TYPE ?= w800
 CONFIG_W800_TOOLCHAIN_PREFIX ?= csky-abiv2-elf
+CONFIG_W800_USE_NIMBLE ?= n
 
 TARGET ?= $(subst ",,$(CONFIG_W800_TARGET_NAME))
 
@@ -49,6 +50,14 @@ optimization ?= -O2
 
 ifeq ($(CONFIG_W800_FIRMWARE_DEBUG),y)
 optimization += -g -DWM_SWD_ENABLE=1
+endif
+
+ifeq ($(CONFIG_W800_USE_NIMBLE),y)
+USE_NIMBLE = 1
+optimization += -DNIMBLE_FTR=1
+else
+USE_NIMBLE = 0
+optimization += -DNIMBLE_FTR=0
 endif
 
 # YES; NO

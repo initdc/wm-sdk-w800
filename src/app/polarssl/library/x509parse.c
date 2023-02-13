@@ -1179,13 +1179,8 @@ int x509parse_crt_der( x509_cert *crt, const unsigned char *buf, size_t buflen )
         return( POLARSSL_ERR_X509_CERT_INVALID_FORMAT + ret );
     }
 
-#if defined(POLARSSL_RSA_C)
     if( ( ret = x509_get_pubkey( &p, p + len, &crt->pk_oid,
                                  &crt->rsa.N, &crt->rsa.E ) ) != 0 )
-#else
-    if( ( ret = x509_get_pubkey( &p, p + len, &crt->pk_oid,
-                                 &crt->rsa.N, &crt->rsa.e ) ) != 0 )
-#endif
     {
         x509_free( crt );
         return( ret );
@@ -1197,11 +1192,7 @@ int x509parse_crt_der( x509_cert *crt, const unsigned char *buf, size_t buflen )
         return( ret );
     }
 
-#if defined(POLARSSL_RSA_C)
     crt->rsa.len = mpi_size( &crt->rsa.N );
-#else
-    crt->rsa.size = mpi_size( &crt->rsa.N );
-#endif
 
     /*
      *  issuerUniqueID  [1]  IMPLICIT UniqueIdentifier OPTIONAL,

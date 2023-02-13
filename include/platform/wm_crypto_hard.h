@@ -12,13 +12,7 @@
 #define WM_CRYPTO_HARD_H
 
 #include "wm_type_def.h"
-//#include "cryptoConfig.h"
-//#include "digest/digest.h"
-//#include "math/pstm.h"
-//#include "symmetric/symmetric.h"
-//#include "cryptolib.h"
-
-#include "cryptoApi.h"
+#include "wm_osal.h"
 
 #ifndef min
 	#define min(a,b)    (((a) < (b)) ? (a) : (b))
@@ -83,6 +77,33 @@
 #define ERR_FAILURE        -1    /* failure */
 #define ERR_ARG_FAIL			-6	/* Failure due to bad function param */
 
+# define PS_SUCCESS          0
+# define PS_FAILURE          -1
+# define PS_FAIL             PS_FAILURE/* Just another name */
+
+/*      NOTE: Failure return codes MUST be < 0 */
+/*      NOTE: The range for core error codes should be between -2 and -29 */
+# define PS_ARG_FAIL         -6       /* Failure due to bad function param */
+# define PS_PLATFORM_FAIL    -7       /* Failure as a result of system call error */
+# define PS_MEM_FAIL         -8       /* Failure to allocate requested memory */
+# define PS_LIMIT_FAIL       -9       /* Failure on sanity/limit tests */
+# define PS_UNSUPPORTED_FAIL -10      /* Unimplemented feature error */
+# define PS_DISABLED_FEATURE_FAIL -11 /* Incorrect #define toggle for feature */
+# define PS_PROTOCOL_FAIL    -12      /* A protocol error occurred */
+# define PS_TIMEOUT_FAIL     -13      /* A timeout occurred and MAY be an error */
+# define PS_INTERRUPT_FAIL   -14      /* An interrupt occurred and MAY be an error */
+# define PS_PENDING          -15      /* In process. Not necessarily an error */
+# define PS_EAGAIN           -16      /* Try again later. Not necessarily an error */
+# define PS_OUTPUT_LENGTH    -17      /* Output length negotiation:
+                                         output buffer is too small. */
+# define PS_HOSTNAME_RESOLUTION -18   /* Cannot resolve host name. */
+# define PS_CONNECT -19               /* Cannot connect to remote host. */
+# define PS_INSECURE_PROTOCOL   -20   /* The operation needs to use insecure protocol.
+                                         The caller needs to accept use of insecure
+                                         protocol. */
+# define PS_VERIFICATION_FAILED -21   /* Signature verification failed. */
+
+
 //CRC
 #define OUTPUT_REFLECT 1
 #define INPUT_REFLECT   2
@@ -145,40 +166,106 @@ typedef struct {
 }psCrcContext_t;
 
 #if 1
-
-struct hsha1_state {
-#ifdef HAVE_NATIVE_INT64
-	uint64		length;
-#else
-	u32		lengthHi;
-	u32		lengthLo;
-#endif /* HAVE_NATIVE_INT64 */
-	u32		state[5], curlen;
-	unsigned char	buf[64];
-};
-struct hmd5_state {
-#ifdef HAVE_NATIVE_INT64
-    uint64 length;
-#else
-    u32 lengthHi;
-    u32 lengthLo;
-#endif /* HAVE_NATIVE_INT64 */
-    u32 state[4], curlen;
-    unsigned char buf[64];
-};
-
-typedef union {
-	struct hsha1_state	sha1;
-	struct hmd5_state	md5;
-} hsDigestContext_t;
-
 typedef u32			hstm_digit;
 typedef struct  {
 	int16	used, alloc, sign;
 	hstm_digit *dp;
 } hstm_int;
 
+typedef struct
+{
+#  ifdef HAVE_NATIVE_INT64
+    uint64 length;
+#  else
+    uint32 lengthHi;
+    uint32 lengthLo;
+#  endif /* HAVE_NATIVE_INT64 */
+    uint32 state[5], curlen;
+    unsigned char buf[64];
+} psSha1_t;
+typedef struct
+{
+#  ifdef HAVE_NATIVE_INT64
+    uint64 length;
+#  else
+    uint32 lengthHi;
+    uint32 lengthLo;
+#  endif /* HAVE_NATIVE_INT64 */
+    uint32 state[4], curlen;
+    unsigned char buf[64];
+} psMd5_t;
+
+typedef struct
+{
+    union
+    {
+        psSha1_t sha1;
+        psMd5_t md5;
+    } u;
+    int32_t hashAlgId;
+} psDigestContext_t;
+
+# define AES_BLOCKLEN    16
+# define AES_IVLEN       AES_BLOCKLEN
+# define AES128_KEYLEN   16
+# define AES192_KEYLEN   24
+# define AES256_KEYLEN   32
+# define DES3_BLOCKLEN    8
+# define DES3_IVLEN      DES3_BLOCKLEN
+# define DES3_KEYLEN     24
+
+typedef struct
+{
+    uint32_t skey[64];      /**< Key schedule (either encrypt or decrypt) */
+    uint16_t rounds;        /**< Number of rounds */
+    uint16_t type;          /**< PS_AES_ENCRYPT or PS_AES_DECRYPT (inverse) key */
+} psAesKey_t;
+typedef struct
+{
+    psAesKey_t key;
+    unsigned char IV[AES_BLOCKLEN];
+} psAesCbc_t;
+
+typedef struct
+{
+    unsigned char state[256];
+    uint32_t byteCount;
+    unsigned char x;
+    unsigned char y;
+} psArc4_t;
+
+typedef struct
+{
+    uint32_t ek[3][32];
+    uint32_t dk[3][32];
+} psDes3Key_t;
+
+typedef struct
+{
+    psDes3Key_t key;
+    unsigned char IV[DES3_BLOCKLEN];
+    uint32_t blocklen;
+} psDes3_t;
+
+
+typedef union
+{
+    psAesCbc_t aes;
+    psArc4_t arc4;
+    psDes3_t des3;
+} psCipherContext_t;
+
 #endif
+
+struct wm_crypto_ctx
+{
+	volatile u8 rsa_complete;
+	volatile u8 gpsec_complete;
+#ifndef CONFIG_KERNEL_NONE
+    tls_os_sem_t *gpsec_lock;
+#endif
+};
+
 
 /**
  * @defgroup System_APIs System APIs
@@ -239,6 +326,19 @@ int tls_crypto_random_init(u32 seed, CRYPTO_RNG_SWITCH rng_switch);
  * @note             	None
  */
 int tls_crypto_random_bytes(unsigned char *out, u32 len);
+
+/**
+ * @brief          	This function is used to generate true random number.
+ *
+ * @param[in]   	out 			Pointer to the output of random number.
+ * @param[in]   	len 			The random number length.
+ *
+ * @retval  		0  			success
+ * @retval  		other   		failed
+ *
+ * @note           	None
+ */
+int tls_crypto_trng(unsigned char *out, u32 len);
 
 
 /**
@@ -521,7 +621,7 @@ int tls_crypto_md5_final(psDigestContext_t * md, unsigned char *hash);
  *
  * @note			None
  */
-int tls_crypto_exptmod(pstm_int *a, pstm_int *e, pstm_int *n, pstm_int *res);
+int tls_crypto_exptmod(hstm_int *a, hstm_int *e, hstm_int *n, hstm_int *res);
 
 /**
  * @brief			This function initializes the encryption module.

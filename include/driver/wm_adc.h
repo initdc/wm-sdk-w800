@@ -17,10 +17,7 @@
 
 #include "wm_type_def.h"
 
-//每次启动dma之后，需要一段稳定时间，所以采集到的数据前面的12个byte不稳定，要舍去
-#define ADC_DEST_BUFFER_DMA     		(u32)0x20028000//(u32)0x20037000	//前面的地方高速SPI可能会用	
-#define ADC_DEST_BUFFER_SIZE			65532//2000			//以半字为单位	
-#define SAMPLE_NUM_PER_CHANNEL  		20//2000
+#define ADC_DEST_BUFFER_SIZE			16383//以字为单位	
 
 
 /*ADC Result*/
@@ -119,9 +116,9 @@
 
 typedef struct adc_st{
 	u8 dmachannel;
-	void (*adc_cb)(u16 *buf, u16 len);
-	void (*adc_bigger_cb)(u16 *buf, u16 len);
-	void (*adc_dma_cb)(u16 *buf,u16 len);
+	void (*adc_cb)(int *buf, u16 len);
+	void (*adc_bigger_cb)(int *buf, u16 len);
+	void (*adc_dma_cb)(int *buf,u16 len);
 	u16 valuelen;		/*dma 采样数据长度*/
 	u16 offset;
 }ST_ADC;
@@ -170,7 +167,7 @@ void tls_adc_init(u8 ifusedma,u8 dmachannel);
  *
  * @note           None
  */
-void tls_adc_irq_register(int inttype, void (*callback)(u32 *buf, u16 len));
+void tls_adc_irq_register(int inttype, void (*callback)(int *buf, u16 len));
 
 /**
  * @brief          This function is used to clear the interrupt source.
@@ -310,7 +307,7 @@ void tls_adc_voltage_start_with_cpu(void);
 void tls_adc_temp_offset_with_cpu(u8 calTemp12);
 void tls_adc_voltage_start_with_dma(int Length);
 void tls_adc_set_clk(int div);
-void signedToUnsignedData(u32 *adcValue);
+void signedToUnsignedData(int *adcValue);
 void tls_adc_buffer_bypass_set(u8 isset);
 void tls_adc_cmp_start(int Channel, int cmp_data, int cmp_pol);
 u32  adc_get_offset(void);

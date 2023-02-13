@@ -29,6 +29,7 @@ void tls_uart_tx_callback_register(u16 uart_no, s16(*tx_callback) (struct tls_ua
 const u32 baud_rates[] = { 2000000, 1500000, 1250000, 1000000, 921600, 460800,
                            230400, 115200, 57600, 38400, 19200, 9600, 4800, 2400, 1800, 1200, 600 };
 struct tls_uart_port uart_port[TLS_UART_MAX];
+static u8 uart_rx_byte_cb_flag[TLS_UART_MAX] = {0};
 
 static void tls_uart_tx_enable(struct tls_uart_port *port)
 {
@@ -559,6 +560,7 @@ ATTRIBUTE_ISR void UART0_IRQHandler(void)
 {
     struct tls_uart_port *port = &uart_port[0];
     struct tls_uart_circ_buf *recv = &port->recv;
+    u8 rx_byte_cb_flag = uart_rx_byte_cb_flag[0];
     u32 intr_src;
     u32 rx_fifocnt;
     u32 fifos;
@@ -599,10 +601,14 @@ ATTRIBUTE_ISR void UART0_IRQHandler(void)
             recv->buf[recv->head] = ch;
             recv->head = (recv->head + 1) & (TLS_UART_RX_BUF_SIZE - 1);
             rxlen++;
+            if(port->rx_callback != NULL && rx_byte_cb_flag)
+            {
+                port->rx_callback(1, port->priv_data);
+            }
         }
-        if (port->rx_callback != NULL)
+        if (port->rx_callback != NULL && !rx_byte_cb_flag)
         {
-	    port->rx_callback(rxlen, port->priv_data);
+            port->rx_callback(rxlen, port->priv_data);
         }
     }
 
@@ -637,6 +643,7 @@ ATTRIBUTE_ISR void UART1_IRQHandler(void)
 {
     struct tls_uart_port *port = &uart_port[1];
     struct tls_uart_circ_buf *recv = &port->recv;
+    u8 rx_byte_cb_flag = uart_rx_byte_cb_flag[1];
     u32 intr_src;
     u32 rx_fifocnt;
     u32 fifos;
@@ -699,10 +706,14 @@ ATTRIBUTE_ISR void UART1_IRQHandler(void)
                         port->plus_char_cnt = 3;
                     break;
             }
+            if(port->rx_callback != NULL && rx_byte_cb_flag)
+            {
+                port->rx_callback(1, port->priv_data);
+            }
         }
-        if (port->rx_callback!=NULL)
+        if (port->rx_callback!=NULL && !rx_byte_cb_flag)
         {
-		port->rx_callback(rxlen, port->priv_data);
+            port->rx_callback(rxlen, port->priv_data);
         }
     }
     if (intr_src & UART_TX_INT_FLAG)
@@ -827,6 +838,19 @@ int tls_uart_port_init(u16 uart_no, tls_uart_options_t * opts, u8 modeChoose)
 		return WM_FAILED;
 	}
 
+	switch( uart_no )
+	{
+		case TLS_UART_0:
+		case TLS_UART_1:
+		    tls_irq_disable((UART0_IRQn+uart_no));	
+			break;
+		case TLS_UART_2:
+		case TLS_UART_3:
+		case TLS_UART_4:
+			tls_irq_disable(UART24_IRQn);
+			break;
+	}
+
     UartRegInit(uart_no);
 	if (uart_port[uart_no].recv.buf)
 	{
@@ -871,7 +895,6 @@ int tls_uart_port_init(u16 uart_no, tls_uart_options_t * opts, u8 modeChoose)
 			port->uart_irq_no = UART24_IRQn;
 			break;
 	}
-    tls_irq_disable(port->uart_irq_no);	
 
     if (port->recv.buf == NULL)
 	{
@@ -906,6 +929,11 @@ void tls_uart_rx_callback_register(u16 uart_no, s16(*rx_callback) (u16 len, void
 {
 	uart_port[uart_no].rx_callback = rx_callback;
 	uart_port[uart_no].priv_data = priv_data;
+}
+
+void tls_uart_rx_byte_callback_flag(u16 uart_no, u8 flag)
+{
+	uart_rx_byte_cb_flag[uart_no] = flag;
 }
 
 /**

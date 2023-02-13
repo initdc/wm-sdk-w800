@@ -46,6 +46,7 @@ static void dma_irq_proc(void *p)
 {
     unsigned char ch;
     unsigned int int_src;
+    static uint32_t len[8] = {0,0,0,0,0,0,0,0};
 
     ch = (unsigned char)(unsigned long)p;
     int_src = tls_reg_read32(HR_DMA_INT_SRC);
@@ -60,6 +61,29 @@ static void dma_irq_proc(void *p)
 
         if (8 == ch)
             return;
+    }
+
+    if (DMA_CTRL_REG(ch) & 0x01)
+    {
+        uint32_t temp = 0, cur_len = 0;
+        
+        temp = DMA_CTRL_REG(ch);
+        if(len[ch] == 0)
+        {
+            len[ch] = (temp & 0xFFFF00) >> 8;
+        }
+        cur_len = (temp & 0xFFFF00) >> 8;
+        if((cur_len + len[ch]) > 0xFFFF)
+        {
+            cur_len = 0;
+            DMA_CHNLCTRL_REG(ch) |= (1 << 1);
+            while(DMA_CHNLCTRL_REG(ch) & (1 << 0));
+            DMA_CHNLCTRL_REG(ch) |= (1 << 0);
+        }
+        
+        temp &= ~(0xFFFF << 8);
+        temp |= ((cur_len + len[ch]) << 8);
+        DMA_CTRL_REG(ch) = temp;
     }
 
     if ((int_src & (TLS_DMA_IRQ_BOTH_DONE << ch * 2)) &&

@@ -13,13 +13,23 @@
 #include "wm_cpu.h"
 #include "wm_watchdog.h"
 
+#define WDG_LOAD_VALUE_MAX  (0xFFFFFFFF / 40)
+#define WDG_LOAD_VALUE_DEF  (20 * 1000 * 1000)
 
+static volatile u8 wdg_reset = 0;
+static volatile u8 wdg_enable = 0;
+static volatile u32 wdg_value_us = WDG_LOAD_VALUE_DEF;
+static volatile u32 wdg_jumpclear_flag = 0; /*0:donot jump clear, 1: jump clear, 2:close wdg*/
 ATTRIBUTE_ISR void WDG_IRQHandler(void)
 {
-	printf("WDG IRQ\n");
+	csi_kernel_intrpt_enter();
+    if (wdg_reset)
+    {
+    	csi_kernel_intrpt_exit();
+        return;
+    }
+	csi_kernel_intrpt_exit();	
 }
-
-static u32 wdg_jumpclear_flag = 0; /*0:donot jump clear, 1: jump clear, 2:close wdg*/
 
 /**
  * @brief          This function is used to clear watchdog irq in case watchdog reset
@@ -34,10 +44,27 @@ void tls_watchdog_clr(void)
 {
 	if (0 == wdg_jumpclear_flag)
 	{
-	    tls_reg_write32(HR_WDG_INT_CLR, 0x01);
+		tls_reg_write32(HR_WDG_INT_CLR, 0x01);
 	}
 }
 
+static void __tls_watchdog_init(u32 usec)
+{
+    tls_sys_clk sysclk;
+
+	tls_sys_clk_get(&sysclk);
+	tls_irq_enable(WDG_IRQn);
+	
+	tls_reg_write32(HR_WDG_LOAD_VALUE, sysclk.apbclk * usec); 		/* 40M dominant frequency: 40 * 10^6 * (usec / 10^6) */
+	tls_reg_write32(HR_WDG_CTRL, 0x3);             /* enable irq & reset */
+}
+
+static void __tls_watchdog_deinit(void)
+{
+	tls_irq_disable(WDG_IRQn);
+	tls_reg_write32(HR_WDG_CTRL, 0);	
+	tls_reg_write32(HR_WDG_INT_CLR, 0x01);
+}
 
 /**
  * @brief          This function is used to init watchdog
@@ -50,14 +77,10 @@ void tls_watchdog_clr(void)
  */
 void tls_watchdog_init(u32 usec)
 {
+    __tls_watchdog_init(usec);
 
-	tls_sys_clk sysclk;
-
-	tls_sys_clk_get(&sysclk);
-	tls_irq_enable(WDG_IRQn);
-	
-	tls_reg_write32(HR_WDG_LOAD_VALUE, sysclk.apbclk * usec); 		/* 40M dominant frequency: 40 * 10^6 * (usec / 10^6) */
-	tls_reg_write32(HR_WDG_CTRL, 0x3);             /* enable irq & reset */
+	wdg_value_us = usec;
+	wdg_enable = 1;
 }
 
 /**
@@ -71,9 +94,10 @@ void tls_watchdog_init(u32 usec)
  */
 void tls_watchdog_deinit(void)
 {
-	tls_irq_disable(WDG_IRQn);
-	tls_reg_write32(HR_WDG_CTRL, 0);	
-	tls_reg_write32(HR_WDG_INT_CLR, 0x01);
+	__tls_watchdog_deinit();
+
+	wdg_value_us = WDG_LOAD_VALUE_DEF;
+	wdg_enable = 0;
 }
 
 /**
@@ -87,15 +111,18 @@ void tls_watchdog_deinit(void)
  */
 void tls_watchdog_start_cal_elapsed_time(void)
 {
-	if (tls_reg_read32(HR_WDG_CTRL)&0x3)
+	if (wdg_enable)
 	{
-		wdg_jumpclear_flag = 1;
-		tls_reg_write32(HR_WDG_INT_CLR, 0x01);
+	    wdg_jumpclear_flag = 1;
+
+	    __tls_watchdog_deinit();
+
+    	__tls_watchdog_init(WDG_LOAD_VALUE_MAX);
 	}
 	else
 	{
 		wdg_jumpclear_flag = 2;
-		tls_watchdog_init(5*1000*1000);
+		__tls_watchdog_init(WDG_LOAD_VALUE_MAX);
 	}
 }
 
@@ -118,6 +145,8 @@ u32 tls_watchdog_stop_cal_elapsed_time(void)
 		case 1:
 		{
 			val = (tls_reg_read32(HR_WDG_LOAD_VALUE) - tls_reg_read32(HR_WDG_CUR_VALUE))/RT_TIME_BASE;
+			__tls_watchdog_deinit();
+			__tls_watchdog_init(wdg_value_us);
 			wdg_jumpclear_flag = 0;
 		}
 		break;
@@ -125,8 +154,8 @@ u32 tls_watchdog_stop_cal_elapsed_time(void)
 		case 2:
 		{
 			val = (tls_reg_read32(HR_WDG_LOAD_VALUE) - tls_reg_read32(HR_WDG_CUR_VALUE))/RT_TIME_BASE;
+			__tls_watchdog_deinit();
 			wdg_jumpclear_flag = 0;
-			tls_watchdog_deinit();
 		}
 		break;
 
@@ -137,9 +166,6 @@ u32 tls_watchdog_stop_cal_elapsed_time(void)
 
 	return val;	
 }
-
-
-
 /**
  * @brief          This function is used to reset system
  *
@@ -152,6 +178,8 @@ u32 tls_watchdog_stop_cal_elapsed_time(void)
 void tls_sys_reset(void)
 {
     tls_os_set_critical();
+	wdg_reset = 1;
+	__tls_watchdog_deinit();
 	tls_reg_write32(HR_WDG_LOCK, 0x1ACCE551);
 	tls_reg_write32(HR_WDG_LOAD_VALUE, 0x100);
 	tls_reg_write32(HR_WDG_CTRL, 0x3);

@@ -18,21 +18,14 @@
 
 #define SPI_USE_DMA
 
-#define SPI_TX_DMA_MASK	0x01
-#define SPI_RX_DMA_MASK	0x02
-
-#define SPI_DMA_CMD_ADDR 		((u32)(MASTER_SPI_DMA_ADDR))
-#define SPI_DMA_CMD_MAX_SIZE       (0x20)
-
-#define SPI_DMA_BUF_ADDR		((u32)(SPI_DMA_CMD_ADDR + SPI_DMA_CMD_MAX_SIZE))
-#define SPI_DMA_BUF_MAX_SIZE	8160
-
-#define SPI_DMA_MAX_TRANS_SIZE	4092
+#define SPI_DMA_CMD_MAX_SIZE    (0x20)
+#define SPI_DMA_BUF_MAX_SIZE	(8160)
+#define SPI_DMA_MAX_TRANS_SIZE	(4092)
 
 /**
  *  error code.
  */
-#define TLS_SPI_STATUS_OK		(0)
+#define TLS_SPI_STATUS_OK		    (0)
 #define TLS_SPI_STATUS_EINVAL		(-1)
 #define TLS_SPI_STATUS_ENOMEM		(-2)
 #define TLS_SPI_STATUS_EBUSY		(-3)

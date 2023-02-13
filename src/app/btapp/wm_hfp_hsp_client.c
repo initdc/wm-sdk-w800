@@ -18,6 +18,10 @@
 #include "wm_bt_hf_client.h"
 #include "wm_hfp_hsp_client.h"
 #include "wm_bt_util.h"
+#if (WM_AUDIO_BOARD_INCLUDED == CFG_ON)
+#include "audio.h"
+#endif
+
 
 const char *dump_hf_client_call_state(tls_bthf_client_call_state_t event);
 const char *dump_hf_client_call(tls_bthf_client_call_t event);
@@ -28,7 +32,60 @@ const char *dump_hf_client_call_direction(uint16_t event);
 const char *dump_hf_client_conn_state(tls_bthf_client_connection_state_t event);
 const char *dump_hf_client_audio_state(tls_bthf_client_audio_state_t event);
 
+#if (WM_AUDIO_BOARD_INCLUDED == CFG_ON)
+static uint32_t Stereo2Mono(void *audio_buf, uint32_t len, int LR)
+{
+    if (!audio_buf || !len || len % 4) {
+        printf( "%s arg err\n", __func__);
+        return 0;
+    }
+    int16_t *buf = audio_buf;
+    uint32_t i = 0;
+    LR = LR ? 1 : 0;
 
+    for (i = 0; i < len / 4; i++) {
+        buf[i] = buf[i * 2 + LR];
+    }
+    return len / 2;
+}
+static void dump_sco_data(uint8_t *p_data,uint16_t length)
+{
+    int i = 0;
+    for(i=0; i<32; i++)
+    {
+        printf("%02x ", p_data[i]);
+    }
+    printf("\r\n");
+}
+/*SCO data to application*/
+int btif_co_sco_data_incoming(uint8_t type, uint8_t *p_data,uint16_t length)
+{
+    dump_sco_data(p_data, length);
+    FifoWrite(p_data, length);
+    return length;
+}
+
+/*SCO data sent over HCI*/
+int btif_co_sco_data_outgoing(uint8_t type, uint8_t *p_data,uint16_t length)
+{
+    memset(p_data, 0,  length);
+    return length;
+}
+
+#else
+/*SCO data to application*/
+int btif_co_sco_data_incoming(uint8_t type, uint8_t *p_data,uint16_t length)
+{
+    return length;
+}
+
+/*SCO data sent over HCI*/
+int btif_co_sco_data_outgoing(uint8_t type, uint8_t *p_data,uint16_t length)
+{
+    memset(p_data, 0,  length);
+    return length;
+}
+#endif
 
 void hfp_client_connection_state_cb(tls_bthf_client_connection_state_t state,
                                     unsigned int peer_feat,
@@ -42,6 +99,23 @@ void hfp_client_audio_state_cb(tls_bthf_client_audio_state_t state,
                                tls_bt_addr_t *bd_addr)
 {
     TLS_BT_APPL_TRACE_DEBUG("hfp_client_audio_state_cb: state=%s\r\n", dump_hf_client_audio_state(state));
+    switch(state)
+    {
+        case WM_BTHF_CLIENT_AUDIO_STATE_DISCONNECTED:
+		#if (WM_AUDIO_BOARD_INCLUDED == CFG_ON)
+            PlayStop();
+		#endif	
+            break;
+        case WM_BTHF_CLIENT_AUDIO_STATE_CONNECTING:
+            break;
+        case WM_BTHF_CLIENT_AUDIO_STATE_CONNECTED:
+            //break;
+        case WM_BTHF_CLIENT_AUDIO_STATE_CONNECTED_MSBC:
+		#if (WM_AUDIO_BOARD_INCLUDED == CFG_ON)
+            PlayStart(8000, 16, 2);
+		#endif	
+            break;
+    }
 }
 
 void hfp_client_vr_cmd_cb(tls_bthf_client_vr_state_t state)

@@ -320,53 +320,10 @@ void tls_set_high_speed_interface_type(int type)
 
     if (HSPI_INTERFACE_SPI == type)
     {
-#if 0		
-#if (HSPI_IO_REUSE_NUM == 0)
-		tls_io_cfg_set(WM_IO_PB_14, WM_IO_OPTION1);
-		tls_io_cfg_set(WM_IO_PB_15, WM_IO_OPTION1);
-		tls_io_cfg_set(WM_IO_PB_16, WM_IO_OPTION1);
-		tls_io_cfg_set(WM_IO_PB_17, WM_IO_OPTION1);
-		tls_io_cfg_set(WM_IO_PB_18, WM_IO_OPTION1);
-#else
-		if(WM_IO_OPTION1 == tls_io_cfg_get(WM_IO_PB_14))
-			tls_io_cfg_set(WM_IO_PB_14, WM_IO_OPTION5);
-		if(WM_IO_OPTION1 == tls_io_cfg_get(WM_IO_PB_15))
-			tls_io_cfg_set(WM_IO_PB_15, WM_IO_OPTION5);
-		if(WM_IO_OPTION1 == tls_io_cfg_get(WM_IO_PB_16))
-			tls_io_cfg_set(WM_IO_PB_16, WM_IO_OPTION5);
-		if(WM_IO_OPTION1 == tls_io_cfg_get(WM_IO_PB_17))
-			tls_io_cfg_set(WM_IO_PB_17, WM_IO_OPTION5);
-		if(WM_IO_OPTION1 == tls_io_cfg_get(WM_IO_PB_18))
-			tls_io_cfg_set(WM_IO_PB_18, WM_IO_OPTION5);
-		tls_io_cfg_set(WM_IO_PB_08, WM_IO_OPTION2);
-		tls_io_cfg_set(WM_IO_PB_09, WM_IO_OPTION2);
-		tls_io_cfg_set(WM_IO_PB_10, WM_IO_OPTION2);
-		tls_io_cfg_set(WM_IO_PB_11, WM_IO_OPTION2);
-		tls_io_cfg_set(WM_IO_PB_12, WM_IO_OPTION2);
-#endif
-#endif
         hspi_regs_cfg();
     }
     else if (HSPI_INTERFACE_SDIO == type)
     {
-#if 0		
-		if(WM_IO_OPTION1 == tls_io_cfg_get(WM_IO_PB_16))	//HSPI_CK,as sdio need close
-			tls_io_cfg_set(WM_IO_PB_16, WM_IO_OPTION5);
-		if(WM_IO_OPTION2 == tls_io_cfg_get(WM_IO_PB_08))	//HSPI_CK,as sdio need close
-			tls_io_cfg_set(WM_IO_PB_08, WM_IO_OPTION5);		
-		tls_io_cfg_set(WM_IO_PB_08, WM_IO_OPTION3);
-		tls_io_cfg_set(WM_IO_PB_09, WM_IO_OPTION3);
-		tls_io_cfg_set(WM_IO_PB_10, WM_IO_OPTION3);
-		tls_io_cfg_set(WM_IO_PB_11, WM_IO_OPTION3);
-		tls_io_cfg_set(WM_IO_PB_12, WM_IO_OPTION3);
-#if (SDIO_IO_REUSE_NUM == 0)
-		tls_io_cfg_set(WM_IO_PA_06, WM_IO_OPTION3);
-#elif (SDIO_IO_REUSE_NUM == 1)
-		tls_io_cfg_set(WM_IO_PB_07, WM_IO_OPTION3);
-#else
-		tls_io_cfg_set(WM_IO_PB_13, WM_IO_OPTION4);
-#endif
-#endif
         hsdio_regs_cfg();
     }
 }

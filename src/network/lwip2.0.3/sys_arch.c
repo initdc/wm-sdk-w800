@@ -14,15 +14,30 @@ const void * const null_pointer = (void *)0;
 OS_STK         lwip_task_stk[LWIP_TASK_MAX*LWIP_STK_SIZE];
 u8_t            lwip_task_priopity_stack[LWIP_TASK_MAX];
 //OS_TCB          lwip_task_tcb[LWIP_TASK_MAX];
+#if LWIP_NETCONN_SEM_PER_THREAD
+sys_sem_t g_lwip_netconn_thread_sems[64];
+sys_sem_t* sys_lwip_netconn_thread_sem_get()
+{
+	long prio = uxTaskPriorityGet(NULL);
+	if(g_lwip_netconn_thread_sems[prio] == NULL)
+	{
+		if(sys_sem_new(&g_lwip_netconn_thread_sems[prio], 0) != ERR_OK)
+		{
+			LWIP_ASSERT("invalid lwip_netconn_thread_sem!", (g_lwip_netconn_thread_sems[prio] != NULL));
+		}
+	}
+	return &g_lwip_netconn_thread_sems[prio];
+}
 
-
-
+#endif
 /**
  * \brief Initialize the sys_arch layer.
  */
 void sys_init(void)
 {
-
+#if LWIP_NETCONN_SEM_PER_THREAD
+	memset(g_lwip_netconn_thread_sems, 0, sizeof(sys_sem_t) * 64);
+#endif
 }
 
 u32_t sys_now(void)
@@ -200,14 +215,14 @@ err_t sys_mbox_new(sys_mbox_t *mbox, int size)
  */
 void sys_mbox_free(sys_mbox_t *mbox)
 {
-    u32_t cpu_sr;
+    //u32_t cpu_sr;
     LWIP_ASSERT( "sys_mbox_free ", *mbox != SYS_MBOX_NULL );      
 
 	tls_os_queue_flush(*mbox);
-	cpu_sr = tls_os_set_critical();
+	//cpu_sr = tls_os_set_critical();
 	//int err = tls_os_queue_delete(*mbox);
 	tls_os_queue_delete(*mbox);
-    tls_os_release_critical(cpu_sr);
+    //tls_os_release_critical(cpu_sr);
     //LWIP_ASSERT("OSQDel ", err == TLS_OS_SUCCESS);
     /* Sanity check */
 }
@@ -250,20 +265,20 @@ void sys_mbox_post(sys_mbox_t *mbox, void *msg)
 err_t sys_mbox_trypost(sys_mbox_t *mbox, void *msg)
 {
     u8_t     err;
-    u8_t  i=0; 
+//    u8_t  i=0; 
 
     if(msg == NULL ) 
         msg = (void*)null_pointer;  
 
-    /* try 10 times */
-    while (i < 10){
+    /* try 10 times 
+    while (i < 10)*/{
        // err = OSQPost(mbox, msg);
 	err = tls_os_queue_send(*mbox, msg, 0);
         if(err == TLS_OS_SUCCESS)
             return ERR_OK;
-        i++;
+        //i++;
         //OSTimeDly(5);
-        tls_os_time_delay(1);
+        //tls_os_time_delay(1);
     }
 
     return ERR_ABRT;    

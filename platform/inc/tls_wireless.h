@@ -427,7 +427,9 @@ int tls_wl_if_tx(struct tls_wif *wif,
         u8 *buf, u32 buflen, bool last_packet, bool is_apsta, bool not_delay);
 int tls_wl_if_set_max_rate(struct tls_wif *wif, u8 max_rate_idx);
 int tls_wl_if_get_max_rate(struct tls_wif *wif, u8 *max_rate_idx);
+#if TLS_CONFIG_IBSS
 int tls_wl_if_set_adhoc(struct tls_wif *wif, int adhoc_automode);
+#endif
 int tls_wl_if_ps(int wake_up);
 void tls_wl_if_set_errno(int eno);
 int  tls_wl_if_get_errno(void);

@@ -180,6 +180,8 @@ typedef xQueueHandle xSemaphoreHandle;
  */
 #define xSemaphoreTake( xSemaphore, xBlockTime )		xQueueGenericReceive( ( xQueueHandle ) ( xSemaphore ), NULL, ( xBlockTime ), pdFALSE )
 
+#define xSemaphoreTakeFromISR( xSemaphore, pxHigherPriorityTaskWoken )  xQueueReceiveFromISR( ( xQueueHandle ) ( xSemaphore ), NULL, ( pxHigherPriorityTaskWoken ) )
+
 /**
  * semphr. h
  * xSemaphoreTakeRecursive( 
@@ -350,6 +352,18 @@ typedef xQueueHandle xSemaphoreHandle;
  * \ingroup Semaphores
  */
 #define xSemaphoreGive( xSemaphore )		xQueueGenericSend( ( xQueueHandle ) ( xSemaphore ), NULL, semGIVE_BLOCK_TIME, queueSEND_TO_BACK )
+
+/**
+ * semphr.h
+ * <pre>UBaseType_t uxSemaphoreGetCount( SemaphoreHandle_t xSemaphore );</pre>
+ *
+ * If the semaphore is a counting semaphore then uxSemaphoreGetCount() returns
+ * its current count value.  If the semaphore is a binary semaphore then
+ * uxSemaphoreGetCount() returns 1 if the semaphore is available, and 0 if the
+ * semaphore is not available.
+ *
+ */
+#define xSemaphoreGetCount( xSemaphore ) xQueueMessagesWaiting( ( xQueueHandle ) ( xSemaphore ) )
 
 /**
  * semphr. h

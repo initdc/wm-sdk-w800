@@ -28,6 +28,11 @@
 
 #if defined(MBEDTLS_RSA_C)
 
+#include "wm_config.h"
+#if TLS_CONFIG_HARD_CRYPTO
+#include "wm_crypto_hard_mbed.h"
+#endif
+
 #include "mbedtls/rsa.h"
 #include "mbedtls/bignum.h"
 #include "mbedtls/rsa_internal.h"
@@ -143,9 +148,22 @@ int mbedtls_rsa_deduce_primes( mbedtls_mpi const *N,
 
         /* Go through K^T + 1, K^(2T) + 1, K^(4T) + 1, ...
          * and check whether they have nontrivial GCD with N. */
+#if TLS_CONFIG_HARD_CRYPTO
+	if( mbedtls_mpi_bitlen(N) <= MAX_HARD_EXPTMOD_BITLEN )
+	{
+		MBEDTLS_MPI_CHK( tls_crypto_mbedtls_exptmod( &K, &K, &T, N) );
+	}
+	else
+	{
         MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &K, &K, &T, N,
                              Q /* temporarily use Q for storing Montgomery
                                 * multiplication helper values */ ) );
+	}
+#else
+        MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &K, &K, &T, N,
+                             Q /* temporarily use Q for storing Montgomery
+                                * multiplication helper values */ ) );
+#endif
 
         for( iter = 1; iter <= order; ++iter )
         {

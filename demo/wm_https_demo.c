@@ -42,7 +42,7 @@ static tls_os_queue_t *https_demo_task_queue = NULL;
 
 static const char *https_request = "GET /legal/html/zh-cn/index.html HTTP/1.0\r\n"
                                    "Host: "HTTPS_DEMO_SERVER"\r\n"
-                                   "User-Agent: W60X\r\n"
+                                   "User-Agent: W80X\r\n"
                                    "\r\n";
 
 extern struct netif *tls_get_netif(void);

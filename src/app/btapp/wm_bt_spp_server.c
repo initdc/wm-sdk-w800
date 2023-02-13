@@ -124,6 +124,11 @@ static void wm_bt_spp_callback(tls_spp_event_t evt, tls_spp_msg_t *msg)
 	}
 }
 
+/*
+ * EXPORTED FUNCTION DEFINITIONS
+ ****************************************************************************************
+ */
+
 tls_bt_status_t tls_bt_enable_spp_server()
 {
     tls_bt_status_t status;

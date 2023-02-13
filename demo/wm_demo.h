@@ -72,6 +72,9 @@
 //slave spi demo
 #define DEMO_SLAVE_SPI				(DEMO_OFF && DEMO_CONSOLE)
 
+//7816
+#define DEMO_7816					(DEMO_OFF && DEMO_CONSOLE)
+
 //ssl server demo
 #define DEMO_SSL_SERVER				(DEMO_OFF && DEMO_CONSOLE)
 

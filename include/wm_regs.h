@@ -80,7 +80,7 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 
 
 /***************************************************************
- * SDIO模块寄存器定义
+ * SDIO Reg
  ***************************************************************/
 #define HR_SDIO_BASE_ADDR     (DEVICE_BASE_ADDR + 0x2400)
 #define HR_SDIO_CIS0                (HR_SDIO_BASE_ADDR + 0x008)
@@ -94,13 +94,13 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define HR_SDIO_PROG                (HR_SDIO_BASE_ADDR + 0x028)
 
 /***************************************************************
- * SDIO HOST模块寄存器定义
+ * SDIO HOST Reg
  ***************************************************************/
 #define HR_SDIO_HOST_BASE_ADDR     (DEVICE_BASE_ADDR + 0xA00)
 #define HR_SDIO_HOST_MMC_CTRL      (HR_SDIO_HOST_BASE_ADDR + 0x0)
 
 /***************************************************************
- * SPI模块寄存器定义
+ * HSPI Reg
  ***************************************************************/
 #define HR_HSPI_BASE_ADDR       (DEVICE_BASE_ADDR + 0x2600)
 #define HR_HSPI_CLEAR_FIFO          (HR_HSPI_BASE_ADDR)
@@ -111,7 +111,7 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define HR_HSPI_RXDAT_LEN           (HR_HSPI_BASE_ADDR + 0x18)
 
 /***************************************************************
- * Inner Flash模块寄存器定义
+ * Inner Flash Reg
  ***************************************************************/
 #define HR_FLASH_BASE_ADDR          (DEVICE_BASE_ADDR + 0x2000)
 #define HR_FLASH_CMD_ADDR           (HR_FLASH_BASE_ADDR + 0x000)
@@ -119,7 +119,7 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define HR_FLASH_CR                 (HR_FLASH_BASE_ADDR + 0x008)
 #define HR_FLASH_ADDR               (HR_FLASH_BASE_ADDR + 0x010)
 /***************************************************************
- * SDIO WRAPPER寄存器定义
+ * SDIO WRAPPER Register
  ***************************************************************/
 #define HR_SDIO_WRAPPER_BASE_ADDR   (DEVICE_BASE_ADDR + 0x2800)
 #define HR_SDIO_INT_SRC             (HR_SDIO_WRAPPER_BASE_ADDR + 0x000)
@@ -145,7 +145,7 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 
 
 /***************************************************************
- * DMA模块寄存器定义
+ * DMA Reg
  ***************************************************************/
 #define HR_DMA_BASE_ADDR                (DEVICE_BASE_ADDR + 0x800)
 #define HR_DMA_INT_MASK                 (HR_DMA_BASE_ADDR + 0x0)
@@ -218,7 +218,7 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define DMA_CTRL_TOTAL_SIZE(n)               (n<<8)
 
 /***************************************************************
- * 节能模块寄存器定义
+ * PMU Reg
  ***************************************************************/
 #define HR_PMU_BASE_ADDR                (DEVICE_BASE_ADDR + 0xD00)
 #define HR_PMU_PS_CR                    (HR_PMU_BASE_ADDR + 0x00)
@@ -237,7 +237,7 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 
 
 /***************************************************************
- * system clock 和bus clock寄存器定义
+ * system clock and bus clock Reg
  ***************************************************************/
 #define HR_CLK_BASE_ADDR        (DEVICE_BASE_ADDR + 0xE00)
 #define HR_CLK_GATE_EN           HR_CLK_BASE_ADDR
@@ -268,11 +268,11 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define HR_PSRAM_CTRL_ADDR       (HR_PSRRAM_BASE_ADDR+ 0x00)
 #define HR_PSRAM_OVERTIMER_ADDR  (HR_PSRRAM_BASE_ADDR+ 0x04)
 
-/* APB基地址*/
+/* APB BaseAddr*/
 #define HR_APB_BASE_ADDR 0x40010000
 
 /***************************************************************
- * I2C模块寄存器定义
+ * I2C Reg
  ***************************************************************/
 #define HR_I2C_BASE_ADDR    (HR_APB_BASE_ADDR)
 #define HR_I2C_PRER_LO              (HR_I2C_BASE_ADDR + 0x0)
@@ -301,7 +301,7 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 
 
 /***************************************************************
- * SD ADC模块寄存器定义
+ * SD ADC Reg
  ***************************************************************/
 #define HR_SD_ADC_BASE_ADDR         (HR_APB_BASE_ADDR + 0x200)
 #define HR_SD_ADC_RESULT_REG     	((HR_SD_ADC_BASE_ADDR+0x000))
@@ -314,7 +314,7 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 
 
 /***************************************************************
- * SPI模块寄存器定义
+ *Low Speed SPI Reg
  ***************************************************************/
 #define HR_SPI_BASE_ADDR            (HR_APB_BASE_ADDR + 0x400)
 #define HR_SPI_CHCFG_REG		   		(HR_SPI_BASE_ADDR + 0x000)
@@ -345,7 +345,7 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define SPIM_RXDATA_REG		   		(*(volatile unsigned int*)(SPIM_STARTADDRESS+0x030))
 
 
-/*RSA寄存器*/
+/*RSA Reg*/
 #define RSA_BASE_ADDRESS       0x40000000
 #define  RSAXBUF               (*((volatile unsigned long *) (RSA_BASE_ADDRESS + 0x0 )))
 #define  RSAYBUF               (*((volatile unsigned long *) (RSA_BASE_ADDRESS + 0x100 )))
@@ -450,7 +450,7 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define SPI_TIME_OUT(n)      (((((n) * (APB_CLK)) / 1000) & ~(0x01U << 31)) << 0)
 
 /***************************************************************
- * UART寄存器定义
+ * UART Reg
  ***************************************************************/
 #define HR_UART0_BASE_ADDR          (HR_APB_BASE_ADDR + 0x600)
 #define HR_UART1_BASE_ADDR          (HR_APB_BASE_ADDR + 0x800)
@@ -592,7 +592,7 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define UFS_CST_STS               (1UL<<12)
 
 /***************************************************************
- * GPIO寄存器定义
+ * GPIO Reg
  ***************************************************************/
 #define HR_GPIO_BASE_ADDR           (HR_APB_BASE_ADDR + 0x1200)
 #define HR_GPIO_DATA                (HR_GPIO_BASE_ADDR + 0x0)
@@ -663,7 +663,7 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define IO_PB_AFS0				(*(volatile unsigned int*)(IO_PB_BASE_ADDR + 0x18))
 
 /***************************************************************
- * TIMER寄存器定义
+ * TIMER Reg
  ***************************************************************/
 #define HR_TIMER_BASE_ADDR          (HR_APB_BASE_ADDR + 0x1800)
 #define HR_TIMER_CFG                (HR_TIMER_BASE_ADDR + 0x0)
@@ -689,7 +689,7 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define TLS_TIMER_INT_CLR(n)            (1UL<<(4+5*n))
 
 /***************************************************************
- * WATCH DOG寄存器定义
+ * WATCH DOG Reg
  ***************************************************************/
 #define HR_WDG_BASE_ADDR            (HR_APB_BASE_ADDR + 0x1600)
 #define HR_WDG_LOAD_VALUE           (HR_WDG_BASE_ADDR + 0x00)
@@ -704,7 +704,7 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define HR_CLK_LCD_GATE_Pos			(14)
 
 /***********************************************************//**
- * LCD寄存器定义
+ * LCD Reg
  ***************************************************************/
 
 #define HR_LCD_REG_BASE     		 (HR_APB_BASE_ADDR + 0x1C00) //(0x4001 1C00)
@@ -754,7 +754,7 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define LCD_DUTY_ONEEIGHTH			 (7UL<<0)
 
 /***********************************************************//**
- * I2S寄存器定义
+ * I2S Reg
  ***************************************************************/
 #define HR_CLK_I2S_GATE_Pos						(10)
 

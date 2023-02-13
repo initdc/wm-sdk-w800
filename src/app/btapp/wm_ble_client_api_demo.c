@@ -10,7 +10,7 @@
 
 #include "wm_ble_client.h"
 #include "wm_ble_client_api_demo.h"
-#include "wm_ble_dm.h"
+#include "wm_ble_gap.h"
 #include "wm_ble_gatt.h"
 #include "wm_ble.h"
 #include "wm_ble_uart_if.h"
@@ -80,7 +80,7 @@ void ble_client_demo_api_register_client_callback(int status, int client_if,
 		status = tls_ble_scan(1);
 		if(status == TLS_BT_STATUS_SUCCESS)
 		{
-			wm_ble_register_report_evt(WM_BLE_DM_SCAN_RES_EVT, ble_report_evt_cb);
+			tls_ble_register_report_evt(WM_BLE_DM_SCAN_RES_EVT, ble_report_evt_cb);
 		}
     }
 }
@@ -103,7 +103,7 @@ void ble_client_demo_api_scan_result_callback(tls_bt_addr_t *addr, int rssi, uin
 		status = tls_ble_scan(0);
 		if(status == TLS_BT_STATUS_SUCCESS)
 		{
-			wm_ble_deregister_report_evt(WM_BLE_DM_SCAN_RES_EVT, ble_report_evt_cb);
+			tls_ble_deregister_report_evt(WM_BLE_DM_SCAN_RES_EVT, ble_report_evt_cb);
 		}
 			
 		tls_dm_start_timer(tls_dm_get_timer_id(), 1000, wm_ble_client_demo_api_connect);
@@ -225,7 +225,7 @@ void ble_client_demo_api_write_characteristic_callback(int conn_id, int status, 
 
     if(g_ble_output_fptr)
     {
-        len = wm_uart_ble_buffer_size();
+        len = tls_ble_uart_buffer_size();
 
         len = MIN(len, g_mtu);
 
@@ -237,13 +237,13 @@ void ble_client_demo_api_write_characteristic_callback(int conn_id, int status, 
                TLS_BT_APPL_TRACE_WARNING("!!!ble_server_indication_sent_cb NO enough memory\r\n"); 
                return;
             }
-            wm_uart_ble_buffer_peek(tmp_ptr, len);
+            tls_ble_uart_buffer_peek(tmp_ptr, len);
             g_send_pending = 1;
             ret = tls_ble_client_write_characteristic(g_conn_id, g_write_handle, 2, len,0,tmp_ptr);    
             tls_mem_free(tmp_ptr);
             if(ret == TLS_BT_STATUS_SUCCESS)
             {
-                wm_uart_ble_buffer_delete(len);
+                tls_ble_uart_buffer_delete(len);
             }
         }
     }
@@ -356,64 +356,10 @@ void ble_client_demo_api_services_added_callback(int conn_id, tls_btgatt_db_elem
     TLS_BT_APPL_TRACE_DEBUG("%s, conn_id=%d\r\n", __FUNCTION__, conn_id);
 }
 
-static const wm_ble_client_callbacks_t  swmbleclientcb =
-{
-    ble_client_demo_api_register_client_callback,
-	ble_client_demo_api_deregister_client_callback,
-    ble_client_demo_api_connect_callback,
-    ble_client_demo_api_disconnect_callback,
-    ble_client_demo_api_search_complete_callback,
-    ble_client_demo_api_search_service_result_callback,
-    ble_client_demo_api_register_for_notification_callback,
-    ble_client_demo_api_notify_callback,
-    ble_client_demo_api_read_characteristic_callback,
-    ble_client_demo_api_write_characteristic_callback,
-    ble_client_demo_api_read_descriptor_callback,
-    ble_client_demo_api_write_descriptor_callback,
-    ble_client_demo_api_execute_write_callback,
-    ble_client_demo_api_read_remote_rssi_callback,
-    ble_client_demo_api_listen_callback,
-    ble_client_demo_api_configure_mtu_callback,
-    ble_client_demo_api_congestion_callback,
-    ble_client_demo_api_get_gatt_db_callback,
-    ble_client_demo_api_services_removed_callback,
-    ble_client_demo_api_services_added_callback,
-} ;
-
-tls_bt_status_t wm_ble_client_demo_api_init(tls_ble_output_func_ptr output_func_ptr)
-{
-    tls_bt_status_t status;
-    
-    status = wm_ble_client_register_client(0x1234, &swmbleclientcb);
-	if(status == TLS_BT_STATUS_SUCCESS)
-	{	
-		TLS_BT_APPL_TRACE_DEBUG("### %s success\r\n", __FUNCTION__);
-
-        g_ble_output_fptr = output_func_ptr;
-        
-	}else
-	{
-		//strange logical, at cmd task , bt host task, priority leads to this situation;
-		TLS_BT_APPL_TRACE_ERROR("### %s failed\r\n", __FUNCTION__);
-	}
-    
-    return status;
-}
-
-tls_bt_status_t wm_ble_client_demo_api_deinit()
-{
-    return wm_ble_client_unregister_client(g_client_if);
-}
-
 static tls_bt_status_t wm_ble_client_demo_api_connect(int id)
 {
     tls_dm_free_timer_id(id);
     return tls_ble_client_connect(g_client_if, &g_bd_addr, 1, WM_BLE_GATT_TRANSPORT_LE);
-}
-tls_bt_status_t wm_ble_client_api_demo_send_msg(uint8_t *ptr, int length)
-{
-    g_send_pending = 1;
-    return tls_ble_client_write_characteristic(g_conn_id, g_write_handle, 2, length,0,ptr);    
 }
 
 static bool analyse_adv_data(tls_bt_addr_t *addr, int rssi, uint8_t *adv_data)
@@ -477,6 +423,64 @@ static bool analyse_adv_data(tls_bt_addr_t *addr, int rssi, uint8_t *adv_data)
 
     return status;
 }
+
+static const wm_ble_client_callbacks_t  swmbleclientcb =
+{
+    ble_client_demo_api_register_client_callback,
+	ble_client_demo_api_deregister_client_callback,
+    ble_client_demo_api_connect_callback,
+    ble_client_demo_api_disconnect_callback,
+    ble_client_demo_api_search_complete_callback,
+    ble_client_demo_api_search_service_result_callback,
+    ble_client_demo_api_register_for_notification_callback,
+    ble_client_demo_api_notify_callback,
+    ble_client_demo_api_read_characteristic_callback,
+    ble_client_demo_api_write_characteristic_callback,
+    ble_client_demo_api_read_descriptor_callback,
+    ble_client_demo_api_write_descriptor_callback,
+    ble_client_demo_api_execute_write_callback,
+    ble_client_demo_api_read_remote_rssi_callback,
+    ble_client_demo_api_listen_callback,
+    ble_client_demo_api_configure_mtu_callback,
+    ble_client_demo_api_congestion_callback,
+    ble_client_demo_api_get_gatt_db_callback,
+    ble_client_demo_api_services_removed_callback,
+    ble_client_demo_api_services_added_callback,
+} ;
+
+int tls_ble_client_demo_api_init(tls_ble_output_func_ptr output_func_ptr)
+{
+    tls_bt_status_t status;
+    
+    status = tls_ble_client_register_client(0x1234, &swmbleclientcb);
+	if(status == TLS_BT_STATUS_SUCCESS)
+	{	
+		TLS_BT_APPL_TRACE_DEBUG("### %s success\r\n", __FUNCTION__);
+
+        g_ble_output_fptr = output_func_ptr;
+        
+	}else
+	{
+		//strange logical, at cmd task , bt host task, priority leads to this situation;
+		TLS_BT_APPL_TRACE_ERROR("### %s failed\r\n", __FUNCTION__);
+	}
+    
+    return status;
+}
+
+int tls_ble_client_demo_api_deinit()
+{
+    return tls_ble_client_unregister_client(g_client_if);
+}
+
+
+int tls_ble_client_demo_api_send_msg(uint8_t *ptr, int length)
+{
+    g_send_pending = 1;
+    return tls_ble_client_write_characteristic(g_conn_id, g_write_handle, 2, length,0,ptr);    
+}
+
+
 
 #endif
 

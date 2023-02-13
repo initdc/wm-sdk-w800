@@ -160,6 +160,7 @@ static int param_to_flash(int id, int modify_count, int partition_num)
 
 		case TLS_PARAM_ID_AUTO_TRIGGER_PERIOD:
 			dest->transparent_trigger_period = src->transparent_trigger_period;
+            break;
 
 		case TLS_PARAM_ID_DEBUG_MODE:
 			dest->debug_mode = src->debug_mode;
@@ -1022,7 +1023,7 @@ int tls_param_get(int id, void *argv, bool from_flash)
 		curflashparm = tls_mem_alloc(sizeof(struct tls_param_flash));
 		if (curflashparm)
 		{
-			if (TLS_FLS_STATUS_OK == tls_fls_read((flash_param.partition_num == 0) ? TLS_FLASH_PARAM1_ADDR : TLS_FLASH_PARAM2_ADDR, curflashparm, sizeof(struct tls_param_flash)))
+			if (TLS_FLS_STATUS_OK == tls_fls_read((flash_param.partition_num == 0) ? TLS_FLASH_PARAM1_ADDR : TLS_FLASH_PARAM2_ADDR, (u8 *)curflashparm, sizeof(struct tls_param_flash)))
 			{
 				src = &curflashparm->parameters;
 			}
@@ -1285,7 +1286,10 @@ int tls_param_get(int id, void *argv, bool from_flash)
 	}
 #if USE_TWO_RAM_FOR_PARAMETER
 #else
-	tls_mem_free(curflashparm);
+	if (curflashparm)
+	{
+		tls_mem_free(curflashparm);
+	}
 #endif
 
 	tls_os_sem_release(sys_param_lock);
@@ -1324,7 +1328,7 @@ int tls_param_to_flash(int id)
 		sram_param = tls_mem_alloc(sizeof(struct tls_param_flash));
 		if (sram_param)
 		{
-			if (TLS_FLS_STATUS_OK != tls_fls_read((flash_param.partition_num == 0) ? TLS_FLASH_PARAM1_ADDR : TLS_FLASH_PARAM2_ADDR, sram_param, sizeof(struct tls_param_flash)))
+			if (TLS_FLS_STATUS_OK != tls_fls_read((flash_param.partition_num == 0) ? TLS_FLASH_PARAM1_ADDR : TLS_FLASH_PARAM2_ADDR, (u8 *)sram_param, sizeof(struct tls_param_flash)))
 			{
 				/*write anyway!!!*/
 			}

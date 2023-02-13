@@ -78,6 +78,10 @@ enum tls_io_name {
 #define WM_IO_OPTION5               5
 /** option 6 of the io */
 #define WM_IO_OPTION6               6
+/** option 7 of the io */
+#define WM_IO_OPTION7               7
+
+
 
 
 /* io option1 */
@@ -164,6 +168,11 @@ enum tls_io_name {
 #define WM_IO_OPT6_ADC              WM_IO_OPTION6
 #define WM_IO_OPT6_LCD_COM          WM_IO_OPTION6
 #define WM_IO_OPT6_LCD_SEG          WM_IO_OPTION6
+
+
+/* io option7 */
+#define WM_IO_OPT7_TOUCH_SENSOR     WM_IO_OPTION7
+
 
 
 /**

@@ -121,6 +121,7 @@ static void wm_i2s_clk_inverse(bool bl)
 static void wm_i2s_set_word_len(uint8_t len)
 {
 	uint32_t reg;
+    
 	reg = tls_reg_read32(HR_I2S_CTRL);
 	reg &= ~(0x3<<4);
 	len = (len>>3) - 1;
@@ -135,12 +136,12 @@ static void wm_i2s_set_mute(bool bl)
 }
 #endif
 
-static void wm_i2s_rx_enable(bool bl)
+void wm_i2s_rx_enable(bool bl)
 {
 	tls_bitband_write(HR_I2S_CTRL, 2, bl);
 }
 
-static void wm_i2s_tx_enable(bool bl)
+void wm_i2s_tx_enable(bool bl)
 {
 	tls_bitband_write(HR_I2S_CTRL, 1, bl);
 }
@@ -211,13 +212,13 @@ static void wm_i2s_set_freq(uint32_t lr_freq, uint32_t mclk)
 	uint32_t div, mclk_div;
 	uint32_t temp;
 	uint8_t wdwidth, stereo;
-	
+    
 	temp = I2S->CTRL;
 	wdwidth = (((temp>>4)&0x03)+1)<<3;
 	stereo = tls_bitband_read(HR_I2S_CTRL, 22) ? 1:2;
 	stereo = 2;
     div = (I2S_CLK + lr_freq * wdwidth * stereo)/(lr_freq * wdwidth * stereo) - 1;
-	
+    
 #if FPGA_800_I2S
 	div = div/2;
 #else
@@ -229,7 +230,6 @@ static void wm_i2s_set_freq(uint32_t lr_freq, uint32_t mclk)
 	mclk_div = I2S_CLK / mclk;
 
 	(mclk_div > 0x3F)?(mclk_div = 0x3F):(mclk_div = mclk_div);
-
 
 	*(volatile uint32_t *)HR_CLK_I2S_CTL &= ~0x3FFFF;
 	//set bclk div ,mclk div, inter clk be used, mclk enabled.
@@ -476,6 +476,9 @@ int wm_i2s_port_init(I2S_InitDef *opts)
 	}
 
 	wm_i2s_module_reset();
+    
+    tls_reg_write32(HR_I2S_CTRL, 0);
+    wm_i2s_set_mode(opt.I2S_Mode_MS);
 	wm_i2s_int_clear_all();
 	wm_i2s_int_mask_all();
 

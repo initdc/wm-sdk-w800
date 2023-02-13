@@ -11,7 +11,7 @@
 
 //#define TEST_ALL_CRYPTO
 #undef	DIGIT_BIT
-#define DIGIT_BIT			32 //28
+#define DIGIT_BIT			28//32
 
 #define SOFT_RESET_RC4    	25
 #define SOFT_RESET_AES    	26
@@ -32,30 +32,35 @@
 #define DES3_KEY_LEN	24
 #define DES3_IV_LEN     8
 
+#define SHA1_HASH_SIZE      20
+#define MD5_HASH_SIZE 16 
+
+#define STORE32H(x, y) { \
+(y)[0] = (unsigned char)(((x)>>24)&255); \
+(y)[1] = (unsigned char)(((x)>>16)&255); \
+(y)[2] = (unsigned char)(((x)>>8)&255); \
+(y)[3] = (unsigned char)((x)&255); \
+}
+#define STORE32L(x, y) { \
+unsigned long __t = (x); memcpy(y, &__t, 4); \
+}
+
 //#define CRYPTO_LOG printf
 #define CRYPTO_LOG(...)
 //extern volatile uint32_t sys_count;
 #define sys_count tls_os_get_time()
 
-struct wm_crypto_ctx
-{
-	volatile u8 rsa_complete;
-	volatile u8 gpsec_complete;
-#ifndef CONFIG_KERNEL_NONE
-    tls_os_sem_t *gpsec_lock;
-#endif
-};
 struct wm_crypto_ctx  g_crypto_ctx = {0,0
 #ifndef CONFIG_KERNEL_NONE
 	,NULL
 #endif
 	};
 
-#if 0
+#if 1
 typedef s32 psPool_t;
 #include "libtommath.h"
 #define pstm_set(a, b) mp_set((mp_int *)a, b)
-#define pstm_init(pool, a) mp_init((mp_int *)a)
+#define pstm_init(pool, a) wpa_mp_init((mp_int *)a)
 #define pstm_count_bits(a) mp_count_bits((mp_int *)a)
 #define pstm_init_for_read_unsigned_bin(pool, a, len) mp_init_for_read_unsigned_bin((mp_int *)a, len)
 #define pstm_read_unsigned_bin(a, b, c) mp_read_unsigned_bin((mp_int *)a, b, c)
@@ -67,6 +72,10 @@ typedef s32 psPool_t;
 #define pstm_reverse mp_reverse
 #define pstm_cmp mp_cmp
 #define pstm_to_unsigned_bin_nr(pool, a, b) mp_to_unsigned_bin_nr((mp_int *)a, (unsigned char *)b)
+
+#define pstm_2expt(a, b) mp_2expt((mp_int *)a, b)
+#define pstm_mod(pool, a, b, c) mp_mod((mp_int *)a, (mp_int *)b, (mp_int *)c)
+
 #endif
 
 
@@ -81,8 +90,8 @@ void CRYPTION_IRQHandler(void)
     g_crypto_ctx.gpsec_complete = 1;
 }
 
-#if 0
-static int16 pstm_get_bit (pstm_int *a, int16 idx)
+#if 1
+static int16 pstm_get_bit (hstm_int *a, int16 idx)
 {
     int16     r;
     int16 n = idx / DIGIT_BIT;
@@ -172,7 +181,11 @@ void tls_crypto_set_iv(void *iv, int ivlen)
  */
 int tls_crypto_random_stop(void)
 {
-    unsigned int sec_cfg, val;
+    unsigned int sec_cfg;
+#if USE_TRNG
+#else
+	unsigned int val;
+#endif
     tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);	
 #if USE_TRNG
 	sec_cfg = 0x40;
@@ -264,6 +277,72 @@ int tls_crypto_random_bytes(unsigned char *out, u32 len)
     tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);	
     return ERR_CRY_OK;
 }
+
+/**
+ * @brief          	This function is used to generate true random number.
+ *
+ * @param[in]   	out 			Pointer to the output of random number.
+ * @param[in]   	len 			The random number length.
+ *
+ * @retval  		0  			success
+ * @retval  		other   		failed
+ *
+ * @note           	None
+ */
+int tls_crypto_trng(unsigned char *out, u32 len)
+{
+    unsigned int sec_cfg, val;
+    uint32 inLen = len;	
+    int randomBytes = 4;
+
+	tls_crypto_sem_lock();	
+	tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);	
+	sec_cfg = (1 << TRNG_INT_MASK) | (4 << TRNG_CP) | (1 << TRNG_SEL) | (1 << TRNG_EN);
+	sec_cfg &= ~(1 << TRNG_INT_MASK);
+	tls_reg_write32(HR_CRYPTO_TRNG_CR, sec_cfg);		
+	delay_cnt(1000);
+	while(inLen > 0)
+	{
+		g_crypto_ctx.gpsec_complete = 0;
+		while (!g_crypto_ctx.gpsec_complete)
+		{
+
+		}
+		g_crypto_ctx.gpsec_complete = 0;
+		val = tls_reg_read32(HR_CRYPTO_RNG_RESULT);
+		if(inLen >= randomBytes)
+		{
+			memcpy(out, (char *)&val, randomBytes);
+			out += randomBytes;
+			inLen -= randomBytes;
+		}
+		else
+		{
+			memcpy(out, (char *)&val, inLen);
+			inLen = 0;
+		}
+	}
+
+	tls_reg_write32(HR_CRYPTO_TRNG_CR, 0x40);
+    tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
+	tls_crypto_sem_unlock();	
+    return ERR_CRY_OK;
+}
+
+
+int tls_crypto_random_bytes_range(unsigned char *out, u32 len, u32 range)
+{
+	unsigned int val, i;
+
+	val = tls_reg_read32(HR_CRYPTO_SEC_CFG);
+	for(i = 0; i< len; i++) {
+		val =  tls_reg_read32(HR_CRYPTO_RNG_RESULT);
+		out[i] = val % range;
+		// printf("rand val:%d, val:%d\r\n", val, out[i]);
+	}
+	return ERR_CRY_OK;
+}
+
 
 /**
  * @brief          	This function initializes a RC4 encryption algorithm,
@@ -733,8 +812,8 @@ void tls_crypto_sha1_init(psDigestContext_t *md)
 #ifdef HAVE_NATIVE_INT64
     md->u.sha1.length = 0;
 #else
-    md->sha1.lengthHi = 0;
-    md->sha1.lengthLo = 0;
+    md->u.sha1.lengthHi = 0;
+    md->u.sha1.lengthLo = 0;
 #endif /* HAVE_NATIVE_INT64 */
 }
 
@@ -816,13 +895,13 @@ int tls_crypto_sha1_final(psDigestContext_t *md, unsigned char *hash)
 #ifdef HAVE_NATIVE_INT64
     md->u.sha1.length += md->u.sha1.curlen << 3;
 #else
-    n = (md->sha1.lengthLo + (md->sha1.curlen << 3)) & 0xFFFFFFFFL;
-    if (n < md->sha1.lengthLo)
+    n = (md->u.sha1.lengthLo + (md->u.sha1.curlen << 3)) & 0xFFFFFFFFL;
+    if (n < md->u.sha1.lengthLo)
     {
-        md->sha1.lengthHi++;
+        md->u.sha1.lengthHi++;
     }
-    md->sha1.lengthHi += (md->sha1.curlen >> 29);
-    md->sha1.lengthLo = n;
+    md->u.sha1.lengthHi += (md->u.sha1.curlen >> 29);
+    md->u.sha1.lengthLo = n;
 #endif /* HAVE_NATIVE_INT64 */
 
     /*
@@ -858,8 +937,8 @@ int tls_crypto_sha1_final(psDigestContext_t *md, unsigned char *hash)
 #ifdef HAVE_NATIVE_INT64
     STORE64H(md->u.sha1.length, md->u.sha1.buf + 56);
 #else
-    STORE32H(md->sha1.lengthHi, md->sha1.buf + 56);
-    STORE32H(md->sha1.lengthLo, md->sha1.buf + 60);
+    STORE32H(md->u.sha1.lengthHi, md->u.sha1.buf + 56);
+    STORE32H(md->u.sha1.lengthLo, md->u.sha1.buf + 60);
 #endif /* HAVE_NATIVE_INT64 */
     hd_sha1_compress(md);
 
@@ -1006,7 +1085,7 @@ s32 tls_crypto_md5_final(psDigestContext_t *md, unsigned char *hash)
     //	psAssert(md != NULL);
     if (hash == NULL)
     {
-        psTraceCrypto("NULL hash storage passed to psMd5Final\n");
+        CRYPTO_LOG("NULL hash storage passed to psMd5Final\n");
         return PS_ARG_FAIL;
     }
 
@@ -1114,7 +1193,7 @@ static void rsaMonMulReadD(u32 *const in)
 {
     memcpy(in, (u32 *)&RSADBUF, RSAN * sizeof(u32));
 }
-static int rsaMulModRead(unsigned char w, pstm_int *a)
+static int rsaMulModRead(unsigned char w, hstm_int *a)
 {
     u32 in[64];
     int err = 0;
@@ -1133,7 +1212,7 @@ static int rsaMulModRead(unsigned char w, pstm_int *a)
     }
     pstm_reverse((unsigned char *)in, RSAN * sizeof(u32));
     /* this a should be initialized outside. */
-    //if ((err = pstm_init_for_read_unsigned_bin(NULL, a, RSAN * sizeof(u32) + sizeof(pstm_int))) != ERR_CRY_OK){
+    //if ((err = pstm_init_for_read_unsigned_bin(NULL, a, RSAN * sizeof(u32) + sizeof(hstm_int))) != ERR_CRY_OK){
     //	return err;
     //}
     if ((err = pstm_read_unsigned_bin(a, (unsigned char *)in, RSAN * sizeof(u32))) != ERR_CRY_OK)
@@ -1162,7 +1241,7 @@ static void rsaMulModDump(unsigned char w)
 	dumpUint32(" Val:",((volatile u32*) (RSA_BASE_ADDRESS + addr )), RSAN);
 }
 
-static void rsaMulModWrite(unsigned char w, pstm_int *a)
+static void rsaMulModWrite(unsigned char w, hstm_int *a)
 {
     u32 in[64];
     memset(in, 0, 64 * sizeof(u32));
@@ -1260,12 +1339,12 @@ static void rsaCalMc(u32 *mc, const u32 in)
  *
  * @note			None
  */
-int tls_crypto_exptmod(pstm_int *a, pstm_int *e, pstm_int *n, pstm_int *res)
+int tls_crypto_exptmod(hstm_int *a, hstm_int *e, hstm_int *n, hstm_int *res)
 {
     int i = 0;
     u32 k = 0, mc = 0, dp0;
     volatile u8 monmulFlag = 0;
-    pstm_int R, X, Y;
+    hstm_int R, X, Y;
 
     tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_RSA);
 

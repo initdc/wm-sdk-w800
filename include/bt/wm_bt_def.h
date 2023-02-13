@@ -187,6 +187,56 @@ typedef struct
 	tls_bt_property_t *properties; /**< bluetooth adapter property data */
 } tls_bt_adapter_prop_msg_t; 
 
+typedef enum
+{ 
+    WM_BLE_SCAN_STOP = 0,
+    WM_BLE_SCAN_PASSIVE = 1,
+    WM_BLE_SCAN_ACTIVE = 2,
+    
+} wm_ble_scan_type_t;
+
+typedef enum
+{
+    WM_BLE_ADV_DATA = 0,
+    WM_BLE_ADV_RSP_DATA,
+} wm_ble_gap_data_t;
+
+typedef enum{
+    WM_BLE_ADV_STOP = 0,
+    WM_BLE_ADV_IND,
+    WM_BLE_ADV_DIRECT_IND_HDC,  /*<high duty cycle, directed advertising>*/
+    WM_BLE_ADV_SCAN_IND,
+    WM_BLE_ADV_NONCONN_IND,
+    WM_BLE_ADV_DIRECT_IND_LDC,  /*<low duty cycle, directed advertising>*/
+} wm_ble_adv_type_t;
+
+#define WM_BLE_GAP_EVENT_CONNECT               (0x01<<0)
+#define WM_BLE_GAP_EVENT_DISCONNECT            (0x01<<1)
+/* Reserved                                 2 */
+#define WM_BLE_GAP_EVENT_CONN_UPDATE           (0x01<<3)
+#define WM_BLE_GAP_EVENT_CONN_UPDATE_REQ       (0x01<<4)
+#define WM_BLE_GAP_EVENT_L2CAP_UPDATE_REQ      (0x01<<5)
+#define WM_BLE_GAP_EVENT_TERM_FAILURE          (0x01<<6)
+#define WM_BLE_GAP_EVENT_DISC                  (0x01<<7)
+#define WM_BLE_GAP_EVENT_DISC_COMPLETE         (0x01<<8)
+#define WM_BLE_GAP_EVENT_ADV_COMPLETE          (0x01<<9)
+#define WM_BLE_GAP_EVENT_ENC_CHANGE            (0x01<<10)
+#define WM_BLE_GAP_EVENT_PASSKEY_ACTION        (0x01<<11)
+#define WM_BLE_GAP_EVENT_NOTIFY_RX             (0x01<<12)
+#define WM_BLE_GAP_EVENT_NOTIFY_TX             (0x01<<13)
+#define WM_BLE_GAP_EVENT_SUBSCRIBE             (0x01<<14)
+#define WM_BLE_GAP_EVENT_MTU                   (0x01<<15)
+#define WM_BLE_GAP_EVENT_IDENTITY_RESOLVED     (0x01<<16)
+#define WM_BLE_GAP_EVENT_REPEAT_PAIRING        (0x01<<17)
+#define WM_BLE_GAP_EVENT_PHY_UPDATE_COMPLETE   (0x01<<18)
+#define WM_BLE_GAP_EVENT_EXT_DISC              (0x01<<19)
+#define WM_BLE_GAP_EVENT_PERIODIC_SYNC         (0x01<<20)
+#define WM_BLE_GAP_EVENT_PERIODIC_REPORT       (0x01<<21)
+#define WM_BLE_GAP_EVENT_PERIODIC_SYNC_LOST    (0x01<<22)
+#define WM_BLE_GAP_EVENT_SCAN_REQ_RCVD         (0x01<<23)
+#define WM_BLE_GAP_EVENT_PERIODIC_TRANSFER     (0x01<<24)
+
+
 /** Bluetooth Address */
 typedef struct
 {
@@ -329,12 +379,6 @@ typedef void (*tls_bt_host_callback_t)(tls_bt_host_evt_t event, tls_bt_host_msg_
 
 typedef enum
 {
-	WM_AUDIO_OVER_HCI = 0,
-	WM_AUDIO_INTERNAL_MODE,
-} tls_sco_data_path_t;
-
-typedef enum
-{
 	TLS_BT_LOG_NONE = 0,
 	TLS_BT_LOG_ERROR = 1,
 	TLS_BT_LOG_WARNING = 2,
@@ -368,6 +412,13 @@ typedef enum
 	TLS_BLE_PWR_TYPE_SCAN,
 	TLS_BLE_PWR_TYPE_DEFAULT,
 } tls_ble_power_type_t;
+
+typedef enum
+{
+	WM_AUDIO_OVER_HCI = 0,
+	WM_AUDIO_INTERNAL_MODE,
+} tls_sco_data_path_t;
+
 
 typedef struct
 {
@@ -427,13 +478,6 @@ typedef struct
 
 #define WM_BLE_MAX_PDU_LENGTH                              251
 
-/** BLE advertisement mode*/
-typedef enum
-{
-    WM_BLE_ADV_STOP = 0,
-    WM_BLE_ADV_START,
-    WM_BLE_NONCONN_ADV_START
-} tls_adv_mode_t;
 
 /** BLE events */
 typedef enum
@@ -818,13 +862,16 @@ typedef void (*tls_ble_output_func_ptr)(uint8_t *p_data, uint32_t length);
 /** BLE dm events */
 typedef enum
 {
-    WM_BLE_DM_SET_ADV_DATA_CMPL_EVT = (0x01<<0),    /**< BLE DM set advertisement data completed*/
+    WM_BLE_DM_SET_ADV_DATA_CMPL_EVT = (0x01<<0),        /**< BLE DM set advertisement data completed*/
     WM_BLE_DM_TIMER_EXPIRED_EVT     = (0x01<<1),        /**< BLE DM timer expired event. */
-    WM_BLE_DM_TRIGER_EVT            = (0x01<<2),               /**< BLE DM event trigered event, async processing*/
-    WM_BLE_DM_SCAN_RES_EVT          = (0x01<<3),             /**< BLE DM scan result evt*/
+    WM_BLE_DM_TRIGER_EVT            = (0x01<<2),        /**< BLE DM event trigered event, async processing*/
+    WM_BLE_DM_SCAN_RES_EVT          = (0x01<<3),        /**< BLE DM scan result evt*/
 	WM_BLE_DM_SET_SCAN_PARAM_CMPL_EVT=(0x01<<4),
 	WM_BLE_DM_REPORT_RSSI_EVT       = (0x01<<5),
 	WM_BLE_DM_SCAN_RES_CMPL_EVT     = (0x01<<6),
+	WM_BLE_DM_SEC_EVT               = (0x01<<7),
+	WM_BLE_DM_ADV_STARTED_EVT       = (0x01<<8),
+    WM_BLE_DM_ADV_STOPPED_EVT       = (0x01<<9),
 	
 } tls_ble_dm_evt_t;
 
@@ -843,7 +890,7 @@ typedef struct
 
 typedef struct
 {
-    uint8_t id;
+    uint32_t id;
     int32_t func_ptr;
 } tls_ble_dm_timer_expired_msg_t;
 
@@ -862,11 +909,19 @@ typedef struct
 	int8_t rssi;
 	uint8_t status;
 } tls_ble_report_rssi_msg_t;
+typedef struct
+{
+	uint8_t address[6];
+	int8_t transport;
+	uint8_t status;    
+} tls_ble_sec_msg_t;
 
 typedef struct
 {
     uint16_t num_responses;
 } tls_ble_dm_scan_res_cmpl_msg_t;
+
+typedef tls_ble_dm_set_adv_data_cmpl_msg_t tls_ble_dm_adv_cmpl_msg_t;
 typedef union
 {
     tls_ble_dm_set_adv_data_cmpl_msg_t   dm_set_adv_data_cmpl;
@@ -876,6 +931,9 @@ typedef union
 	tls_ble_dm_set_scan_param_cmpl_msg_t dm_set_scan_param_cmpl;
     tls_ble_dm_scan_res_cmpl_msg_t       dm_scan_result_cmpl;
 	tls_ble_report_rssi_msg_t            dm_report_rssi;
+    tls_ble_sec_msg_t                    dm_sec_result;
+    tls_ble_dm_adv_cmpl_msg_t            dm_adv_cmpl;
+    
 } tls_ble_dm_msg_t;
 
 typedef struct
@@ -922,7 +980,7 @@ typedef void (*tls_ble_dm_callback_t)(tls_ble_dm_evt_t event, tls_ble_dm_msg_t *
 typedef void (*tls_ble_dm_timer_callback_t)(uint8_t timer_id);
 
 /** WM BLE device evt triger callback function */
-typedef void (*tls_ble_dm_triger_callback_t)(int32_t evt_id);
+typedef void (*tls_ble_dm_triger_callback_t)(uint32_t evt_id);
 
 typedef void (*tls_ble_scan_res_notify_t)(tls_ble_dm_scan_res_msg_t *msg);
 
@@ -1815,7 +1873,14 @@ typedef union
 
 /** WM BT SPP callback function */
 typedef void (*tls_bt_spp_callback_t)(tls_spp_event_t event, tls_spp_msg_t *p_data);
+typedef enum
+{
+    BLE_UART_SERVER_MODE,
+    BLE_UART_CLIENT_MODE,
+    BLE_UART_UNKNOWN_MODE,
+} tls_ble_uart_mode_t;
 
+typedef void (*tls_ble_output_func_ptr)(uint8_t *p_data, uint32_t length);
 #define TLS_HAL_CBACK(P_CB, P_CBACK, ...)\
     if (P_CB && P_CB->P_CBACK) {            \
         P_CB->P_CBACK(__VA_ARGS__);         \

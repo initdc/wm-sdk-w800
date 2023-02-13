@@ -21,6 +21,7 @@ typedef enum {
 	TLS_PERIPHERAL_TYPE_UART3 = (1 << 4), /**< peripheral type : UART3 */
     TLS_PERIPHERAL_TYPE_UART4 = (1 << 5), /**< peripheral type : UART4 */
 
+    TLS_PERIPHERAL_TYPE_UART5 = (1 << 6), /**< peripheral type : UART4 */
 
     TLS_PERIPHERAL_TYPE_LSPI  = (1 << 7), /**< peripheral type : LSPI */
     TLS_PERIPHERAL_TYPE_DMA   = (1 << 8), /**< peripheral type : DMA */

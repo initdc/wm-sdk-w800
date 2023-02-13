@@ -91,7 +91,7 @@ int tls_ft_param_init(void)
 	tls_mem_free(pft);
 
 	/*lock parameter*/
-	tls_flash_lock();
+	tls_flash_unlock();
 	return TRUE;
 }
 

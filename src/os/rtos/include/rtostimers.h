@@ -473,6 +473,18 @@ xTaskHandle xTimerGetTimerDaemonTaskHandle( void );
  * }
  */
  #define xTimerChangePeriod( xTimer, xNewPeriod, xBlockTime ) xTimerGenericCommand( ( xTimer ), tmrCOMMAND_CHANGE_PERIOD, ( xNewPeriod ), NULL, ( xBlockTime ) )
+ /**
+  * Returns the time in ticks at which the timer will expire.  If this is less
+  * than the current tick count then the expiry time has overflowed from the
+  * current time.
+  *
+  * @param xTimer The handle of the timer being queried.
+  *
+  * @return If the timer is running then the time in ticks at which the timer
+  * will next expire is returned.  If the timer is not running then the return
+  * value is undefined.
+  */
+ TickType_t xTimerGetExpiryTime( xTimerHandle xTimer ) PRIVILEGED_FUNCTION;
 
 /**
  * portBASE_TYPE xTimerDelete( xTimerHandle xTimer, portTickType xBlockTime );

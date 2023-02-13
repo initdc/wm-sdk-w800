@@ -113,15 +113,10 @@ int lws_issue_raw(struct lws *wsi, unsigned char *buf, size_t len)
 		char dump[20];
 		strncpy(dump, (char *)buf, sizeof(dump) - 1);
 		dump[sizeof(dump) - 1] = '\0';
-#if defined(LWS_WITH_ESP8266)
-		lwsl_err("****** %p: Sending new %d (%s), pending truncated ...\n",
-			 wsi, len, dump);
-#else
 		lwsl_err("****** %p: Sending new %d (%s), pending truncated ...\n"
 			 "       It's illegal to do an lws_write outside of\n"
 			 "       the writable callback: fix your code",
 			 wsi, len, dump);
-#endif
 		//assert(0);
 
 		return -1;
@@ -145,12 +140,6 @@ int lws_issue_raw(struct lws *wsi, unsigned char *buf, size_t len)
 	n += LWS_PRE + 4;
 	if (n > len)
 		n = len;
-#if defined(LWS_WITH_ESP8266)	
-	if (wsi->pending_send_completion) {
-		n = 0;
-		goto handle_truncated_send;
-	}
-#endif
 
 	/* nope, send it on the socket directly */
 	lws_latency_pre(context, wsi);

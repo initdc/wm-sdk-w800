@@ -89,7 +89,7 @@ static void writeBpBit_for_2wreg(char cmp, char bp4, char bp3, char bp2, char bp
     M32(HR_FLASH_CMD_START) = CMD_START_Msk;
 
     bpstatus  = (bp4 << 6) | (bp3 << 5) | (bp2 << 4) | (bp1 << 3) | (bp0 << 2);
-    bpstatus      = (status &83) | bpstatus;
+    bpstatus      = (status & 0x83) | bpstatus;
 
     M32(RSA_BASE_ADDRESS)  = bpstatus;
     M32(HR_FLASH_CMD_ADDR) = 0xA001;
@@ -416,13 +416,20 @@ void flashSRRW(unsigned long offset, unsigned char *buf, unsigned long sz, unsig
 
 /*sr end*/
 
-int readByCMD(unsigned char cmd, unsigned long addr, unsigned char *buf, unsigned long sz)
+int __readByCMD(unsigned char cmd, unsigned long addr, unsigned char *buf, unsigned long sz)
 {
     int i = 0;
     int word = sz / 4;
     int byte = sz % 4;
     unsigned long addr_read;
-
+	if (!(M32(HR_FLASH_CR)&0x1))/*non-QIO mode, only single line command can be used*/
+	{
+		if (cmd > 0x0B)
+		{
+			cmd = 0x0B;
+		}
+	}
+	
     switch (cmd)
     {
     case 0x03:
@@ -485,6 +492,21 @@ int readByCMD(unsigned char cmd, unsigned long addr, unsigned char *buf, unsigne
 }
 
 
+int readByCMD(unsigned char cmd, unsigned long addr, unsigned char *buf, unsigned long sz)
+{
+    if (inside_fls == NULL)
+    {
+        return TLS_FLS_STATUS_EPERM;
+    }
+
+	tls_os_sem_acquire(inside_fls->fls_lock, 0);
+	__readByCMD(cmd, addr, buf, sz);
+	tls_os_sem_release(inside_fls->fls_lock);
+    return 0;
+}
+
+
+
 int flashRead(unsigned long addr, unsigned char *buf, unsigned long sz)
 {
 
@@ -503,7 +525,7 @@ int flashRead(unsigned long addr, unsigned char *buf, unsigned long sz)
         return TLS_FLS_STATUS_ENOMEM;
     }
     flash_addr = addr & ~(INSIDE_FLS_PAGE_SIZE - 1);
-    readByCMD(0xEB, flash_addr, (unsigned char *)cache, INSIDE_FLS_PAGE_SIZE);
+    __readByCMD(0xEB, flash_addr, (unsigned char *)cache, INSIDE_FLS_PAGE_SIZE);
     if (sz > INSIDE_FLS_PAGE_SIZE - page_offset)
     {
         MEMCPY(buf, cache + page_offset, INSIDE_FLS_PAGE_SIZE - page_offset);
@@ -515,7 +537,7 @@ int flashRead(unsigned long addr, unsigned char *buf, unsigned long sz)
         for (i = 0; i < sz_pagenum; i++)
         {
 
-            readByCMD(0xEB, flash_addr, (unsigned char *)cache, INSIDE_FLS_PAGE_SIZE);
+            __readByCMD(0xEB, flash_addr, (unsigned char *)cache, INSIDE_FLS_PAGE_SIZE);
             MEMCPY(buf, cache, INSIDE_FLS_PAGE_SIZE);
             buf 		+= INSIDE_FLS_PAGE_SIZE;
             flash_addr 	+= INSIDE_FLS_PAGE_SIZE;
@@ -523,7 +545,7 @@ int flashRead(unsigned long addr, unsigned char *buf, unsigned long sz)
 
         if (sz_remain)
         {
-            readByCMD(0xEB, flash_addr, (unsigned char *)cache, sz_remain);
+            __readByCMD(0xEB, flash_addr, (unsigned char *)cache, sz_remain);
             MEMCPY(buf, cache, sz_remain);
         }
     }

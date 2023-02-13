@@ -312,7 +312,7 @@
  *
  * This module is required for RSA and DHM support.
  */
-//#define POLARSSL_BIGNUM_C
+#define POLARSSL_BIGNUM_C
 
 /**
  * \def POLARSSL_CAMELLIA_C
@@ -557,7 +557,7 @@
  *
  * This module is required for SSL/TLS and MD5-signed certificates.
  */
-//#define POLARSSL_RSA_C
+#define POLARSSL_RSA_C
 
 /**
  * \def POLARSSL_SHA1_C

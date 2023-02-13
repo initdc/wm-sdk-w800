@@ -702,6 +702,10 @@ typedef struct {
 extern uint32_t __Vectors[];
 extern uint32_t irq_vectors[];
 
+/*Forward declaration*/
+__STATIC_INLINE void csi_icache_invalid (void);
+
+
 /**
   \brief   Enable External Interrupt
   \details Enable a device-specific interrupt in the VIC interrupt controller.
@@ -908,6 +912,7 @@ __STATIC_INLINE uint32_t csi_vic_get_prio(int32_t IRQn)
     return ((uint32_t)(((VIC->IPR[_IP_IDX(IRQn)] >> _BIT_SHIFT(IRQn)) & (uint32_t)0xFFUL) >> (8U - __VIC_PRIO_BITS)));
 }
 
+
 /**
   \brief   Set interrupt handler
   \details Set the interrupt handler according to the interrupt num, the handler will be filled in __Vectors[].
@@ -919,6 +924,8 @@ __STATIC_INLINE void csi_vic_set_vector(int32_t IRQn, uint32_t handler)
     if (IRQn >= 0 && IRQn < 128) {
     	irq_vectors[32 + IRQn] = handler;
     }
+
+    csi_icache_invalid();
 }
 
 /**

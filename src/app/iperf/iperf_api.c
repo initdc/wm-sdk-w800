@@ -1030,7 +1030,7 @@ parse_parameters(struct iperf_test *test)
 	IPF_DBG("IERECVPARAMS\n");
 
     for (param = strtok(pstring, " "), n = 1, params = NULL; param; param = strtok(NULL, " ")) {
-        if ((params = tls_mem_realloc(params, (n+1)*sizeof(char *))) == NULL) {
+        if ((params = realloc(params, (n+1)*sizeof(char *))) == NULL) {
             i_errno = IERECVPARAMS;
             return (-1);
         }
@@ -1086,7 +1086,7 @@ parse_parameters(struct iperf_test *test)
 #endif
     optind = 1;
 
-    tls_mem_free(params);
+    free(params);
 
     return (0);
 }

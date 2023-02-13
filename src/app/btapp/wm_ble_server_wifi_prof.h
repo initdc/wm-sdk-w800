@@ -8,6 +8,7 @@ typedef tls_bt_status_t (*op_disconnected_callback)(int status);
 typedef tls_bt_status_t (*op_connected_callback)(int status);
 typedef tls_bt_status_t (*op_indication_callback)(int status);
 typedef tls_bt_status_t (*op_service_enabled_callback)(int status);
+typedef tls_bt_status_t (*op_mtu_changed_callback)(int mtu);
 
 
 typedef struct
@@ -28,16 +29,18 @@ typedef struct
 
     op_indication_callback indication_cb;
 
+    op_mtu_changed_callback mtu_changed_cb;
+
 } wm_ble_wifi_prof_callbacks_t;
 
-tls_bt_status_t wm_wifi_prof_init(wm_ble_wifi_prof_callbacks_t *callback);
-tls_bt_status_t wm_wifi_prof_deinit();
-tls_bt_status_t wm_wifi_prof_connect(int status);
-tls_bt_status_t wm_wifi_prof_disconnect(int status);
-tls_bt_status_t wm_wifi_prof_send_msg(uint8_t *ptr, int length);
-tls_bt_status_t wm_wifi_prof_send_response(uint8_t *ptr, int length);
-tls_bt_status_t wm_wifi_prof_clean_up(int status);
-tls_bt_status_t wm_wifi_prof_disable(int status);
+int tls_ble_wifi_prof_init(wm_ble_wifi_prof_callbacks_t *callback);
+int tls_ble_wifi_prof_deinit();
+int tls_ble_wifi_prof_connect(int status);
+int tls_ble_wifi_prof_disconnect(int status);
+int tls_ble_wifi_prof_send_msg(uint8_t *ptr, int length);
+int tls_ble_wifi_prof_send_response(uint8_t *ptr, int length);
+int tls_ble_wifi_prof_clean_up(int status);
+int tls_ble_wifi_prof_disable(int status);
 
 #endif
 

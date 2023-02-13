@@ -21,6 +21,8 @@
 /*-----------------------------------------------------------------------*/
 
 #include "wm_sdio_host.h"
+#include <string.h>
+#include "wm_include.h"
 
 extern int wm_sd_card_set_blocklen(uint32_t blocklen);
 
@@ -81,20 +83,40 @@ static int MMC_disk_read(	BYTE *buff, LBA_t sector, UINT count)
 {
 	int ret, i;
 	int buflen = BLOCK_SIZE*count;
+    BYTE *rdbuff = buff;
 
+	if (((u32)buff)&0x3) /*non aligned 4*/
+	{
+	    rdbuff = tls_mem_alloc(buflen);
+		if (rdbuff == NULL)
+		{
+			return -1;
+		}
+	}
+    
 	for( i=0; i<TRY_COUNT; i++ )
 	{   
 	    if(count == 1)
 	    {
-            ret = wm_sd_card_block_read(sector, (char *)buff);
+            ret = wm_sd_card_block_read(fs_rca, sector, (char *)rdbuff);
         }
         else if(count > 1)
         {
-		    ret = wm_sd_card_blocks_read(sector, (char *)buff, buflen);
+		    ret = wm_sd_card_blocks_read(fs_rca, sector, (char *)rdbuff, buflen);
         }
 		if( ret == 0 ) 
 			break;
 	}
+
+    if(rdbuff != buff)
+    {
+        if(ret == 0)
+        {
+            memcpy(buff, rdbuff, buflen);
+        }
+        tls_mem_free(rdbuff);
+    }
+
 	return ret;
 }
 
@@ -112,20 +134,39 @@ static int MMC_disk_write(	BYTE *buff, LBA_t sector, UINT count)
 {
 	int ret, i;
 	int buflen = BLOCK_SIZE*count;
-
-	for( i=0; i<TRY_COUNT; i++ )
+    BYTE *wrbuff = buff;
+    
+	if (((u32)buff)&0x3)
+	{
+	    wrbuff = tls_mem_alloc(buflen);
+		if (wrbuff == NULL) /*non aligned 4*/
+		{
+			return -1;
+		}
+        memcpy(wrbuff, buff, buflen);
+	}
+	
+	for( i = 0; i < TRY_COUNT; i++ )
 	{
 	    if(count == 1)
 	    {
-            ret = wm_sd_card_block_write(fs_rca, sector, (char *)buff);
+            ret = wm_sd_card_block_write(fs_rca, sector, (char *)wrbuff);
         }
         else if(count > 1)
 	    {
-		    ret = wm_sd_card_blocks_write(fs_rca, sector, (char *)buff, buflen);
+		    ret = wm_sd_card_blocks_write(fs_rca, sector, (char *)wrbuff, buflen);
 	    }
 		if( ret == 0 ) 
+		{
 			break;
+		}
 	}
+
+    if(wrbuff != buff)
+    {
+        tls_mem_free(wrbuff);
+    }
+
 	return ret;
 }
 

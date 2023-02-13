@@ -84,12 +84,6 @@ ATTRIBUTE_ISR void GPIOB_IRQHandler(void)
  * @return         None
  *
  * @note
- * From gpio3 to gpio7,attribute can set to WM_GPIO_ATTR_PULLHIGH,
- * but can not set to WM_GPIO_ATTR_PULLLOW,
- * the default attribute is WM_GPIO_ATTR_PULLHIGH.
- * Other gpio can set to WM_GPIO_ATTR_PULLLOW,but can not set to WM_GPIO_ATTR_PULLHIGH,the deault
- * attribute is WM_GPIO_ATTR_PULLLOW.
- * all gpio can set to WM_GPIO_ATTR_FLOATING
  */
 void tls_gpio_cfg(enum tls_io_name gpio_pin, enum tls_gpio_dir dir, enum tls_gpio_attr attr)
 {
@@ -333,16 +327,19 @@ void tls_gpio_irq_disable(enum tls_io_name gpio_pin)
     {
         pin    = gpio_pin - WM_IO_PB_00;
         offset = TLS_IO_AB_OFFSET;
+		reg = tls_reg_read32(HR_GPIO_IE + offset);
+		tls_reg_write32(HR_GPIO_IE + offset, reg & (~(0x1 << pin)));	/* disable interrupt */		
+		tls_irq_disable(GPIOB_IRQn);
     }
     else
     {
         pin    = gpio_pin;
         offset = 0;
+		reg = tls_reg_read32(HR_GPIO_IE + offset);
+		tls_reg_write32(HR_GPIO_IE + offset, reg & (~(0x1 << pin)));	/* disable interrupt */		
+		tls_irq_disable(GPIOA_IRQn);
     }
 
-	reg = tls_reg_read32(HR_GPIO_IE + offset);
-	tls_reg_write32(HR_GPIO_IE + offset, reg & (~(0x1 << pin)));	/* disable interrupt */
-	tls_irq_disable(GPIOA_IRQn);
 }
 
 /**
@@ -390,7 +387,6 @@ u8 tls_get_gpio_irq_status(enum tls_io_name gpio_pin)
  */
 void tls_clr_gpio_irq_status(enum tls_io_name gpio_pin)
 {
-	u32 reg;
 	u8  pin;
     u16 offset;
 
@@ -405,8 +401,7 @@ void tls_clr_gpio_irq_status(enum tls_io_name gpio_pin)
         offset = 0;
     }
 
-	reg = tls_reg_read32(HR_GPIO_IC + offset);
-	tls_reg_write32(HR_GPIO_IC + offset, reg | (0x1 << pin));		/* 1 clear interrupt status */
+	tls_reg_write32(HR_GPIO_IC + offset, (0x1 << pin));		/* 1 clear interrupt status */
 }
 
 /**

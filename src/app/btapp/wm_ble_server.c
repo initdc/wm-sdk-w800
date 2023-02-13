@@ -450,20 +450,24 @@ static void tls_ble_server_event_handler(tls_ble_evt_t evt, tls_ble_msg_t *msg)
 }
 
 
+/*
+ * EXPORTED FUNCTION DEFINITIONS
+ ****************************************************************************************
+ */
 
-tls_bt_status_t wm_ble_server_init()
+int tls_ble_server_init()
 {
 	memset(&app_env, 0, sizeof(app_ble_server_t)*GATT_MAX_SR_PROFILES);
 	return tls_ble_server_app_init(tls_ble_server_event_handler);
 }
 
-tls_bt_status_t wm_ble_server_deinit()
+int tls_ble_server_deinit()
 {
 	return tls_ble_server_app_deinit();
 }
 
 /** Registers a GATT server application with the stack */
-tls_bt_status_t wm_ble_server_register_server(uint16_t app_uuid, wm_ble_server_callbacks_t *callback)
+int tls_ble_server_register_server(uint16_t app_uuid, wm_ble_server_callbacks_t *callback)
 {
     int index = -1;
 	tls_bt_status_t status;
@@ -499,7 +503,7 @@ tls_bt_status_t wm_ble_server_register_server(uint16_t app_uuid, wm_ble_server_c
 }
 
 /** Unregister a server application from the stack */
-tls_bt_status_t wm_ble_server_unregister_server(int server_if)
+int tls_ble_server_unregister_server(int server_if)
 {
     int index = -1;
     index = get_app_env_index_by_server_if(server_if);

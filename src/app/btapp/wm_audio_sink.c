@@ -19,13 +19,64 @@
 #include "wm_audio_sink.h"
 #include "wm_bt_util.h"
 
-/**This function is the pcm output function, type is 0(PCM)*/
-int btif_co_avk_data_incoming(uint8_t type, uint8_t *p_data,uint16_t length)
-{
+#if (WM_AUDIO_BOARD_INCLUDED == CFG_ON)
+#include "audio.h"
+#endif
 
-    
+static uint16_t g_sample_rate = 44100;
+static uint8_t  g_bit_width   = 16;
+static uint8_t  g_chan_count = 2;
+static uint8_t  g_playing_state = 0;
+
+/**This function is the pcm output function, type is 0(PCM)*/
+#if (WM_AUDIO_BOARD_INCLUDED == CFG_ON)
+static uint32_t Stereo2Mono(void *audio_buf, uint32_t len, int LR)
+{
+    if (!audio_buf || !len || len % 4) {
+        printf( "%s arg err\n", __func__);
+        return 0;
+    }
+    int16_t *buf = audio_buf;
+    uint32_t i = 0;
+    LR = LR ? 1 : 0;
+
+    for (i = 0; i < len / 4; i++) {
+        buf[i] = buf[i * 2 + LR];
+    }
+    return len / 2;
 }
 
+int btif_co_avk_data_incoming(uint8_t type, uint8_t *p_data,uint16_t length)
+{
+    uint16_t fif0_len = 0;
+    
+    Stereo2Mono(p_data, length, 1);
+
+    fif0_len = FifoSpaceLen();
+
+    if(fif0_len < length/2)
+    {
+        printf("overwritten, fifo_space(%d), write to len(%d)\r\n", fif0_len, length/2);
+    }
+
+    FifoWrite(p_data, length/2);
+
+    if(g_playing_state)
+    {
+        if(FifoDataLen()>4*1024)
+        {
+            PlayStart(g_sample_rate, g_bit_width, g_chan_count);
+            g_playing_state = 0;
+        }
+    }
+    
+}
+#else
+int btif_co_avk_data_incoming(uint8_t type, uint8_t *p_data,uint16_t length)
+{
+	
+}
+#endif
 static void bta2dp_connection_state_callback(tls_btav_connection_state_t state, tls_bt_addr_t *bd_addr)
 {
     switch(state)
@@ -61,14 +112,22 @@ static void bta2dp_audio_state_callback(tls_btav_audio_state_t state, tls_bt_add
             TLS_BT_APPL_TRACE_DEBUG("BTAV_AUDIO_STATE_STARTED\r\n");
             //sbc_ABV_buffer_reset();
             //VolumeControl(16);
+            //PlayStart(g_sample_rate, g_bit_width);
+            g_playing_state = 1;
             break;
 
         case WM_BTAV_AUDIO_STATE_STOPPED:
             TLS_BT_APPL_TRACE_DEBUG("BTAV_AUDIO_STATE_STOPPED\r\n");
+			#if (WM_AUDIO_BOARD_INCLUDED == CFG_ON)
+            PlayStop();
+			#endif
             break;
 
         case WM_BTAV_AUDIO_STATE_REMOTE_SUSPEND:
             TLS_BT_APPL_TRACE_DEBUG("BTAV_AUDIO_STATE_REMOTE_SUSPEND\r\n");
+			#if (WM_AUDIO_BOARD_INCLUDED == CFG_ON)
+            PlayStop();
+			#endif
             break;
 
         default:
@@ -79,6 +138,7 @@ static void bta2dp_audio_config_callback(tls_bt_addr_t *bd_addr, uint32_t sample
 {
     TLS_BT_APPL_TRACE_DEBUG("CBACK:%02x:%02x:%02x:%02x:%02x:%02x::sample_rate=%d, channel_count=%d\r\n",
                 bd_addr->address[0], bd_addr->address[1], bd_addr->address[2], bd_addr->address[3], bd_addr->address[4], bd_addr->address[5], sample_rate, channel_count);
+    g_sample_rate = sample_rate;    
 }
 static void bta2dp_audio_payload_callback(tls_bt_addr_t *bd_addr, uint8_t format, uint8_t *p_data, uint16_t length)
 {
@@ -122,9 +182,6 @@ static void btavrcp_connection_state_callback(bool state, tls_bt_addr_t *bd_addr
     TLS_BT_APPL_TRACE_DEBUG("CBACK:%02x:%02x:%02x:%02x:%02x:%02x::state:%d\r\n",
                 bd_addr->address[0], bd_addr->address[1], bd_addr->address[2], bd_addr->address[3], bd_addr->address[4], bd_addr->address[5], state);
 }
-
-
-
 
 static void wm_a2dp_sink_callback(tls_bt_av_evt_t evt, tls_bt_av_msg_t *msg)
 {
@@ -214,6 +271,9 @@ tls_bt_status_t tls_bt_enable_a2dp_sink()
 		tls_btrc_deinit();
 		return status;
 	}	
+	#if (WM_AUDIO_BOARD_INCLUDED == CFG_ON)
+    AudioInit(12*1024);
+	#endif
 
 	return status;
 }

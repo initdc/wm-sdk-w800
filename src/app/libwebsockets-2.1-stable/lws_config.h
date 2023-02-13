@@ -19,7 +19,6 @@
 //#define LWS_USE_MBEDTLS
 #define LWS_USE_POLARSSL
 #endif
-//#define LWS_WITH_ESP8266
 
 //#define LWS_WITH_PLUGINS
 #define LWS_WITH_NO_LOGS

@@ -28,9 +28,6 @@
 #define POLARSSL_RSA_H
 
 #include "bignum.h"
-#ifndef POLARSSL_RSA_C
-#include "cryptoApi.h"
-#endif
 
 /*
  * RSA Error codes
@@ -128,7 +125,6 @@
 /**
  * \brief          RSA context structure
  */
-#ifdef  POLARSSL_RSA_C
 typedef struct
 {
     int ver;                    /*!<  always 0          */
@@ -156,10 +152,6 @@ typedef struct
                                       encoding                          */
 }
 rsa_context;
-
-#else
-typedef psRsaKey_t rsa_context;
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -205,11 +197,7 @@ int rsa_gen_key( rsa_context *ctx,
  *
  * \return         0 if successful, or an POLARSSL_ERR_RSA_XXX error code
  */
-#ifdef  POLARSSL_RSA_C
 int rsa_check_pubkey( const rsa_context *ctx );
-#else
-#define rsa_check_pubkey(ctx)     (0)
-#endif
 
 /**
  * \brief          Check a private RSA key
@@ -219,8 +207,6 @@ int rsa_check_pubkey( const rsa_context *ctx );
  * \return         0 if successful, or an POLARSSL_ERR_RSA_XXX error code
  */
 int rsa_check_privkey( const rsa_context *ctx );
-
-#ifdef POLARSSL_RSA_C
 
 /**
  * \brief          Do an RSA public key operation
@@ -257,13 +243,6 @@ int rsa_public( rsa_context *ctx,
 int rsa_private( rsa_context *ctx,
                  const unsigned char *input,
                  unsigned char *output );
-#else
-/*extern int32 psRsaEncryptPriv(psPool_t *pool, psRsaKey_t *key,
-						 unsigned char *in, uint32 inlen,
-						 unsigned char *out, uint32 outlen, void *data);*/
-#define  rsa_public(ctx, input, output)  (psRsaDecryptPub(NULL, ctx, input, ((rsa_context *)ctx)->size, output, ((rsa_context *)ctx)->size, NULL) == ((rsa_context *)ctx)->size ? 0 : 1)
-#define  rsa_private(ctx, input, output)  (psRsaEncryptPriv(NULL, ctx, input, ((rsa_context *)ctx)->size, output, ((rsa_context *)ctx)->size, NULL) == ((rsa_context *)ctx)->size ? 0 : 1)
-#endif
 
 /**
  * \brief          Add the message padding, then do an RSA operation
@@ -281,16 +260,12 @@ int rsa_private( rsa_context *ctx,
  * \note           The output buffer must be as large as the size
  *                 of ctx->N (eg. 128 bytes if RSA-1024 is used).
  */
-#ifdef  POLARSSL_RSA_C
 int rsa_pkcs1_encrypt( rsa_context *ctx,
                        int (*f_rng)(void *, unsigned char *, size_t),
                        void *p_rng,
                        int mode, size_t ilen,
                        const unsigned char *input,
                        unsigned char *output );
-#else
-#define rsa_pkcs1_encrypt(ctx, f_rng, p_rng, mode, ilen, input, output)   (psRsaEncryptPub(NULL, ctx, input, ilen, output, ((rsa_context *)ctx)->size, NULL) == ((rsa_context *)ctx)->size ? 0 : 1)
-#endif
 
 /**
  * \brief          Do an RSA operation, then remove the message padding
@@ -376,16 +351,12 @@ int rsa_pkcs1_verify( rsa_context *ctx,
                       const unsigned char *hash,
                       unsigned char *sig );
 
-#ifdef  POLARSSL_RSA_C
 /**
  * \brief          Free the components of an RSA key
  *
  * \param ctx      RSA Context to free
  */
 void rsa_free( rsa_context *ctx );
-#else
-#define rsa_free   psRsaFreeKey
-#endif
 
 /**
  * \brief          Checkup routine

@@ -377,6 +377,8 @@ int tls_uart_port_init(u16 uart_no, tls_uart_options_t * opts, u8 modeChoose);
  */
 void tls_uart_rx_callback_register(u16 uart_no, s16(*rx_callback) (u16 len, void* user_data), void* user_data);
 
+void tls_uart_rx_byte_callback_flag(u16 uart_no, u8 flag);
+
 /**
  * @brief	This function is used to register uart tx interrupt.
  *

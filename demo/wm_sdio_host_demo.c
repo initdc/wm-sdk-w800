@@ -57,7 +57,7 @@ static int sdh_card_wr_sb(uint32_t rca, uint8_t bus_width, const uint32_t tsize)
 		goto end;
 	for(i=0; i<(tsize/512); i++)
 	{
-		ret = wm_sd_card_block_read(i, bufR);
+		ret = wm_sd_card_block_read(rca, i, bufR);
 		if(ret)
 			goto end;
 		if(memcmp(buf, bufR, 512))
@@ -124,7 +124,7 @@ static int sdh_card_wr_mbs_dma_4M_test(uint32_t rca, uint8_t bus_width, uint32_t
 	for(i=0; i<(tsize/512); i+=block_cnt)
 	{
 		memset(bufR, 0, buflen);
-		ret = wm_sd_card_blocks_read(i, bufR, buflen);
+		ret = wm_sd_card_blocks_read(rca, i, bufR, buflen);
 		if(ret)
 			goto end;
 		if(memcmp(buf, bufR, buflen))

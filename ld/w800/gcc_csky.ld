@@ -28,7 +28,7 @@ MEMORY
 }
 
 __min_heap_size = 0x18000;
-PROVIDE (__ram_end  = 0x2003c000);
+PROVIDE (__ram_end  = 0x2003A000);
 PROVIDE (__heap_end = __ram_end);
 
 REGION_ALIAS("REGION_TEXT",    I-SRAM);

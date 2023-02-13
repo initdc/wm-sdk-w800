@@ -45,6 +45,10 @@
 
 #if defined(MBEDTLS_RSA_C)
 
+#include "wm_config.h"
+#if TLS_CONFIG_HARD_CRYPTO
+#include "wm_crypto_hard_mbed.h"
+#endif
 #include "mbedtls/rsa.h"
 #include "mbedtls/rsa_internal.h"
 #include "mbedtls/oid.h"
@@ -686,7 +690,18 @@ int mbedtls_rsa_public( mbedtls_rsa_context *ctx,
     }
 
     olen = ctx->len;
+#if TLS_CONFIG_HARD_CRYPTO
+	if( mbedtls_mpi_bitlen(&ctx->N) <= MAX_HARD_EXPTMOD_BITLEN )
+	{
+		MBEDTLS_MPI_CHK( tls_crypto_mbedtls_exptmod( &T, &T, &ctx->E, &ctx->N) );
+	}
+	else
+	{
+    	MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &T, &T, &ctx->E, &ctx->N, &ctx->RN ) );
+	}
+#else
     MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &T, &T, &ctx->E, &ctx->N, &ctx->RN ) );
+#endif
     MBEDTLS_MPI_CHK( mbedtls_mpi_write_binary( &T, output, olen ) );
 
 cleanup:
@@ -736,7 +751,18 @@ static int rsa_prepare_blinding( mbedtls_rsa_context *ctx,
 
     /* Blinding value: Vi =  Vf^(-e) mod N */
     MBEDTLS_MPI_CHK( mbedtls_mpi_inv_mod( &ctx->Vi, &ctx->Vf, &ctx->N ) );
+#if TLS_CONFIG_HARD_CRYPTO
+	if( mbedtls_mpi_bitlen(&ctx->N) <= MAX_HARD_EXPTMOD_BITLEN )
+	{
+		MBEDTLS_MPI_CHK( tls_crypto_mbedtls_exptmod( &ctx->Vi, &ctx->Vi, &ctx->E, &ctx->N ) );
+	}
+	else
+	{
+		MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &ctx->Vi, &ctx->Vi, &ctx->E, &ctx->N, &ctx->RN ) );
+	}
+#else
     MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &ctx->Vi, &ctx->Vi, &ctx->E, &ctx->N, &ctx->RN ) );
+#endif
 
 
 cleanup:
@@ -907,7 +933,18 @@ int mbedtls_rsa_private( mbedtls_rsa_context *ctx,
     }
 
 #if defined(MBEDTLS_RSA_NO_CRT)
+#if TLS_CONFIG_HARD_CRYPTO
+	if( mbedtls_mpi_bitlen(&ctx->N) <= MAX_HARD_EXPTMOD_BITLEN )
+	{
+		MBEDTLS_MPI_CHK( tls_crypto_mbedtls_exptmod( &T, &T, D, &ctx->N ) );
+	}
+	else
+	{
+    	MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &T, &T, D, &ctx->N, &ctx->RN ) );
+	}
+#else
     MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &T, &T, D, &ctx->N, &ctx->RN ) );
+#endif
 #else
     /*
      * Faster decryption using the CRT
@@ -915,9 +952,22 @@ int mbedtls_rsa_private( mbedtls_rsa_context *ctx,
      * TP = input ^ dP mod P
      * TQ = input ^ dQ mod Q
      */
-
-    MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &TP, &T, DP, &ctx->P, &ctx->RP ) );
-    MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &TQ, &T, DQ, &ctx->Q, &ctx->RQ ) );
+	
+#if TLS_CONFIG_HARD_CRYPTO
+	if( mbedtls_mpi_bitlen(&ctx->P) <= MAX_HARD_EXPTMOD_BITLEN && mbedtls_mpi_bitlen(&ctx->Q) <= MAX_HARD_EXPTMOD_BITLEN )
+	{
+	    MBEDTLS_MPI_CHK( tls_crypto_mbedtls_exptmod( &TP, &T, DP, &ctx->P ) );
+	    MBEDTLS_MPI_CHK( tls_crypto_mbedtls_exptmod( &TQ, &T, DQ, &ctx->Q ) );
+	}
+	else
+	{
+	    MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &TP, &T, DP, &ctx->P, &ctx->RP ) );
+	    MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &TQ, &T, DQ, &ctx->Q, &ctx->RQ ) );
+	}
+#else
+	MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &TP, &T, DP, &ctx->P, &ctx->RP ) );
+	MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &TQ, &T, DQ, &ctx->Q, &ctx->RQ ) );
+#endif
 
     /*
      * T = (TP - TQ) * (Q^-1 mod P) mod P
@@ -944,8 +994,20 @@ int mbedtls_rsa_private( mbedtls_rsa_context *ctx,
     }
 
     /* Verify the result to prevent glitching attacks. */
+#if TLS_CONFIG_HARD_CRYPTO
+	if( mbedtls_mpi_bitlen(&ctx->N) <= MAX_HARD_EXPTMOD_BITLEN )
+	{
+		MBEDTLS_MPI_CHK( tls_crypto_mbedtls_exptmod( &C, &T, &ctx->E, &ctx->N ) );
+	}
+	else
+	{
+    	MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &C, &T, &ctx->E,
+                                          &ctx->N, &ctx->RN ) );
+	}
+#else
     MBEDTLS_MPI_CHK( mbedtls_mpi_exp_mod( &C, &T, &ctx->E,
                                           &ctx->N, &ctx->RN ) );
+#endif
     if( mbedtls_mpi_cmp_mpi( &C, &I ) != 0 )
     {
         ret = MBEDTLS_ERR_RSA_VERIFY_FAILED;

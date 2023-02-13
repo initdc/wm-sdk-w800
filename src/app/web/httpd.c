@@ -1492,7 +1492,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 				hs->http_recive_request.charlen=0;
 				hs->http_recive_request.Valid=0;
 				hs->http_recive_request.PreBuf=NULL;
-				printf("http_recv 00pbuf:0x%x\r\n", (u32)p);
+				DEBUG_PRINT("http_recv 00pbuf:0x%x\r\n", (u32)p);
 				pbuf_free(p);
 		    	close_conn(pcb, hs);
 		  		return ERR_OK;	

@@ -16,7 +16,6 @@
 
 #if (WM_BLE_INCLUDED == CFG_ON)
 
-#include "cryptoApi.h"
 #include "wm_crypto_hard.h"
 #include "wm_debug.h"
 #include "wm_netif.h"
@@ -30,6 +29,7 @@
 #include "wm_ble_dm_api.h"
 #include "wm_ble.h"
 #include "wm_bt_util.h"
+#include "mbedtls/pk.h"
 
 //uint8_t btwifi_trace_level = BT_TRACE_LEVEL_DEBUG;
 /*
@@ -41,7 +41,10 @@
 #define ENC_FLAG_VALID_BIT     (0x01<<7)
 #define ACK_FLAG_VALID_BIT     (0x01<<6)
 #define MRE_FLAG_VALID_BIT     (0x01<<5)
-#define PAYLOAD_FRAGMENT_LENGTH       15
+//#define PAYLOAD_FRAGMENT_LENGTH       15
+//#define PAYLOAD_FRAGMENT_LENGTH       15
+static int PAYLOAD_FRAGMENT_LENGTH = 15;
+
 /*opcode, seq, flag, no, crc*/
 #define ATTACHED_LENGTH               5
 
@@ -152,7 +155,7 @@ static int PKCS7Padding(unsigned char *str, int len)
 }
 static int DePKCS7Padding(unsigned char *str, int len)
 {
-    int remain = str[len - 1];//��ȡ���ĸ���
+    int remain = str[len - 1];//¶ÁÈ¡Ìî³äµÄ¸öÊý
     return len - remain;
 }
 static int bt_aes_decrypt(uint8_t *key, uint8_t *src_ptr, int length, uint8_t *dest_ptr)
@@ -202,65 +205,37 @@ out:
 
     return ret;
 }
-static int bt_rsa_encrypt(uint8_t *pub_key, int pubkey_size, uint8_t *src_ptr, int length, uint8_t *dest_ptr)
+static int rng_func(void *ctx, unsigned char *out, size_t len)
+{
+	tls_crypto_random_init(0, CRYPTO_RNG_SWITCH_16);
+	tls_crypto_random_bytes(out, len);
+	tls_crypto_random_stop();
+	return 0;
+}
+static int bt_rsa_encrypt(uint8_t *pub_key, int pubkey_size, uint8_t *src_ptr, int length, uint8_t *dest_ptr, int dest_len)
 {
     int ret = -1;
-    uint32 len;
-    int oi;
-    psPubKey_t *pubKey = NULL;
-    u8 *p = NULL, *end = NULL;
-    TLS_DBGPRT_INFO("pub_key:");
-    TLS_DBGPRT_DUMP(pub_key, pubkey_size);
-    ret = psNewPubKey(NULL, PS_RSA, &pubKey);
 
-    if(ret)
-    {
-        ret = -1;
-        goto out;
-    }
+    mbedtls_pk_context ctx_pk;
+	unsigned char *p = pub_key;
+	size_t olen = 0;
+	mbedtls_pk_init(&ctx_pk);
 
-    p = pub_key;
-    end = pub_key + pubkey_size;
-
-    if((ret = getAsnSequence(&p, (uint32)(end - p), &len)) < 0)
-    {
-        printf("Couldn't parse signed element sequence\n");
-        goto out;
-    }
-
-    if((ret = getAsnAlgorithmIdentifier(&p, (uint32)(end - p), &oi, (int32 *)&len)) < 0)
-    {
-        printf("Couldn't parse signed element octet string\n");
-        goto out;
-    }
-
-    if((ret = getAsnRsaPubKey(NULL, &p, (uint32)(end - p), &pubKey->key.rsa)) < 0)
-    {
-        printf("getAsnRsaPubKey err\n");
-        goto out;
-    }
-
-    pubKey->type = PS_RSA;
-    pubKey->keysize = pubKey->key.rsa.size;
-    TLS_DBGPRT_INFO("aes key:");
-    TLS_DBGPRT_DUMP(src_ptr, length);
-
-    if(psRsaEncryptPub(NULL, &pubKey->key.rsa, src_ptr, (psSize_t)length, dest_ptr, 128, NULL) < 0)
-    {
-        printf("psRsaEncryptPub err\n");
-        goto out;
-    }
-
-    TLS_DBGPRT_INFO("aes encrypted key:");
-    TLS_DBGPRT_DUMP(dest_ptr, length);
-    ret = 0;
+	ret = mbedtls_pk_parse_subpubkey( &p, p + pubkey_size, &ctx_pk );
+	if(ret)
+	{
+		printf("Can't import public key %d\n ", ret);
+		goto out;
+	}
+	ret = mbedtls_pk_encrypt(&ctx_pk, src_ptr, length, dest_ptr, &olen, dest_len, rng_func, NULL);
+	if(ret)
+	{
+		printf("rsa encrypt fail %d\n ", ret);
+		goto out;
+	}
 out:
-
-    if(pubKey)
-    {
-        psDeletePubKey(&pubKey);
-    }
-
+	mbedtls_pk_free(&ctx_pk);
+    
     return ret;
 }
 static int bt_aes_encrypt(uint8_t *key, uint8_t *src_ptr, int length, uint8_t *dest_ptr)
@@ -334,7 +309,7 @@ static void wm_ble_wifi_cfg_and_enable_adv()
 static void wm_ble_wifi_cfg_disconnect(int id)
 {
     TLS_BT_APPL_TRACE_DEBUG("wm_ble_wifi_cfg_disconnect, id=%d\r\n", id);
-    wm_wifi_prof_disconnect(0);
+    tls_ble_wifi_prof_disconnect(0);
 }
 static void free_rsp_content(msg_buffer_t *rsp)
 {
@@ -391,7 +366,7 @@ void send_app_msg_wait_ack_timeout_cb(uint8_t timer_id)
 			}
             //
             ///RE ADV; DISCONNECT ;
-            wm_wifi_prof_disconnect(0);
+            tls_ble_wifi_prof_disconnect(0);
         }
     }
 }
@@ -406,13 +381,13 @@ void send_ack(uint8_t payload)
     ack[4] = payload;
     crc8 = get_crc8(ack, 5);
     ack[5] = crc8;
-    wm_wifi_prof_send_msg(ack, 6);
+    tls_ble_wifi_prof_send_msg(ack, 6);
 }
 
 int send_app_msg(uint8_t opcode, uint8_t flag, uint8_t seqno, uint8_t *ptr, int length, uint8_t *cache_buffer)
 {
-    assert(length <= PAYLOAD_FRAGMENT_LENGTH); //check? SHOULD GET MAX MTU OF L2CAP
-    uint8_t msg[ATTACHED_LENGTH + PAYLOAD_FRAGMENT_LENGTH + 1] = {0};
+    //assert(length <= PAYLOAD_FRAGMENT_LENGTH); //check? SHOULD GET MAX MTU OF GATT
+    uint8_t msg[255] = {0};
     uint8_t offset = 0;
     uint8_t crc8 = 0x00;
     msg[offset++] = opcode;
@@ -423,7 +398,7 @@ int send_app_msg(uint8_t opcode, uint8_t flag, uint8_t seqno, uint8_t *ptr, int 
     offset += length;
     crc8 = get_crc8(msg, offset);
     msg[offset++] = crc8;
-    wm_wifi_prof_send_msg(msg, offset);
+    tls_ble_wifi_prof_send_msg(msg, offset);
 
     if(flag & ACK_FLAG_VALID_BIT)
     {
@@ -439,13 +414,13 @@ int send_app_msg(uint8_t opcode, uint8_t flag, uint8_t seqno, uint8_t *ptr, int 
 
 static void resend_app_msg(uint8_t *ptr, int length)
 {
-    uint8_t msg[ATTACHED_LENGTH + PAYLOAD_FRAGMENT_LENGTH + 1];
+    uint8_t msg[255];
     uint8_t crc8 = 0x00;
     memcpy(msg, ptr, length);
     msg[1] = send_sequence++;
     crc8 = get_crc8(ptr, (length - 1));
     msg[length - 1] = crc8;
-    wm_wifi_prof_send_msg(msg, length);
+    tls_ble_wifi_prof_send_msg(msg, length);
     //This must be wait ack retry resending
     //start an timeout timer;
     tls_dm_start_timer(g_rsend_timer_id, 1000, send_app_msg_wait_ack_timeout_cb);
@@ -660,7 +635,7 @@ static void key_exchange_process(const uint8_t *payload, int length)
         priv_key[i] = rand() % 0xFF;
     }
 
-    if(bt_rsa_encrypt(payload + 2, payload[1], priv_key, 16, resp + 5))
+    if(bt_rsa_encrypt(payload + 2, payload[1], priv_key, 16, resp + 5, 128))
     {
         resp[2] = 1;
         build_cmd_rsp(CONFIG_KEY_EXCHANGE_CMD + 0x80, DEFAULT_SEND_FLAG, resp, 3);
@@ -1041,6 +1016,7 @@ static tls_bt_status_t wm_ble_wifi_cfg_connected_cb(int status)
 #endif
     g_fd = 1;
     g_wifi_config_success = WIFI_CONFIG_IDLE;
+    PAYLOAD_FRAGMENT_LENGTH = 15;
     tls_dm_start_timer(g_disconnect_timer_id, DISCONNECT_TIME_OUT, wm_ble_wifi_cfg_disconnect); // give the function addr???
     TLS_BT_APPL_TRACE_DEBUG("ble wifi config service connected\r\n");
     return TLS_BT_STATUS_SUCCESS;
@@ -1144,7 +1120,7 @@ static tls_bt_status_t wm_ble_wifi_cfg_write_cb(int offset, uint8_t *ptr, int le
     {
         build_cmd_rsp(opcode + 0x80, DEFAULT_SEND_FLAG, resp, sizeof(resp));
         ///RE ADV; DISCONNECT ;
-        wm_wifi_prof_disconnect(0);
+        tls_ble_wifi_prof_disconnect(0);
         return status;
     }
 
@@ -1162,7 +1138,7 @@ static tls_bt_status_t wm_ble_wifi_cfg_write_cb(int offset, uint8_t *ptr, int le
             return;
         }
 
-        cmd_buffer.buffer = tls_mem_alloc((length - ATTACHED_LENGTH - 1)); // CRC, SEQUENCE, FLAG, AND NO  equals 4 bytes;
+        cmd_buffer.buffer = tls_mem_alloc((length - ATTACHED_LENGTH + 1)); // CRC, SEQUENCE, FLAG, AND NO  equals 4 bytes;
         assert(cmd_buffer.buffer != NULL);
         cmd_buffer.buffer[0] = ptr[0];
         memcpy(&cmd_buffer.buffer[1], ptr + ATTACHED_LENGTH - 1, (length - ATTACHED_LENGTH));
@@ -1195,18 +1171,6 @@ static tls_bt_status_t wm_ble_wifi_cfg_write_cb(int offset, uint8_t *ptr, int le
         {
             //This must be the last fragmented packet;
             //hci_dbg_hexstring("Merged content(encrypt):", cmd_buffer.buffer,  cmd_buffer.total_len);
-            if(flag & ENC_FLAG_VALID_BIT)
-            {
-                length = bt_aes_decrypt(priv_key, cmd_buffer.buffer + 1, cmd_buffer.total_len - 1, cmd_buffer.buffer + 1);
-
-                if(length < 0)
-                {
-                    return TLS_BT_STATUS_PARM_INVALID;
-                }
-
-                cmd_buffer.total_len = length + 1;
-            }
-
             //hci_dbg_hexstring("Merged content(plained):", cmd_buffer.buffer,  cmd_buffer.total_len);
             cmd_buffer.pending = false;
         }
@@ -1214,6 +1178,18 @@ static tls_bt_status_t wm_ble_wifi_cfg_write_cb(int offset, uint8_t *ptr, int le
 
     if(cmd_buffer.pending == false)
     {
+        if(flag & ENC_FLAG_VALID_BIT)
+        {
+            length = bt_aes_decrypt(priv_key, cmd_buffer.buffer + 1, cmd_buffer.total_len - 1, cmd_buffer.buffer + 1);
+
+            if(length < 0)
+            {
+                TLS_BT_APPL_TRACE_ERROR("!!!!bt_aes_decrypt failed\r\n");
+                return TLS_BT_STATUS_PARM_INVALID;
+            }
+
+            cmd_buffer.total_len = length + 1;
+        }
         app_cmd_process(cmd_buffer.buffer, cmd_buffer.total_len);
         cmd_buffer.offset = 0;
         cmd_buffer.total_len = 0;
@@ -1247,6 +1223,17 @@ static tls_bt_status_t wm_ble_wifi_cfg_exec_write_cb(int exec)
     return TLS_BT_STATUS_SUCCESS;
 }
 
+static int wm_ble_wifi_cfg_mtu_changed_cb(int mtu)
+{
+    int proper_mtu;  //per controller data length ext, max 255 payload bytes
+    //244+3+8 = 255;
+    proper_mtu = min(mtu, 247); //att level mtu;
+
+    proper_mtu -= 3;            //gatt level mtu;
+    
+    PAYLOAD_FRAGMENT_LENGTH = proper_mtu  -5; //app msg mtu;  5: wifi cfg protocal msg header;    
+}
+
 
 static wm_ble_wifi_prof_callbacks_t wm_ble_wifi_cfg_cb =
 {
@@ -1258,12 +1245,13 @@ static wm_ble_wifi_prof_callbacks_t wm_ble_wifi_cfg_cb =
     wm_ble_wifi_cfg_write_cb,
     wm_ble_wifi_cfg_exec_write_cb,
     wm_ble_wifi_cfg_sent_cb,
+    wm_ble_wifi_cfg_mtu_changed_cb,
 };
 
-tls_bt_status_t wm_bt_wifi_cfg_init()
+int tls_ble_wifi_cfg_init()
 {
     tls_bt_status_t status = 0;
-    status = wm_wifi_prof_init(&wm_ble_wifi_cfg_cb);
+    status = tls_ble_wifi_prof_init(&wm_ble_wifi_cfg_cb);
 	if(status != TLS_BT_STATUS_SUCCESS)
 	{
 		TLS_BT_APPL_TRACE_ERROR("wm_wifi_prof_init, ret=%d\r\n", status);
@@ -1271,12 +1259,12 @@ tls_bt_status_t wm_bt_wifi_cfg_init()
     return status;
 }
 
-tls_bt_status_t wm_bt_wifi_cfg_deinit()
+int tls_ble_wifi_cfg_deinit()
 {
 	tls_bt_status_t status = 0;
     if(g_bt_wifi_service_enabled == 1)
     {
-	    status = wm_wifi_prof_disable(TLS_BT_STATUS_SUCCESS);
+	    status = tls_ble_wifi_prof_disable(TLS_BT_STATUS_SUCCESS);
 		if(status != TLS_BT_STATUS_SUCCESS)
 		{
 			TLS_BT_APPL_TRACE_ERROR("wm_bt_wifi_cfg_deinit, ret=%d\r\n", status);

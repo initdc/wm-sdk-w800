@@ -23,7 +23,6 @@
 
 #if (WM_BLE_INCLUDED == CFG_ON)
     #include "wm_ble_server_wifi_app.h"
-    #include "wm_ble_client_huawei.h"
     #include "wm_ble_server_api_demo.h"
     #include "wm_ble_uart_if.h"
     #include "wm_ble_client_api_multi_conn_demo.h"
@@ -98,25 +97,26 @@ void app_adapter_state_changed_callback(tls_bt_state_t status)
     {
     	TLS_BT_APPL_TRACE_VERBOSE("init base application\r\n");
         /* those funtions should be called basiclly*/
-    	wm_ble_dm_init();
-		wm_ble_client_init();
-    	wm_ble_server_init(); 
+    	tls_ble_gap_init();
+		tls_ble_client_init();
+    	tls_ble_server_init(); 
 
 		//at here , user run their own applications;
         //application_run();
         //demo_ble_adv(1);
         //demo_async_ble_scan(1);
-        //wm_ble_server_api_demo_init(NULL);
+        //tls_ble_server_demo_api_init(NULL);
         //wm_ble_client_multi_conn_demo_api_init();
     }else
     {
         TLS_BT_APPL_TRACE_VERBOSE("deinit base application\r\n");
-    	wm_ble_dm_deinit();
-		wm_ble_client_deinit();
-        wm_ble_server_deinit();
+    	tls_ble_gap_deinit();
+		tls_ble_client_deinit();
+        tls_ble_server_deinit();
 
         //here, user may free their application;
         //application_stop();
+        //tls_ble_server_demo_api_deinit();
     }
 
     #endif
@@ -275,7 +275,7 @@ void app_bond_state_changed_callback(tls_bt_status_t status,
 }
 static void app_flush_bonded_params(uint8_t id)
 {
-    tls_dm_free_timer_id(id);
+    //tls_dm_free_timer_id(id);
     TLS_BT_APPL_TRACE_DEBUG("flush bonded params to flash\r\n");
     tls_param_to_flash(-1);
 }
@@ -285,10 +285,11 @@ void app_acl_state_changed_callback(tls_bt_status_t status, tls_bt_addr_t *remot
     TLS_BT_APPL_TRACE_DEBUG("app_acl_state_changed_callback is called,[%02x:%02x:%02x:%02x:%02x:%02x],type=%s, state=(%s)\r\n", 
         remote_bd_addr->address[0],remote_bd_addr->address[1],remote_bd_addr->address[2],remote_bd_addr->address[3],
         remote_bd_addr->address[4],remote_bd_addr->address[5],(link_type==1)?"BR_EDR":"BLE",(state)?"DISCONNECTED":"CONNECTED");
-    if(state == WM_BT_ACL_STATE_CONNECTED)
+    if((state == WM_BT_ACL_STATE_CONNECTED) && (link_type == 1))
     {
        //demo_bt_scan_mode(0); 
-       tls_dm_start_timer(tls_dm_get_timer_id(),3000,app_flush_bonded_params);
+       //TODO , flush bonding information to flash
+       //tls_dm_start_timer(tls_dm_get_timer_id(),3000,app_flush_bonded_params);
     }else
     {
        //demo_bt_scan_mode(2);  
@@ -380,7 +381,7 @@ void tls_bt_exit()
     //demo_bt_destroy(); //turn off bluetooth system;
 }
 
-tls_bt_status_t at_bt_enable(int uart_no, tls_bt_log_level_t log_level, tls_bt_host_callback_t at_callback_ptr)
+int tls_at_bt_enable(int uart_no, tls_bt_log_level_t log_level, tls_bt_host_callback_t at_callback_ptr)
 {
 	tls_bt_status_t status;
 	bt_enabled_by_at = 1;
@@ -420,7 +421,7 @@ tls_bt_status_t at_bt_enable(int uart_no, tls_bt_log_level_t log_level, tls_bt_h
 
 	return status;
 }
-tls_bt_status_t at_bt_destroy()
+int tls_at_bt_destroy()
 {
 	tls_bt_status_t status;
 	if(host_enabled_by_at)
@@ -447,68 +448,7 @@ tls_bt_status_t at_bt_destroy()
 	return TLS_BT_STATUS_SUCCESS;
 }
 
-
-tls_bt_status_t at_bt_enable_host(tls_bt_log_level_t log_level, tls_bt_host_callback_t at_callback_ptr)
-{
-	tls_bt_status_t status;
-	tls_bt_ctrl_status_t ctrl_status;
-
-	ctrl_status = tls_bt_controller_get_status();
-	if(ctrl_status == TLS_BT_CTRL_IDLE)
-	{
-		TLS_BT_APPL_TRACE_WARNING("please enable controller first\r\n");
-		return TLS_BT_STATUS_NOT_READY;
-	}
-	TLS_BT_APPL_TRACE_VERBOSE("run bluedroid\r\n");
-	host_enabled_by_at = 1;
-    if(bt_enabled_by_at) 
-	{
-		TLS_BT_APPL_TRACE_WARNING("bt host stack enabled by at+bten=1,n\r\n");
-		return TLS_BT_STATUS_UNSUPPORTED;
-    }
-	
-	tls_appl_trace_level = log_level;
-	if(tls_bt_host_callback_at_ptr)
-	{
-		TLS_BT_APPL_TRACE_WARNING("bluedroid already enabled\r\n");
-		return TLS_BT_STATUS_DONE;
-	}
-	tls_bt_host_callback_at_ptr = at_callback_ptr;
-	status = tls_bt_host_enable(tls_bt_host_callback_handler, log_level);
-	if(status != TLS_BT_STATUS_SUCCESS)
-	{
-		tls_bt_host_callback_at_ptr = NULL;
-		TLS_BT_APPL_TRACE_ERROR("tls_bt_host_enable, ret:%s,%d\r\n", tls_bt_status_2_str(status),status);
-	}
-	
-	return status;
-}
-
-tls_bt_status_t at_bt_destroy_host()
-{
-	tls_bt_status_t status;
-	if(bt_enabled_by_at)
-	{
-		TLS_BT_APPL_TRACE_WARNING("do not support, bt system enabled by at+bten=1,n\r\n");
-		return TLS_BT_STATUS_UNSUPPORTED;
-	}
-    host_enabled_by_at = 0;
-	TLS_BT_APPL_TRACE_VERBOSE("stop bluedroid\r\n");
-	if(tls_bt_host_callback_at_ptr == NULL)
-	{
-		TLS_BT_APPL_TRACE_WARNING("bluedroid already disabled\r\n");
-		return TLS_BT_STATUS_DONE;
-	}
-	status = tls_bt_host_disable();
-	if(status != TLS_BT_STATUS_SUCCESS)
-	{
-		TLS_BT_APPL_TRACE_WARNING("tls_bt_host_disable, ret:%s,%d\r\n", tls_bt_status_2_str(status),status);
-		if(status == TLS_BT_STATUS_NOT_READY)
-			return TLS_BT_STATUS_SUCCESS;
-	}
-	return status;
-}
-tls_bt_status_t at_bt_cleanup_host()
+int tls_at_bt_cleanup_host()
 {
 	tls_bt_status_t status;
 	TLS_BT_APPL_TRACE_DEBUG("cleanup bluedroid\r\n");
@@ -525,16 +465,7 @@ tls_bt_status_t at_bt_cleanup_host()
 	return status;
 }
 
-void bt_run_btc()
-{
-	TLS_BT_APPL_TRACE_VERBOSE("run controller\r\n");
-	tls_bt_ctrl_enable(NULL, TLS_BT_LOG_NONE);	
-}
-void bt_clean_btc()
-{
-	TLS_BT_APPL_TRACE_VERBOSE("cleanup controller stack\r\n");
-	tls_bt_ctrl_disable();	
-}
+
 
 /*
 *bluetooth api demo 
@@ -543,7 +474,7 @@ int demo_bt_enable()
 {
 	tls_bt_status_t status;
     uint8_t uart_no = 1;    //default we use uart 1 for testing;
-	tls_appl_trace_level = TLS_BT_LOG_DEBUG;
+	tls_appl_trace_level = TLS_BT_LOG_VERBOSE;
     tls_bt_hci_if_t hci_if;
 
     if(bt_adapter_state == WM_BT_STATE_ON)
@@ -551,7 +482,6 @@ int demo_bt_enable()
        TLS_BT_APPL_TRACE_VERBOSE("bt system enabled already"); 
        return TLS_BT_STATUS_SUCCESS;
     }
-	
 	
 	TLS_BT_APPL_TRACE_VERBOSE("bt system running, uart_no=%d, log_level=%d\r\n", uart_no, tls_appl_trace_level);
 
@@ -612,69 +542,6 @@ int demo_bt_destroy()
 
 #if (TLS_CONFIG_BLE == CFG_ON)
 
-int demo_ble_server_on()
-{
-    if(bt_adapter_state == WM_BT_STATE_OFF)
-    {
-       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n"); 
-       return -1;
-    }   
-    wm_ble_server_api_demo_init(NULL); 
-    return 0;
-}
-int demo_ble_server_off()
-{
-    if(bt_adapter_state == WM_BT_STATE_OFF)
-    {
-       TLS_BT_APPL_TRACE_VERBOSE("bluetooth system stopped\r\n"); 
-       return -1;
-    } 
-
-    wm_ble_server_api_demo_deinit(); 
-
-    return 0;
-}
-int demo_ble_client_on()
-{
-    if(bt_adapter_state == WM_BT_STATE_OFF)
-    {
-       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n"); 
-       return -1;
-    }   
-    wm_ble_client_demo_api_init(NULL); 
-    return 0;
-}
-int demo_ble_client_off()
-{
-    if(bt_adapter_state == WM_BT_STATE_OFF)
-    {
-       TLS_BT_APPL_TRACE_VERBOSE("bluetooth system stopped\r\n"); 
-       return -1;
-    } 
-
-    wm_ble_client_demo_api_deinit();
-
-    return 0;
-}
-
-int demo_ble_uart_server_on(uint8_t uart_no)
-{
-    return wm_uart_ble_init(BLE_UART_SERVER_MODE, uart_no, NULL);    
-}
-
-int demo_ble_uart_server_off()
-{
-    return wm_uart_ble_deinit(BLE_UART_SERVER_MODE, 0xFF);
-}
-int demo_ble_uart_client_on(uint8_t uart_no)
-{
-    return wm_uart_ble_init(BLE_UART_CLIENT_MODE, uart_no, NULL); 
-}
-
-int demo_ble_uart_client_off()
-{
-    return wm_uart_ble_deinit(BLE_UART_CLIENT_MODE, 0xFF);   
-}
 
 static uint8_t get_valid_adv_length_and_name(uint8_t *ptr, uint8_t *pname)
 {
@@ -703,7 +570,6 @@ static uint8_t get_valid_adv_length_and_name(uint8_t *ptr, uint8_t *pname)
 	return ret;
 }
 
-int g_recv_count = 0;
 static void demo_ble_scan_report_cb(tls_ble_dm_evt_t event, tls_ble_dm_msg_t *p_data)
 {
     if((event != WM_BLE_DM_SCAN_RES_EVT) && (event != WM_BLE_DM_SCAN_RES_CMPL_EVT)) return;
@@ -716,7 +582,7 @@ static void demo_ble_scan_report_cb(tls_ble_dm_evt_t event, tls_ble_dm_msg_t *p_
     buf = tls_mem_alloc(BLE_SCAN_RESULT_LEN);
     if (!buf)
     {
-        printf("alloc failed\r\n");
+        TLS_BT_APPL_TRACE_ERROR("alloc failed\r\n");
         return;
     }
     switch(event)
@@ -755,20 +621,15 @@ static void demo_ble_scan_report_cb(tls_ble_dm_evt_t event, tls_ble_dm_msg_t *p_
 
                 len += sprintf(buf + len, "\r\n");
             	buf[len++] = '\0';
+                TLS_BT_APPL_TRACE_VERBOSE("%s\r\n", buf);
 
-            	if(device_name[0] == 'W' ||device_name[0] == 'w' )
-                {
-                    g_recv_count++;
-                    printf("%s\r\n", buf);
-                }
             }
             break;  
         case WM_BLE_DM_SCAN_RES_CMPL_EVT:
             {
                 tls_ble_dm_scan_res_cmpl_msg_t *msg = (tls_ble_dm_scan_res_cmpl_msg_t *)&p_data->dm_scan_result_cmpl;
-                printf("scan ended, ret=%d\r\n", /*msg->num_responses*/g_recv_count);
+                TLS_BT_APPL_TRACE_VERBOSE("scan ended, ret=%d\r\n", msg->num_responses);
                 bt_adapter_scaning = 0;
-                g_recv_count = 0;
             }
             break;  
         default:
@@ -779,7 +640,7 @@ static void demo_ble_scan_report_cb(tls_ble_dm_evt_t event, tls_ble_dm_msg_t *p_
         tls_mem_free(buf);
 	
 }    
-int demo_ble_scan(uint8_t start)
+int tls_ble_demo_scan(uint8_t start)
 {
     tls_bt_status_t ret;
     TLS_BT_APPL_TRACE_VERBOSE("demo_ble_scan=%d\r\n",start);
@@ -793,7 +654,7 @@ int demo_ble_scan(uint8_t start)
 		if(ret == TLS_BT_STATUS_SUCCESS)
 		{
 		    bt_adapter_scaning = 1;
-			ret = wm_ble_register_report_evt(WM_BLE_DM_SCAN_RES_EVT|WM_BLE_DM_SCAN_RES_CMPL_EVT, demo_ble_scan_report_cb);
+			ret = tls_ble_register_report_evt(WM_BLE_DM_SCAN_RES_EVT|WM_BLE_DM_SCAN_RES_CMPL_EVT, demo_ble_scan_report_cb);
 		}
     }
     else
@@ -808,7 +669,7 @@ int demo_ble_scan(uint8_t start)
                 tls_os_time_delay(500);
             }
 		    //unregister the callback 
-			ret = wm_ble_deregister_report_evt(WM_BLE_DM_SCAN_RES_EVT|WM_BLE_DM_SCAN_RES_CMPL_EVT, demo_ble_scan_report_cb);
+			ret = tls_ble_deregister_report_evt(WM_BLE_DM_SCAN_RES_EVT|WM_BLE_DM_SCAN_RES_CMPL_EVT, demo_ble_scan_report_cb);
         }
 
     }
@@ -833,7 +694,7 @@ static void ble_adv_enable_cb(uint8_t triger_id)
 	tls_ble_adv(triger_id);
 }
 
-int demo_ble_adv(uint8_t type)
+int tls_ble_demo_adv(uint8_t type)
 {
     TLS_BT_APPL_TRACE_VERBOSE("demo_ble_adv=%d\r\n",type);
     if(type)
@@ -891,6 +752,79 @@ int demo_ble_adv(uint8_t type)
     
     return TLS_BT_STATUS_SUCCESS;
 }
+
+int demo_ble_server_on()
+{
+    if(bt_adapter_state == WM_BT_STATE_OFF)
+    {
+       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n"); 
+       return -1;
+    }   
+    tls_ble_server_demo_api_init(NULL);
+    return 0;
+}
+int demo_ble_server_off()
+{
+    if(bt_adapter_state == WM_BT_STATE_OFF)
+    {
+       TLS_BT_APPL_TRACE_VERBOSE("bluetooth system stopped\r\n"); 
+       return -1;
+    } 
+
+    tls_ble_server_demo_api_deinit();
+
+    return 0;
+}
+int demo_ble_client_on()
+{
+    if(bt_adapter_state == WM_BT_STATE_OFF)
+    {
+       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n"); 
+       return -1;
+    }   
+    tls_ble_client_demo_api_init(NULL); 
+    return 0;
+}
+int demo_ble_client_off()
+{
+    if(bt_adapter_state == WM_BT_STATE_OFF)
+    {
+       TLS_BT_APPL_TRACE_VERBOSE("bluetooth system stopped\r\n"); 
+       return -1;
+    } 
+
+    tls_ble_client_demo_api_deinit();
+
+    return 0;
+}
+
+int demo_ble_uart_server_on(uint8_t uart_no)
+{
+    return tls_ble_uart_init(BLE_UART_SERVER_MODE, uart_no, NULL);    
+}
+
+int demo_ble_uart_server_off()
+{
+    return tls_ble_uart_deinit(BLE_UART_SERVER_MODE, 0xFF);
+}
+int demo_ble_uart_client_on(uint8_t uart_no)
+{
+    return tls_ble_uart_init(BLE_UART_CLIENT_MODE, uart_no, NULL); 
+}
+
+int demo_ble_uart_client_off()
+{
+    return tls_ble_uart_deinit(BLE_UART_CLIENT_MODE, 0xFF);   
+}
+int demo_ble_adv(uint8_t type)
+{
+    return tls_ble_demo_adv(type);
+}
+int demo_ble_scan(uint8_t start)
+{
+    return tls_ble_demo_scan(start);
+}
+
 #endif
 
 #if (WM_BT_INCLUDED == CFG_ON)

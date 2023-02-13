@@ -10,8 +10,6 @@
 #else
 #define TEST_DEBUG(fmt, ...)
 #endif
-//#define DELAY_TIME              (40000)
-static struct tls_dma_descriptor *dma_desc_lst = NULL;
 
 SD_CardInfo_t SDCardInfo;
 extern void delay_cnt(int count);
@@ -59,7 +57,7 @@ static int sm_sdh_wait_interrupt(uint8_t srcbit, int timeout)
 	volatile int vtimeout= timeout;
 
 	if(vtimeout == -1) {
-		vtimeout = 0x40000;
+		vtimeout = 0x7FFFF;
 	}
 
 	while(1)
@@ -86,8 +84,11 @@ static int sm_sdh_wait_interrupt(uint8_t srcbit, int timeout)
 
 int wm_sdh_config(void)
 {
-	SDIO_HOST->MMC_CARDSEL = 0xd3; //enable module, enable mmcclk
-	SDIO_HOST->MMC_CTL = 0x83; //4bits, low speed, 1/2 divider, auto transfer, mmc mode.
+    tls_sys_clk sysclk;	
+
+	tls_sys_clk_get(&sysclk);
+	SDIO_HOST->MMC_CARDSEL = 0xC0 | (sysclk.cpuclk / 2 - 1);//0xd3; //enable module, enable mmcclk
+	SDIO_HOST->MMC_CTL = 0xD3;//0xC3; //4bits, low speed, 1/4 divider, auto transfer, mmc mode.
 	SDIO_HOST->MMC_INT_MASK = 0x100; //unmask sdio data interrupt.
 	SDIO_HOST->MMC_CRCCTL = 0xC0; //
 	SDIO_HOST->MMC_TIMEOUTCNT = 0xff;
@@ -137,7 +138,7 @@ begin:
 
 		wm_sdh_send_cmd(41, 0xC0100000, 0x44); //Send ACMD41
 		sm_sdh_wait_interrupt(0, -1);
-		sm_sdh_wait_interrupt(3, 100); //由于sd规范中，Acmd41返回的crc永远是11111，也就是应该忽略crc;这里的crc错误应该忽略。
+		sm_sdh_wait_interrupt(3, 1000); //由于sd规范中，Acmd41返回的crc永远是11111，也就是应该忽略crc;这里的crc错误应该忽略。
 		wm_sdh_get_response(respCmd, 2);
 		sh_dumpBuffer("ACMD41 respCmd", (char *)respCmd, 5);
 		if((respCmd[1] & 0xFF) != 0x3F) //sd规范定义固定为0x3F,所以导致crc错误
@@ -151,7 +152,7 @@ begin:
 
 	wm_sdh_send_cmd(2, 0, 0x54); //Send CMD2
 	sm_sdh_wait_interrupt(0, -1);
-	sm_sdh_wait_interrupt(3, 100);
+	sm_sdh_wait_interrupt(3, 1000);
 	wm_sdh_get_response(respCmd, 4);
 	sh_dumpBuffer("CMD2 respCmd", (char *)respCmd, 16);
 	if((respCmd[3] >> 24 & 0xFF) != 0x3F) //sd规范定义固定为0x3F,所以导致crc错误
@@ -202,7 +203,7 @@ int wm_sd_card_query_csd(uint32_t rca)
 	
 	wm_sdh_send_cmd(9, rca<<16, 0x54); //Send CMD9
 	sm_sdh_wait_interrupt(0, -1);
-	sm_sdh_wait_interrupt(3, 100);
+	sm_sdh_wait_interrupt(3, 1000);
 	wm_sdh_get_response(respCmd, 4);
 	for(i=0; i<16; i++) adjustResp[15-i] = SDIO_HOST->CMD_BUF[i];
 	SD_GetCapacity((uint8_t*)&adjustResp[1], &SDCardInfo);
@@ -293,7 +294,7 @@ int wm_sd_card_switch_func(uint8_t speed_mode)
 	sh_dumpBuffer("CMD6 respCmd", (char *)respCmd, 5);
 	if((respCmd[1] & 0xFF) != 6)
 		goto end;
-	SDIO_HOST->BUF_CTL = 0x020; //disable dma, read sd card
+	SDIO_HOST->BUF_CTL = 0x4020; //disable dma, read sd card
 	SDIO_HOST->MMC_INT_SRC |= 0x7ff; // clear all firstly
 	SDIO_HOST->MMC_IO  = 0x3;   //!!!read data, auto transfer
 	sm_sdh_wait_interrupt(1, -1);
@@ -320,7 +321,7 @@ int wm_sd_card_switch_func(uint8_t speed_mode)
 		sh_dumpBuffer("CMD6 respCmd", (char *)respCmd, 5);
 		if((respCmd[1] & 0xFF) != 6)
 			goto end;
-		SDIO_HOST->BUF_CTL = 0x020; //disable dma, read sd card
+		SDIO_HOST->BUF_CTL = 0x4020; //disable dma, read sd card
 		SDIO_HOST->MMC_INT_SRC |= 0x7ff; // clear all firstly
 		SDIO_HOST->MMC_IO  = 0x3;   //!!!read data, auto transfer
 		sm_sdh_wait_interrupt(1, -1);
@@ -450,7 +451,7 @@ end:
 }
 
 /*buf's len must >= 512*/
-int wm_sd_card_block_read(uint32_t sd_addr, char *buf)
+int wm_sd_card_block_read(uint32_t rca, uint32_t sd_addr, char *buf)
 {
 	int ret = -1;
 	int i;
@@ -461,7 +462,7 @@ int wm_sd_card_block_read(uint32_t sd_addr, char *buf)
 	sh_dumpBuffer("CMD17 respCmd", (char *)respCmd, 5);
 	if((respCmd[1] & 0xFF) != 17)
 		goto end;
-	SDIO_HOST->BUF_CTL = 0x020; //disable dma, read sd card
+	SDIO_HOST->BUF_CTL = 0x4020; //disable dma, read sd card
 	SDIO_HOST->MMC_INT_SRC |= 0x7ff; // clear all firstly
 	SDIO_HOST->MMC_IO  = 0x3;   //!!!read data, auto transfer
 	sm_sdh_wait_interrupt(1, -1);
@@ -491,7 +492,7 @@ int wm_sd_card_block_write(uint32_t rca, uint32_t sd_addr, char *buf)
 	if((respCmd[1] & 0xFF) != 24)
 		goto end;
 
-	SDIO_HOST->BUF_CTL = 0x820; //disable dma, write sd card
+	SDIO_HOST->BUF_CTL = 0x4820; //disable dma, write sd card
 	for(i = 0; i < 128; i++)
 	{
 		SDIO_HOST->DATA_BUF[i] = *((uint32*)(buf + 4*i));
@@ -529,51 +530,68 @@ end:
 int wm_sd_card_dma_config(u32*mbuf,u32 bufsize,u8 dir)
 {
 	int ch;
-	int i = 0;
 	u32 addr_inc = 0;
-	int block_cnt = bufsize/512;
-	struct tls_dma_descriptor *dma_desc = dma_desc_lst;
-	struct tls_dma_descriptor *p_desc = dma_desc;
 
 	ch = tls_dma_request(0, NULL);
 	DMA_CHNLCTRL_REG(ch) = DMA_CHNL_CTRL_CHNL_OFF;
-	DMA_INTMASK_REG &= ~(0x02<<(ch *2));
-	for(i=0; i<block_cnt; i++)
+
+	if(dir)
 	{
-		if(dir)
-		{
-			p_desc->src_addr = (unsigned int)(mbuf + 128*i);
-			p_desc->dest_addr = (unsigned int)SDIO_HOST->DATA_BUF;
-			addr_inc = TLS_DMA_DESC_CTRL_SRC_ADD_INC;
-		}
-		else
-		{
-			p_desc->src_addr = (unsigned int)SDIO_HOST->DATA_BUF;
-			p_desc->dest_addr = (unsigned int)(mbuf + 128*i);
-			addr_inc = TLS_DMA_DESC_CTRL_DEST_ADD_INC;
-		}
-		TEST_DEBUG("p_desc:%x, src_addr:%x, dest_addr:%x\n", p_desc, p_desc->src_addr, p_desc->dest_addr);
-		p_desc->dma_ctrl = addr_inc | TLS_DMA_DESC_CTRL_DATA_SIZE_WORD | TLS_DMA_DESC_CTRL_BURST_SIZE1 | TLS_DMA_DESC_CTRL_TOTAL_BYTES(512);
-		p_desc->valid = TLS_DMA_DESC_VALID;
-		p_desc->next = p_desc + 1;
-		p_desc++;
+		DMA_SRCADDR_REG(ch) = (unsigned int)mbuf;
+		DMA_DESTADDR_REG(ch) = (unsigned int)SDIO_HOST->DATA_BUF;
+		addr_inc = (1 << 1);
 	}
-	p_desc->valid = 0;
-	DMA_MODE_REG(ch) = TLS_DMA_FLAGS_CHAIN_MODE | DMA_MODE_SEL_SDIOHOST | DMA_MODE_HARD_MODE | TLS_DMA_FLAGS_CHAIN_LINK_EN;
-	DMA_DESC_ADDR_REG(ch) = (unsigned int)dma_desc;
+	else
+	{
+		DMA_SRCADDR_REG(ch) = (unsigned int)SDIO_HOST->DATA_BUF;
+		DMA_DESTADDR_REG(ch) = (unsigned int)mbuf;
+		addr_inc = (1 << 3);
+	}
+	DMA_CTRL_REG(ch) = addr_inc | (2 << 5) | (bufsize << 8);   
+	DMA_MODE_REG(ch) = DMA_MODE_SEL_SDIOHOST | DMA_MODE_HARD_MODE;
 	DMA_CHNLCTRL_REG(ch) = DMA_CHNL_CTRL_CHNL_ON;
 	
 	return ch;
 }
 
+static int wm_sdh_wait_blocks_done(void)
+{
+	int ret = 0;
+    uint32_t timeout = 0x7FFFF * 8;
+
+	while(1)
+	{
+        if((SDIO_HOST->MMC_IO_MBCTL & 0x01) == 0x00)
+		{
+            break;
+		}
+        
+        if(timeout == 0)
+        {
+            ret = -1;
+            tls_os_time_delay(HZ);
+
+        }
+        else
+        {
+            delay_cnt(1);
+            timeout--;
+        }
+	}
+
+	return ret;
+}
+
 /*read blocks by dma
  * buflen must be integer multiple of 512
  * */
-int wm_sd_card_blocks_read(uint32_t sd_addr, char *buf, uint32_t buflen)
+int wm_sd_card_blocks_read(uint32_t rca, uint32_t sd_addr, char *buf, uint32_t buflen)
 {
-	int ret = -1, dma_channel = 0xFF;
+	int ret = -1, dma_channel = 0xFF, retresp = -100;
 	uint32_t respCmd[2];
 	int block_cnt = buflen/512;
+	uint8_t current_state = 0;
+	uint8_t error_state = 0;	
 
 	wm_sdh_send_cmd(18, sd_addr, 0x44); //Send CMD18
 	sm_sdh_wait_interrupt(0, -1);
@@ -581,36 +599,65 @@ int wm_sd_card_blocks_read(uint32_t sd_addr, char *buf, uint32_t buflen)
 	sh_dumpBuffer("CMD18 respCmd", (char *)respCmd, 5);
 	if((respCmd[1] & 0xFF) != 18)
 		goto end;
-	dma_desc_lst = tls_mem_alloc(sizeof(struct tls_dma_descriptor)*block_cnt);
-	if (NULL == dma_desc_lst)
-	{
-		TEST_DEBUG("dma buffer alloc failed\r\n");
-		goto end;
-	}	
+
+	SDIO_HOST->BUF_CTL = 0x4000; //disable dma,
 	dma_channel = wm_sd_card_dma_config((u32*)buf, 512*block_cnt, 0);
 	SDIO_HOST->BUF_CTL = 0x404; //enable dma, read sd card
 	SDIO_HOST->MMC_BLOCKCNT = block_cnt;
 	SDIO_HOST->MMC_INT_SRC |= 0x7ff; // clear all firstly
-	SDIO_HOST->MMC_IO_MBCTL = 0x3; //read data, enable multi blocks data transfer
-	sm_sdh_wait_interrupt(1, -1);
-	ret = sm_sdh_wait_interrupt(4, -1);//wait multi blocks data done
+	SDIO_HOST->MMC_IO_MBCTL = 0xa3; //read data, enable multi blocks data transfer
+//	sm_sdh_wait_interrupt(1, -1);
+	ret = wm_sdh_wait_blocks_done();
 	if(ret)
 	{
 		TEST_DEBUG("wm_sd_card_blocks_read: timeout error\n");
-		goto end;
+        goto end;
 	}
 	TEST_DEBUG("read complete\n");
 	ret = wm_sd_card_stop_trans();
 	if(ret)
 		goto end;
+	
+	/*waiting for card to trans state*/
+	do
+	{
+		ret = wm_sd_card_query_status(rca, &respCmd[0]);
+		if(ret)
+		   break;
+		current_state = respCmd[0] >> 9 & 0xF;
+		error_state = respCmd[0] >> 19 & 0x1;
+		if(error_state)
+		{
+			ret = -1;
+			break;
+		}
+	}while(current_state != 4);
+	if (ret)
+	{
+		TEST_DEBUG("mr blocks:%x\r\n", error_state);
+		goto end;
+	}
 	ret = 0;
 end:
-	tls_dma_free(dma_channel);
-	if (dma_desc_lst)
+	if (ret)
 	{
-		tls_mem_free(dma_desc_lst);
-		dma_desc_lst = NULL;
+		wm_sd_card_stop_trans();
+		do
+		{
+			retresp = wm_sd_card_query_status(rca, &respCmd[0]);
+			if(retresp)
+			   break;
+			current_state = respCmd[0] >> 9 & 0xF;
+			error_state = respCmd[0] >> 19 & 0x1;
+			if(error_state)
+			{
+				ret = -1;
+				break;
+			}
+		}while(current_state != 4);
 	}
+	tls_dma_free(dma_channel);
+
 	return ret;
 }
 
@@ -620,11 +667,11 @@ end:
 int wm_sd_card_blocks_write(uint32_t rca, uint32_t sd_addr, char *buf, uint32_t buflen)
 {
 	int dma_channel = 0xFF;
-	int ret = -1;
+	int ret = -1, retresp = -100;
 	uint32_t respCmd[2];
 	int block_cnt = buflen/512;
 	uint8_t current_state = 0;
-	uint8_t error_state = 0;	
+	uint8_t error_state = 0;
 
 	wm_sdh_send_cmd(25, sd_addr, 0x44); //Send CMD25
 	ret = sm_sdh_wait_interrupt(0, -1);
@@ -636,25 +683,21 @@ int wm_sd_card_blocks_write(uint32_t rca, uint32_t sd_addr, char *buf, uint32_t 
 		ret = -1;
 		goto end;
 	}
-	dma_desc_lst = tls_mem_alloc(sizeof(struct tls_dma_descriptor)*block_cnt);
-	if (NULL == dma_desc_lst)
-	{
-		ret = -8;
-		TEST_DEBUG("dma buffer alloc failed\r\n");
-		goto end;
-	}
-	dma_channel = wm_sd_card_dma_config((u32*)buf, 512*block_cnt, 1);
 
+	SDIO_HOST->BUF_CTL = 0x4000; //disable dma,
+	dma_channel = wm_sd_card_dma_config((u32*)buf, 512*block_cnt, 1);
 	SDIO_HOST->BUF_CTL = 0xC20; //enable dma, write sd card
 	SDIO_HOST->MMC_BLOCKCNT = block_cnt;
 	SDIO_HOST->MMC_INT_SRC |= 0x7ff; // clear all firstly
-	SDIO_HOST->MMC_IO_MBCTL = 0x81;////write data, enable multi blocks data transfer
+	SDIO_HOST->MMC_IO_MBCTL = 0xa1;////write data, enable multi blocks data transfer
+#if 0
 	ret = sm_sdh_wait_interrupt(1, -1);
 	if(ret)
 		goto end;
-	ret = sm_sdh_wait_interrupt(4, -1);//wait multi blocks data done
+#endif
+	ret = wm_sdh_wait_blocks_done();
 	if(ret)
-		goto end;
+        goto end;
 	ret = wm_sd_card_stop_trans();
 	if(ret)
 		goto end;
@@ -672,6 +715,11 @@ int wm_sd_card_blocks_write(uint32_t rca, uint32_t sd_addr, char *buf, uint32_t 
 			break;
 		}
 	}while(current_state != 4);
+	if (ret)
+	{
+		TEST_DEBUG("mw blocks:%x\r\n", error_state);
+		goto end;
+	}	
 	TEST_DEBUG("write complete\n");
 	ret = 0;
 end:
@@ -680,8 +728,8 @@ end:
 		wm_sd_card_stop_trans();
 		do
 		{
-			ret = wm_sd_card_query_status(rca, &respCmd[0]);
-			if(ret)
+			retresp = wm_sd_card_query_status(rca, &respCmd[0]);
+			if(retresp)
 			   break;
 			current_state = respCmd[0] >> 9 & 0xF;
 			error_state = respCmd[0] >> 19 & 0x1;
@@ -693,13 +741,8 @@ end:
 		}while(current_state != 4);
 	}
 
-
 	tls_dma_free(dma_channel);
-	if (dma_desc_lst)
-	{
-		tls_mem_free(dma_desc_lst);
-		dma_desc_lst = NULL;
-	}
+
 	return ret;
 }
 

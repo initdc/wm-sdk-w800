@@ -23,48 +23,40 @@ static struct pmu_irq_context pmu_sdio_wake_context = {0};
 
 void PMU_TIMER1_IRQHandler(void)
 {
-    csi_kernel_intrpt_enter();
     tls_reg_write32(HR_PMU_INTERRUPT_SRC, BIT(1)|0x180); /* clear timer1 interrupt */
 	tls_reg_write32(HR_PMU_TIMER1, tls_reg_read32(HR_PMU_TIMER1) & (~BIT(16)));
     if (NULL != pmu_timer1_context.callback)
     {
         pmu_timer1_context.callback(pmu_timer1_context.arg);
     }
-    csi_kernel_intrpt_exit();
     return;	
 }
 
 void PMU_TIMER0_IRQHandler(void)
 {
-    csi_kernel_intrpt_enter();
     tls_reg_write32(HR_PMU_INTERRUPT_SRC, BIT(0)|0x180); /* clear timer0 interrupt */
 	tls_reg_write32(HR_PMU_TIMER0, tls_reg_read32(HR_PMU_TIMER0) & (~BIT(16)));
 
     if (NULL != pmu_timer0_context.callback)
         pmu_timer0_context.callback(pmu_timer0_context.arg);
-    csi_kernel_intrpt_exit();
     return;
 }
 
 void PMU_GPIO_WAKE_IRQHandler(void)
 {
-    csi_kernel_intrpt_enter();
     tls_reg_write32(HR_PMU_INTERRUPT_SRC, BIT(2)|0x180); /* clear gpio wake interrupt */
 
     if (NULL != pmu_gpio_wake_context.callback)
         pmu_gpio_wake_context.callback(pmu_gpio_wake_context.arg);
-    csi_kernel_intrpt_exit();
     return;
 }
 
 void PMU_SDIO_WAKE_IRQHandler(void)
 {
-    csi_kernel_intrpt_enter();
     tls_reg_write32(HR_PMU_INTERRUPT_SRC, BIT(3)|0x180); /* clear sdio wake interrupt */
 
     if (NULL != pmu_sdio_wake_context.callback)
         pmu_sdio_wake_context.callback(pmu_sdio_wake_context.arg);
-    csi_kernel_intrpt_exit();
     return;
 }
 
@@ -261,8 +253,6 @@ void tls_pmu_timer0_stop(void)
 void tls_pmu_timer1_start(u16 msec)
 {
 	u32 val;
-	u32 value = 0;
-	int i = 0;
 
 	val = tls_reg_read32(HR_PMU_INTERRUPT_SRC);
 	if (val&0x180)

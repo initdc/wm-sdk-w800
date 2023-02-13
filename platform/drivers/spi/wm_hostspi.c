@@ -47,6 +47,9 @@ int tls_spi_async(struct tls_spi_message *message);
 int tls_spi_sync(struct tls_spi_message *message);
 
 #ifdef SPI_USE_DMA
+unsigned char *SPI_DMA_CMD_ADDR = NULL;
+unsigned char *SPI_DMA_BUF_ADDR = NULL;
+
 static void SpiMasterInit(u8 mode, u8 cs_active, u32 fclk)
 {
 	tls_sys_clk sysclk;
@@ -60,6 +63,26 @@ static void SpiMasterInit(u8 mode, u8 cs_active, u32 fclk)
     SPIM_SPICFG_REG = 0;
     SPIM_SPICFG_REG = SPI_FRAME_FORMAT_MOTO | SPI_SET_MASTER_SLAVE(SPI_MASTER) | mode;
     SPIM_INTEN_REG = 0xff;      /* Disable INT */
+
+	if (SPI_DMA_CMD_ADDR == NULL)
+	{
+		SPI_DMA_CMD_ADDR = tls_mem_alloc(SPI_DMA_CMD_MAX_SIZE);
+		if (SPI_DMA_CMD_ADDR == NULL)
+		{
+			return;
+		}
+	}
+
+	if (SPI_DMA_BUF_ADDR == NULL)
+	{
+		SPI_DMA_BUF_ADDR = tls_mem_alloc(SPI_DMA_BUF_MAX_SIZE);
+		if (SPI_DMA_BUF_ADDR == NULL)
+		{
+			tls_mem_free(SPI_DMA_CMD_ADDR);
+			SPI_DMA_CMD_ADDR = NULL;
+			return;
+		}
+	}
 
     tls_dma_init();
 }
@@ -876,15 +899,22 @@ int tls_spi_read_with_cmd(const u8 * txbuf, u32 n_tx, u8 * rxbuf, u32 n_rx)
         }
         tls_os_sem_acquire(spi_port->lock, 0);
         tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_LSPI);
-
-        MEMCPY((u8 *) SPI_DMA_CMD_ADDR, txbuf, n_tx);
-        SpiDmaBlockRead((u8 *) SPI_DMA_BUF_ADDR, n_rx, (u8 *) SPI_DMA_CMD_ADDR,
-                        n_tx);
-        MEMCPY(rxbuf, (u8 *) SPI_DMA_BUF_ADDR, n_rx);
+		if (SPI_DMA_CMD_ADDR && SPI_DMA_BUF_ADDR)
+		{
+	        MEMCPY((u8 *) SPI_DMA_CMD_ADDR, txbuf, n_tx);
+	        SpiDmaBlockRead((u8 *) SPI_DMA_BUF_ADDR, n_rx, (u8 *) SPI_DMA_CMD_ADDR,
+	                        n_tx);
+	        MEMCPY(rxbuf, (u8 *) SPI_DMA_BUF_ADDR, n_rx);
+			status = TLS_SPI_STATUS_OK;
+		}
+		else
+		{
+			status = TLS_SPI_STATUS_ENOMEM;
+    	}
 
         tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_LSPI);
         tls_os_sem_release(spi_port->lock);
-        return TLS_SPI_STATUS_OK;
+        return status;
     }
 #endif
 
@@ -975,8 +1005,17 @@ int tls_spi_read(u8 * buf, u32 len)
                 tls_os_sem_release(spi_port->lock);
                 return TLS_SPI_STATUS_EINVAL;
             }
-            SpiDmaBlockRead((u8 *) SPI_DMA_BUF_ADDR, len, NULL, 0);
-            MEMCPY(buf, (u8 *) SPI_DMA_BUF_ADDR, len);
+			if (SPI_DMA_BUF_ADDR)
+			{
+	            SpiDmaBlockRead((u8 *) SPI_DMA_BUF_ADDR, len, NULL, 0);
+	            MEMCPY(buf, (u8 *) SPI_DMA_BUF_ADDR, len);
+			}
+			else
+			{
+		        tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_LSPI);
+		        tls_os_sem_release(spi_port->lock);
+		        return TLS_SPI_STATUS_ENOMEM;
+			}
         }
         tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_LSPI);
         tls_os_sem_release(spi_port->lock);
@@ -1057,8 +1096,17 @@ int tls_spi_write(const u8 * buf, u32 len)
                 tls_os_sem_release(spi_port->lock);
                 return TLS_SPI_STATUS_EINVAL;
             }
-            MEMCPY((u8 *) SPI_DMA_BUF_ADDR, buf, len);
-            SpiDmaBlockWrite((u8 *) SPI_DMA_BUF_ADDR, len, 0, 0);
+			if (SPI_DMA_BUF_ADDR)
+			{
+	            MEMCPY((u8 *) SPI_DMA_BUF_ADDR, buf, len);
+	            SpiDmaBlockWrite((u8 *) SPI_DMA_BUF_ADDR, len, 0, 0);
+			}
+			else
+			{
+				tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_LSPI);
+				tls_os_sem_release(spi_port->lock);
+				return TLS_SPI_STATUS_ENOMEM;
+			}
         }
         tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_LSPI);
         tls_os_sem_release(spi_port->lock);
@@ -1114,12 +1162,20 @@ int tls_spi_write_with_cmd(const u8 * cmd, u32 n_cmd, const u8 * txbuf,
         }
         tls_os_sem_acquire(spi_port->lock, 0);
         tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_LSPI);
-        MEMCPY((u8 *) SPI_DMA_BUF_ADDR, (u8 *) cmd, n_cmd);
-        MEMCPY((u8 *) (SPI_DMA_BUF_ADDR + n_cmd), txbuf, n_tx);
-        SpiDmaBlockWrite((u8 *) SPI_DMA_BUF_ADDR, (n_cmd + n_tx), 0, 0);
-        tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_LSPI);
-        tls_os_sem_release(spi_port->lock);
-        return TLS_SPI_STATUS_OK;
+		if (SPI_DMA_BUF_ADDR)
+		{
+	        MEMCPY((u8 *) SPI_DMA_BUF_ADDR, (u8 *) cmd, n_cmd);
+	        MEMCPY((u8 *) (SPI_DMA_BUF_ADDR + n_cmd), txbuf, n_tx);
+	        SpiDmaBlockWrite((u8 *) SPI_DMA_BUF_ADDR, (n_cmd + n_tx), 0, 0);
+			status = TLS_SPI_STATUS_OK;
+		}
+		else
+		{
+			status = TLS_SPI_STATUS_ENOMEM;			
+		}
+		tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_LSPI);
+		tls_os_sem_release(spi_port->lock);
+		return status;
     }
 #endif
 
@@ -1274,7 +1330,7 @@ int tls_spi_init(void)
         TLS_DBGPRT_ERR("allocate \"struct tls_spi_port\" fail!\n");
         return TLS_SPI_STATUS_ENOMEM;
     }
-
+	memset(port, 0, sizeof(struct tls_spi_port));
     err = tls_os_sem_create(&port->lock, 1);
     if (err != TLS_OS_SUCCESS)
     {
@@ -1334,7 +1390,7 @@ int tls_spi_task_init(void)
 		return TLS_SPI_STATUS_ENOMEM;
 	}
 
-	if (spi_scheduler_stk)
+	if (spi_port->msg_queue)
 	{
 		return TLS_SPI_STATUS_OK;
 	}
@@ -1353,7 +1409,6 @@ int tls_spi_task_init(void)
 		TLS_DBGPRT_ERR("spi_scheduler_stk allocated fail!\n");
         return TLS_SPI_STATUS_ENOMEM;
 	}
-
 	err = tls_os_task_create(NULL, "hostspi",
 							 spi_scheduler,
 							 (void *) spi_port,
@@ -1435,7 +1490,7 @@ void tls_spi_slave_sel(u16 slave)
 **********************************************************************************************************/
 int32_t tls_spi_xfer(const void *data_out, void *data_in, uint32_t num_out, uint32_t num_in)
 {
-    int ret;
+    int ret = 0;
 	uint32_t length = 0;
     uint32_t remain_length ;
     uint32_t int_status;	

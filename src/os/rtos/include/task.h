@@ -432,7 +432,8 @@ void vTaskAllocateMPURegions( xTaskHandle xTask, const xMemoryRegion * const pxR
  */
 void vTaskDelete( xTaskHandle pxTaskToDelete ) PRIVILEGED_FUNCTION;
 
-unsigned portBASE_TYPE vTaskDeleteByPriority(unsigned portBASE_TYPE prio);
+unsigned portBASE_TYPE vTaskDeleteByPriority(unsigned portBASE_TYPE prio,void (*freeStackfunc)(void));
+void vTaskDeleteByHandle( void* pxTaskToDelete, void (*freeStackfunc)(void));
 
 /*-----------------------------------------------------------
  * TASK CONTROL API

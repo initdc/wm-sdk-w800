@@ -56,7 +56,6 @@
 #include "wm_type_def.h"
 #include "lwip/arch.h"
 #include "wm_sockets.h"
-#include "cryptoApi.h"
 #if( defined( CommonServices_PLATFORM_HEADER ) )
 	#include  CommonServices_PLATFORM_HEADER
 #endif

@@ -1,438 +1,222 @@
 #include <string.h>
 #include "wm_include.h"
-#include "wm_crypto_hard.h"
+#include "wm_crypto_hard_mbed.h"
 #include "wm_demo.h"
 #include "utils.h"
 
 #if DEMO_RSA
+#include "mbedtls/platform.h"
+#include "mbedtls/sha1.h"
+#include "mbedtls/rsa.h"
 
-int getRsaBig(unsigned char *p, uint32 len, pstm_int *big)
-{
-	if (pstm_init_for_read_unsigned_bin(NULL, big, len) != PSTM_OKAY) {
-		return PS_MEM_FAIL;
-	}
-	if (pstm_read_unsigned_bin(big, p, len) != 0) {
-		pstm_clear(big);
-		printf("getRsaBig failed\n");
-		return PS_PARSE_FAIL;
-	}
-	return PS_SUCCESS;
-}
-int getRsaKey(unsigned char *e, uint32 elen, unsigned char *d, uint32 dlen, 
-					 unsigned char *n, uint32 nlen, psRsaKey_t *pubKey)
-{
-	int ret = PS_PARSE_FAIL;
-	memset(pubKey, 0x0, sizeof(psRsaKey_t));
-	if(getRsaBig(e, elen, &pubKey->e))
-		goto out;
-	if(getRsaBig(d, dlen, &pubKey->d))
-		goto out;
-	if(getRsaBig(n, nlen, &pubKey->N))
-		goto out;
-	pubKey->size = pstm_unsigned_bin_size(&pubKey->N);
-	ret = PS_SUCCESS;
-out:
-	return ret;
-}
 
-int getRsaKeyByStr(const char *e, const char *d, const char *n, psRsaKey_t *pubKey)
-{
-	int ret = -1;
-#ifndef TLS_CONFIG_CPU_XT804	
-	int i = 0;
-#endif
-	unsigned char *ee = NULL;
-	unsigned char *dd = NULL;
-	unsigned char *nn = NULL;
-	uint32 elen = strlen(e) / 2;
-	uint32 dlen = strlen(d) / 2;
-	uint32 nlen = strlen(n) / 2;
-	ee = tls_mem_alloc(elen);
-	if(ee == NULL){
-		goto out;
-	}
-	dd = tls_mem_alloc(dlen);
-	if(dd == NULL){
-		goto out;
-	}
-	nn = tls_mem_alloc(nlen);
-	if(nn == NULL){
-		goto out;
-	}
+/*
+ * Example RSA-1024 keypair, for test purposes
+ */
+#define KEY_LEN 128
 
-#ifndef TLS_CONFIG_CPU_XT804
-	for(i = 0; i < elen; i++)
-	{
-		sscanf(e + (i * 2), "%02X", ee + i);
-	}
-	for(i = 0; i < dlen; i++)
-	{
-		sscanf(d + (i * 2), "%02X", dd+ i);
-	}
-	for(i = 0; i < nlen; i++)
-	{
-		sscanf(n + (i * 2), "%02X", nn + i);
-	}
+#define RSA_N   "9292758453063D803DD603D5E777D788" \
+                "8ED1D5BF35786190FA2F23EBC0848AEA" \
+                "DDA92CA6C3D80B32C4D109BE0F36D6AE" \
+                "7130B9CED7ACDF54CFC7555AC14EEBAB" \
+                "93A89813FBF3C4F8066D2D800F7C38A8" \
+                "1AE31942917403FF4946B0A83D3D3E05" \
+                "EE57C6F5F5606FB5D4BC6CD34EE0801A" \
+                "5E94BB77B07507233A0BC7BAC8F90F79"
+
+#define RSA_E   "10001"
+
+#define RSA_D   "24BF6185468786FDD303083D25E64EFC" \
+                "66CA472BC44D253102F8B4A9D3BFA750" \
+                "91386C0077937FE33FA3252D28855837" \
+                "AE1B484A8A9A45F7EE8C0C634F99E8CD" \
+                "DF79C5CE07EE72C7F123142198164234" \
+                "CABB724CF78B8173B9F880FC86322407" \
+                "AF1FEDFDDE2BEB674CA15F3E81A1521E" \
+                "071513A1E85B5DFA031F21ECAE91A34D"
+
+#define RSA_P   "C36D0EB7FCD285223CFB5AABA5BDA3D8" \
+                "2C01CAD19EA484A87EA4377637E75500" \
+                "FCB2005C5C7DD6EC4AC023CDA285D796" \
+                "C3D9E75E1EFC42488BB4F1D13AC30A57"
+
+#define RSA_Q   "C000DF51A7C77AE8D7C7370C1FF55B69" \
+                "E211C2B9E5DB1ED0BF61D0D9899620F4" \
+                "910E4168387E3C30AA1E00C339A79508" \
+                "8452DD96A9A5EA5D9DCA68DA636032AF"
+
+#define PT_LEN  24
+#define RSA_PT  "\xAA\xBB\xCC\x03\x02\x01\x00\xFF\xFF\xFF\xFF\xFF" \
+                "\x11\x22\x33\x0A\x0B\x0C\xCC\xDD\xDD\xDD\xDD\xDD"
+
+#if defined(MBEDTLS_PKCS1_V15)
+static int myrand( void *rng_state, unsigned char *output, size_t len )
+{
+#if !defined(__OpenBSD__)
+    size_t i;
+
+    if( rng_state != NULL )
+        rng_state  = NULL;
+
+    for( i = 0; i < len; ++i )
+        output[i] = rand();
 #else
-    strtohexarray(ee, elen, (char *)e);
-    strtohexarray(dd, dlen, (char *)d);
-    strtohexarray(nn, nlen, (char *)n);
+    if( rng_state != NULL )
+        rng_state = NULL;
+
+    arc4random_buf( output, len );
+#endif /* !OpenBSD */
+
+    return( 0 );
+}
+#endif /* MBEDTLS_PKCS1_V15 */
+
+/*
+ * Checkup routine
+ */
+int mbedtls_rsa_self_test( int verbose )
+{
+    int ret = 0;
+#if defined(MBEDTLS_PKCS1_V15)
+    size_t len;
+    mbedtls_rsa_context rsa;
+    unsigned char rsa_plaintext[PT_LEN];
+    unsigned char rsa_decrypted[PT_LEN];
+    unsigned char rsa_ciphertext[KEY_LEN];
+#if defined(MBEDTLS_SHA1_C)
+    unsigned char sha1sum[20];
 #endif
 
-	ret = getRsaKey(ee, elen, dd, dlen, nn, nlen, pubKey);
-out:
-	if(ee)
-		tls_mem_free(ee);
-	if(dd)
-		tls_mem_free(dd);
-	if(nn)
-		tls_mem_free(nn);
-	return ret;
+    mbedtls_mpi K;
+
+    mbedtls_mpi_init( &K );
+    mbedtls_rsa_init( &rsa, MBEDTLS_RSA_PKCS_V15, 0 );
+
+    MBEDTLS_MPI_CHK( mbedtls_mpi_read_string( &K, 16, RSA_N  ) );
+    MBEDTLS_MPI_CHK( mbedtls_rsa_import( &rsa, &K, NULL, NULL, NULL, NULL ) );
+    MBEDTLS_MPI_CHK( mbedtls_mpi_read_string( &K, 16, RSA_P  ) );
+    MBEDTLS_MPI_CHK( mbedtls_rsa_import( &rsa, NULL, &K, NULL, NULL, NULL ) );
+    MBEDTLS_MPI_CHK( mbedtls_mpi_read_string( &K, 16, RSA_Q  ) );
+    MBEDTLS_MPI_CHK( mbedtls_rsa_import( &rsa, NULL, NULL, &K, NULL, NULL ) );
+    MBEDTLS_MPI_CHK( mbedtls_mpi_read_string( &K, 16, RSA_D  ) );
+    MBEDTLS_MPI_CHK( mbedtls_rsa_import( &rsa, NULL, NULL, NULL, &K, NULL ) );
+    MBEDTLS_MPI_CHK( mbedtls_mpi_read_string( &K, 16, RSA_E  ) );
+    MBEDTLS_MPI_CHK( mbedtls_rsa_import( &rsa, NULL, NULL, NULL, NULL, &K ) );
+
+    MBEDTLS_MPI_CHK( mbedtls_rsa_complete( &rsa ) );
+
+    if( verbose != 0 )
+        mbedtls_printf( "  RSA key validation: " );
+
+    if( mbedtls_rsa_check_pubkey(  &rsa ) != 0 ||
+        mbedtls_rsa_check_privkey( &rsa ) != 0 )
+    {
+        if( verbose != 0 )
+            mbedtls_printf( "failed\n" );
+
+        ret = 1;
+        goto cleanup;
+    }
+
+    if( verbose != 0 )
+        mbedtls_printf( "passed\n  PKCS#1 encryption : " );
+
+    memcpy( rsa_plaintext, RSA_PT, PT_LEN );
+
+    if( mbedtls_rsa_pkcs1_encrypt( &rsa, myrand, NULL, MBEDTLS_RSA_PUBLIC,
+                                   PT_LEN, rsa_plaintext,
+                                   rsa_ciphertext ) != 0 )
+    {
+        if( verbose != 0 )
+            mbedtls_printf( "failed\n" );
+
+        ret = 1;
+        goto cleanup;
+    }
+
+    if( verbose != 0 )
+        mbedtls_printf( "passed\n  PKCS#1 decryption : " );
+
+    if( mbedtls_rsa_pkcs1_decrypt( &rsa, myrand, NULL, MBEDTLS_RSA_PRIVATE,
+                                   &len, rsa_ciphertext, rsa_decrypted,
+                                   sizeof(rsa_decrypted) ) != 0 )
+    {
+        if( verbose != 0 )
+            mbedtls_printf( "failed\n" );
+
+        ret = 1;
+        goto cleanup;
+    }
+
+    if( memcmp( rsa_decrypted, rsa_plaintext, len ) != 0 )
+    {
+        if( verbose != 0 )
+            mbedtls_printf( "failed\n" );
+
+        ret = 1;
+        goto cleanup;
+    }
+
+    if( verbose != 0 )
+        mbedtls_printf( "passed\n" );
+
+#if defined(MBEDTLS_SHA1_C)
+    if( verbose != 0 )
+        mbedtls_printf( "  PKCS#1 data sign  : " );
+
+    if( mbedtls_sha1_ret( rsa_plaintext, PT_LEN, sha1sum ) != 0 )
+    {
+        if( verbose != 0 )
+            mbedtls_printf( "failed\n" );
+
+        return( 1 );
+    }
+
+    if( mbedtls_rsa_pkcs1_sign( &rsa, myrand, NULL,
+                                MBEDTLS_RSA_PRIVATE, MBEDTLS_MD_SHA1, 0,
+                                sha1sum, rsa_ciphertext ) != 0 )
+    {
+        if( verbose != 0 )
+            mbedtls_printf( "failed\n" );
+
+        ret = 1;
+        goto cleanup;
+    }
+
+    if( verbose != 0 )
+        mbedtls_printf( "passed\n  PKCS#1 sig. verify: " );
+
+    if( mbedtls_rsa_pkcs1_verify( &rsa, NULL, NULL,
+                                  MBEDTLS_RSA_PUBLIC, MBEDTLS_MD_SHA1, 0,
+                                  sha1sum, rsa_ciphertext ) != 0 )
+    {
+        if( verbose != 0 )
+            mbedtls_printf( "failed\n" );
+
+        ret = 1;
+        goto cleanup;
+    }
+
+    if( verbose != 0 )
+        mbedtls_printf( "passed\n" );
+#endif /* MBEDTLS_SHA1_C */
+
+    if( verbose != 0 )
+        mbedtls_printf( "\n" );
+
+cleanup:
+    mbedtls_mpi_free( &K );
+    mbedtls_rsa_free( &rsa );
+#else /* MBEDTLS_PKCS1_V15 */
+    ((void) verbose);
+#endif /* MBEDTLS_PKCS1_V15 */
+    return( ret );
 }
 
-void freeRsaKey(psRsaKey_t *key)
-{
-	pstm_clear(&(key->N));
-	pstm_clear(&(key->e));
-	pstm_clear(&(key->d));
-}
-
-int test_rsa(psRsaKey_t * key, unsigned char *in, int inLen)
-{
-	int ret = -1;
-	int keySize = key->size;
-	unsigned char *out = NULL;
-	unsigned char *outout = NULL;
-
-	out = tls_mem_alloc(keySize);
-	if(out == NULL)
-	{
-		goto out;
-	}
-	outout = tls_mem_alloc(keySize);
-	if(outout == NULL)
-	{
-		goto out;
-	}	
-
-	if(psRsaEncryptPriv(NULL, key, in, inLen, out, keySize, NULL) < 0)
-	{
-		goto out;
-	}
-
-	if(psRsaDecryptPub(NULL, key, out, keySize, outout, inLen, NULL) < 0)
-	{
-		goto out;
-	}
-	
-	if(memcmp(in, outout, inLen))
-	{
-		goto out;
-	}
-
-	if(psRsaEncryptPub(NULL, key, in, inLen, out, keySize, NULL) < 0)
-	{
-		goto out;
-	}
-
-	if(psRsaDecryptPriv(NULL, key, out, keySize, outout, inLen, NULL) < 0)
-	{
-		goto out;
-	}
-
-	if(memcmp(in, outout, inLen))
-	{
-		goto out;
-	}
-	
-	ret = 0;
-out:
-	if(out)
-		tls_mem_free(out);
-	if(outout)
-		tls_mem_free(outout);
-	return ret;	
-}
-
-int rsa128_demo(void)
-{
-#undef KEY_SIZE
-#define KEY_SIZE   16
-	int ret = -1, len = 4, i = 0;
-	psRsaKey_t pubkey;
-	char *e = "010001";
-	char *d = "006DFD720E301A062B9ACA4BE269633D";
-	char *n = "8D7F323AB44D756BC881D09EDBA021B9";
-	unsigned char *in = NULL;
-
-	in = tls_mem_alloc(KEY_SIZE);
-	if(in == NULL)
-	{
-		printf("malloc err\n");
-		goto out;
-	}
-
-	for(i=0; i<KEY_SIZE; i++)
-	{
-		in[i] = rand();
-	}
-	if(getRsaKeyByStr(e, d, n, &pubkey))
-	{
-		printf("getRsaKeyByStr err\n");
-		goto out;
-	}
-	
-	len = KEY_SIZE - 11;
-	if(test_rsa(&pubkey, in, len))
-	{
-		printf("rsa128 test fail\n");
-		goto out;
-	}
-	
-	len = KEY_SIZE - 15;
-	if(test_rsa(&pubkey, in, len))
-	{
-		printf("rsa128 test fail\n");
-		goto out;
-	}	
-
-	printf("rsa128 test sucess\n");
-	ret = 0;
-out:
-	if(in != NULL)
-	{
-		tls_mem_free(in);
-	}
-	freeRsaKey(&pubkey);
-	return ret;	
-}
-
-int rsa256_demo(void)
-{
-#undef KEY_SIZE
-#define KEY_SIZE   32
-	int ret = -1, len = 4, i = 0;
-	psRsaKey_t pubkey;
-	char *e = "010001";
-	char *d = "A834A242A7F8AB804581EA3BC37E0921EDBBDBC755078FEC097191D28304F825";
-	char *n = "B05BFAC56C23D78E6902AC5F2FFC94267A362F67A3422EA88DC90E64D0FD0CC5";
-	unsigned char *in = NULL;
-
-	in = tls_mem_alloc(KEY_SIZE);
-	if(in == NULL)
-	{
-		printf("malloc err\n");
-		goto out;
-	}
-
-	for(i=0; i<KEY_SIZE; i++)
-	{
-		in[i] = rand();
-	}
-	if(getRsaKeyByStr(e, d, n, &pubkey))
-	{
-		printf("getRsaKeyByStr err\n");
-		goto out;
-	}
-	
-	len = KEY_SIZE - 11;
-	if(test_rsa(&pubkey, in, len))
-	{
-		printf("rsa256 test fail\n");
-		goto out;
-	}
-	
-	len = KEY_SIZE - 15;
-	if(test_rsa(&pubkey, in, len))
-	{
-		printf("rsa256 test fail\n");
-		goto out;
-	}	
-
-	printf("rsa256 test sucess\n");
-	ret = 0;
-out:
-	if(in != NULL)
-	{
-		tls_mem_free(in);
-	}
-	freeRsaKey(&pubkey);
-	return ret;	
-}
-
-int rsa512_demo(void)
-{
-#undef KEY_SIZE
-#define KEY_SIZE   64
-	int ret = -1, len = 4, i = 0;
-	psRsaKey_t pubkey;
-	char *e = "010001";
-	char *d = "528F5501EE3730E68DEE5E91EE9F9D95D63B7E5A776D99494B092E8032685A09736FB4BBED02A495ABF423A65833D80707152A22C3EC94744F0FD435FF37D601";
-	char *n = "860593CE009DA860C8346E48FAE96064914B48CEB415EB4BBD41E15E6FB5004BCED662716B416AE1C2160923022F38DDC39034B0EDE5CCA941226108B4CE473D";
-	unsigned char *in = NULL;
-
-	in = tls_mem_alloc(KEY_SIZE);
-	if(in == NULL)
-	{
-		printf("malloc err\n");
-		goto out;
-	}
-
-	for(i=0; i<KEY_SIZE; i++)
-	{
-		in[i] = rand();
-	}
-	if(getRsaKeyByStr(e, d, n, &pubkey))
-	{
-		printf("getRsaKeyByStr err\n");
-		goto out;
-	}
-	
-	len = KEY_SIZE - 11;
-	if(test_rsa(&pubkey, in, len))
-	{
-		printf("rsa512 test fail\n");
-		goto out;
-	}
-	
-	len = KEY_SIZE - 15;
-	if(test_rsa(&pubkey, in, len))
-	{
-		printf("rsa512 test fail\n");
-		goto out;
-	}	
-
-	printf("rsa512 test sucess\n");
-	ret = 0;
-out:
-	if(in != NULL)
-	{
-		tls_mem_free(in);
-	}
-	freeRsaKey(&pubkey);
-	return ret;	
-}
-
-int rsa1024_demo(void)
-{
-#undef KEY_SIZE
-#define KEY_SIZE   128
-	int ret = -1, len = 4, i = 0;
-	psRsaKey_t pubkey;
-	char *e = "010001";
-	char *d = "10472A02092A7B762B58F106F685A7C7BF89A9BB63D1995AA18DD69D60D12A0A2A57DD68FDC9A3F7B88A8CE9F9AD3691A679BCA92FA69863FE624ADF0C3DDA45663DC2C7AF657E9F94C1912FF43F3B25F7707DA9ED4012F94ABB5459A7D3B85D5073238956C683674D60E97B04E5C73533AF1B362C990C93DED2ADFEBA73FA01";
-	char *n = "831F490969DD687C0F942642303956C30FE71E9E00E9820560ACEFFDB775644A24D0AB3271DC4F962ADD2EB5F322FF358605A2F48E7791937844C25EDEED536D6FE1E8842AA07CE2604B93FF9DC48DB89B9F0744D499566109C3984EE9E01CA27077858408F1204EB929836C0396D410471CD0944AFE0D84E83BD36277A64963";
-	unsigned char *in = NULL;
-
-	in = tls_mem_alloc(KEY_SIZE);
-	if(in == NULL)
-	{
-		printf("malloc err\n");
-		goto out;
-	}
-
-	for(i=0; i<KEY_SIZE; i++)
-	{
-		in[i] = rand();
-	}
-	if(getRsaKeyByStr(e, d, n, &pubkey))
-	{
-		printf("getRsaKeyByStr err\n");
-		goto out;
-	}
-	
-	len = KEY_SIZE - 11;
-	if(test_rsa(&pubkey, in, len))
-	{
-		printf("rsa1024 test fail\n");
-		goto out;
-	}
-	
-	len = KEY_SIZE - 15;
-	if(test_rsa(&pubkey, in, len))
-	{
-		printf("rsa1024 test fail\n");
-		goto out;
-	}	
-
-	printf("rsa1024 test sucess\n");
-	ret = 0;
-out:
-	if(in != NULL)
-	{
-		tls_mem_free(in);
-	}
-	freeRsaKey(&pubkey);
-	return ret;	
-}
-
-int rsa2048_demo(void)
-{
-#undef KEY_SIZE
-#define KEY_SIZE   256
-	int ret = -1, len = 4, i = 0;
-	psRsaKey_t pubkey;
-	char *e = "010001";
-	char *d = "42A99675F95DAE21A1E951C252CDE058AB3810A85D954A24F3EFFF92A38A6EF3012405DBF36A2813AA9080DA1F089474408293B987F34F0D604BAA2D8180196AEF323DAB1C244539D384B89C3F76581A80A5E335FC39593084C07241DD0267B207B556EAD8DA5CC1E900278E584E8C3E1E9E89AA4D9EA3C6C69211253492744AE5259515A7E2D8F7A45F1E38D0F0D31469833F4B3A5E3EE09B0922BD9FB44DFF04E2DBE243C3407E70FB27B03AE271B511E0AB6A0E6947FF19F3FFAD388159B60FC1B9C58DACE4A92FFCA16412510AB90F665968A44B7C9C12AF98CD5B1E7EB38790079FD0531EF3A3CEE3313FE7A778EBE63AAA494B778285A803CC39820841";
-	char *n = "B3459DB697592E0642E20EDEF5442AAD07774FB17D81BAFC8E28EBD66F1BF29C6FED95D16A194A3ED8912B493778E7681CA502B61B3CAF8FE30495C47F75C9DE99F8318DF0117E8514E39E1B2FDD9FBE5FD962177B8CAC4C0854729155E910AA4114A3498D37963DC9456667BE3FF56050FA2EF1A49E6D03076CD8CF4C12544F82BEFC8A39745BE2FBC514479D79AB2877B33742536403B340CC7711936A220370EC2A189F97D6B3D1178CB9E63036A75F14AE65AB7DD6830B18AD2BA44204E97F8AE2218AC024466AA07BB90712DB2FF8F91F5C0817F19D3821FA4E7A0B66BB65B0A72BA6CC44EC4FD4A12EB7312469C37F90118C87AA742A44AEB60710C3ED";
-	unsigned char *in = NULL;
-
-	in = tls_mem_alloc(KEY_SIZE);
-	if(in == NULL)
-	{
-		printf("malloc err\n");
-		goto out;
-	}
-
-	for(i=0; i<KEY_SIZE; i++)
-	{
-		in[i] = rand();
-	}
-	if(getRsaKeyByStr(e, d, n, &pubkey))
-	{
-		printf("getRsaKeyByStr err\n");
-		goto out;
-	}
-	
-	len = KEY_SIZE - 11;
-	if(test_rsa(&pubkey, in, len))
-	{
-		printf("rsa2048 test fail\n");
-		goto out;
-	}
-	
-	len = KEY_SIZE - 15;
-	if(test_rsa(&pubkey, in, len))
-	{
-		printf("rsa2048 test fail\n");
-		goto out;
-	}	
-
-	printf("rsa2048 test sucess\n");
-	ret = 0;
-out:
-	if(in != NULL)
-	{
-		tls_mem_free(in);
-	}
-	freeRsaKey(&pubkey);
-	return ret;	
-}
 
 int rsa_demo(void)
 {
-	tls_crypto_init();
-
-//	while(1)
-	{
-		printf("rsa test start\n");
-		rsa128_demo();
-		rsa256_demo();
-		rsa512_demo();
-		rsa1024_demo();
-		rsa2048_demo();
-		printf("rsa test end\n");
-	}
+	mbedtls_rsa_self_test(1);
     return WM_SUCCESS;
 }
 

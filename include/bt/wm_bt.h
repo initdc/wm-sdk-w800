@@ -32,28 +32,6 @@
  * @{
  */
 
-/**
- * @brief          enable the bluetooth host
- *
- * @param[in]      *p_callback   pointer on callback function
- * @param[in]       log_level    @ref tls_bt_log_level_t
- *
- * @retval         @ref tls_bt_status_t
- *
- * @note           None
- */
-tls_bt_status_t tls_bt_host_enable(tls_bt_host_callback_t callback, tls_bt_log_level_t log_level);
-
-/**
- * @brief          disable the bluetooth host
- *
- * @param          None
- *
- * @return         @ref tls_bt_status_t
- *
- * @note           None
- */
-tls_bt_status_t tls_bt_host_disable(void);
 
 /**
  * @brief          reply the pin request

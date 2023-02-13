@@ -53,6 +53,17 @@ void tls_watchdog_clr(void);
 void tls_watchdog_init(u32 usec);
 
 /**
+ * @brief          This function is used to deinit watchdog
+ *
+ * @param[in]     None
+ *
+ * @return         None
+ *
+ * @note           None
+ */
+void tls_watchdog_deinit(void);
+
+/**
  * @brief          This function is used to reset the system.
  *
  * @param          None

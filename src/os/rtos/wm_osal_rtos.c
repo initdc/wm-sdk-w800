@@ -132,14 +132,18 @@ tls_os_status_t tls_os_task_create(tls_os_task_t *task,
 #if ( INCLUDE_vTaskDelete == 1 )
 tls_os_status_t tls_os_task_del(u8 prio,void (*freefun)(void))
 {
-	if (0 == vTaskDeleteByPriority(configMAX_PRIORITIES - prio)){
-		if (freefun){
-			freefun();
-		}
+	if (0 == vTaskDeleteByPriority(configMAX_PRIORITIES - prio, freefun)){
+
 		return TLS_OS_SUCCESS;
 	}
 
 	return TLS_OS_ERROR;
+}
+
+tls_os_status_t tls_os_task_del_by_task_handle(void *handle, void (*freefun)(void))
+{
+	vTaskDeleteByHandle(handle, freefun);
+	return TLS_OS_SUCCESS;
 }
 #endif
 
@@ -164,6 +168,15 @@ tls_os_status_t tls_os_task_del(u8 prio,void (*freefun)(void))
 	vTaskSuspend(task);
 
 	return TLS_OS_SUCCESS;
+}
+
+tls_os_task_t tls_os_task_id()
+{
+   return (tls_os_task_t)xTaskGetCurrentTaskHandle(); 
+}
+u8 tls_os_task_schedule_state()
+{
+   return (u8)xTaskGetSchedulerState();
 }
 
 /*
@@ -292,13 +305,29 @@ tls_os_status_t tls_os_task_del(u8 prio,void (*freefun)(void))
 {
     u8 error;
     tls_os_status_t os_status;
+    portBASE_TYPE pxHigherPriorityTaskWoken = pdFALSE;
 	unsigned int time;
 
 	if(0 == wait_time)
 		time = portMAX_DELAY;
 	else
 		time = wait_time;
+	u8 isrcount = 0;
+
+    isrcount = tls_get_isr_count();
+    if(isrcount > 0)
+    {
+        error = xSemaphoreTakeFromISR((xQUEUE *)mutex, &pxHigherPriorityTaskWoken );
+        if((pdTRUE == pxHigherPriorityTaskWoken) && (1 == isrcount))
+        {
+            portYIELD_FROM_ISR(TRUE);
+        }
+    }
+    else
+    {
 	error = xSemaphoreTake((xQUEUE *)mutex, time );
+    }
+
     if (error == pdPASS)
         os_status = TLS_OS_SUCCESS;
     else
@@ -437,13 +466,33 @@ tls_os_status_t tls_os_task_del(u8 prio,void (*freefun)(void))
 		time = portMAX_DELAY;
 	else
 		time = wait_time;
+	portBASE_TYPE pxHigherPriorityTaskWoken = pdFALSE;
+	    u8 isrcount = 0;
+
+	    isrcount = tls_get_isr_count();
+	    if(isrcount > 0)
+	    {
+	        error = xSemaphoreTakeFromISR((xQUEUE *)sem, &pxHigherPriorityTaskWoken );
+	        if((pdTRUE == pxHigherPriorityTaskWoken) && (1 == isrcount))
+	        {
+	            portYIELD_FROM_ISR(TRUE);
+	        }
+	    }
+	    else
+	    {
 	error = xSemaphoreTake((xQUEUE *)sem, time );
+	    }
     if (error == pdPASS)
         os_status = TLS_OS_SUCCESS;
     else
         os_status = TLS_OS_ERROR;
 
     return os_status;
+}
+
+u16 tls_os_sem_get_count(tls_os_sem_t *sem)
+{
+    return (u16)xSemaphoreGetCount((xQUEUE *)sem);
 }
 
 /*
@@ -569,6 +618,10 @@ extern u32 __heap_start;
     return TLS_OS_SUCCESS;
 }
 
+u8 tls_os_queue_is_empty(tls_os_queue_t *queue)
+{
+    return xQueueIsQueueEmptyFromISR((xQUEUE *)queue);
+}
 /*
 *********************************************************************************************************
 *                                        POST MESSAGE TO A QUEUE
@@ -614,6 +667,60 @@ extern u32 __heap_start;
     }
 
     return os_status;
+}
+
+tls_os_status_t tls_os_queue_remove(tls_os_queue_t *queue, void* msg, u32 msg_size)
+{
+    void *tmp_ev;
+    BaseType_t ret;
+    int i;
+    int count;
+    BaseType_t woken, woken2;  
+    /*
+     * XXX We cannot extract element from inside FreeRTOS queue so as a quick
+     * workaround we'll just remove all elements and add them back except the
+     * one we need to remove. This is silly, but works for now - we probably
+     * better use counting semaphore with os_queue to handle this in future.
+     */
+
+    if (tls_get_isr_count()>0) {
+        woken = pdFALSE;
+
+        count = uxQueueMessagesWaitingFromISR((xQUEUE *) queue);
+        for (i = 0; i < count; i++) {
+            ret = xQueueReceiveFromISR((xQUEUE *) queue, &tmp_ev, &woken2);
+            assert(ret == pdPASS);
+            woken |= woken2;
+
+            if (tmp_ev == msg) {
+                continue;
+            }
+
+            ret = xQueueSendToBackFromISR((xQUEUE *) queue, &tmp_ev, &woken2);
+            assert(ret == pdPASS);
+            woken |= woken2;
+        }
+
+        portYIELD_FROM_ISR(woken);
+    } else {
+        vPortEnterCritical();
+
+        count = uxQueueMessagesWaiting((xQUEUE *) queue);
+        for (i = 0; i < count; i++) {
+            ret = xQueueReceive((xQUEUE *) queue, &tmp_ev, 0);
+            assert(ret == pdPASS);
+
+            if (tmp_ev == msg) {
+                continue;
+            }
+
+            ret = xQueueSendToBack((xQUEUE *) queue, &tmp_ev, 0);
+            assert(ret == pdPASS);
+        }
+
+        vPortExitCritical();
+    }
+
 }
 /*
 *********************************************************************************************************
@@ -1078,6 +1185,18 @@ u32 os_cnter = 0;
 #endif
 	}
 }
+
+u8 tls_os_timer_active(tls_os_timer_t *timer)
+{
+    return (u8)xTimerIsTimerActive((xTIMER *)timer);
+}
+u32 tls_os_timer_expirytime(tls_os_timer_t *timer)
+{
+    return (u32)xTimerGetExpiryTime((xTIMER *)timer);
+}
+
+
+
 
 
 /*

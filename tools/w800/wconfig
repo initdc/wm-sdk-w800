@@ -79,6 +79,12 @@ menu "Compile Configuration"
         default y
         help
             w800 sdk use lib.
+			
+    config W800_USE_NIMBLE
+        bool "enable use nimble"
+        default y
+        help
+            w800 sdk use nimble.			
 
     config W800_FIRMWARE_DEBUG
         bool "enable JTAG debug"

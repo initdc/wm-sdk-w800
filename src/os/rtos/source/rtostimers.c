@@ -286,6 +286,19 @@ xTIMER *pxNewTimer;
 
 /*-----------------------------------------------------------*/
 
+TickType_t xTimerGetExpiryTime( xTimerHandle xTimer )
+{
+xTIMER * pxTimer = ( xTIMER * ) xTimer;
+TickType_t xReturn;
+
+    configASSERT( xTimer );
+    xReturn = listGET_LIST_ITEM_VALUE( &( pxTimer->xTimerListItem ) );
+    return xReturn;
+}
+
+
+/*-----------------------------------------------------------*/
+
 portBASE_TYPE xTimerGenericCommand( xTimerHandle xTimer, portBASE_TYPE xCommandID, portTickType xOptionalValue, portBASE_TYPE *pxHigherPriorityTaskWoken, portTickType xBlockTime )
 {
 portBASE_TYPE xReturn = pdFAIL;

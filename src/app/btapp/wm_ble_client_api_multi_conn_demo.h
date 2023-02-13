@@ -3,14 +3,9 @@
 
 #include "wm_bt_def.h"
 
-tls_bt_status_t wm_ble_client_multi_conn_demo_api_init();
-
-
-tls_bt_status_t wm_ble_client_multi_conn_demo_api_deinit();
-
-
-tls_bt_status_t wm_ble_client_multi_conn_demo_send_msg(uint8_t *ptr, int length);
-
+int tls_ble_client_multi_conn_demo_api_init();
+int tls_ble_client_multi_conn_demo_api_deinit();
+int tls_ble_client_multi_conn_demo_send_msg(uint8_t *ptr, int length);
 
 
 #endif

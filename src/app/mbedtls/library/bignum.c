@@ -756,6 +756,46 @@ int mbedtls_mpi_write_binary( const mbedtls_mpi *X,
 }
 
 /*
+ * Export X into unsigned binary data, big endian
+ */
+int mbedtls_mpi_write_binary_nr( const mbedtls_mpi *X,
+                              unsigned char *buf, size_t buflen )
+{
+    size_t stored_bytes = X->n * ciL;
+    size_t bytes_to_copy;
+    unsigned char *p;
+    size_t i;
+
+    if( stored_bytes < buflen )
+    {
+        /* There is enough space in the output buffer. Write initial
+         * null bytes and record the position at which to start
+         * writing the significant bytes. In this case, the execution
+         * trace of this function does not depend on the value of the
+         * number. */
+        bytes_to_copy = stored_bytes;
+        p = buf + buflen - stored_bytes;
+        memset( buf, 0, buflen - stored_bytes );
+    }
+    else
+    {
+        /* The output buffer is smaller than the allocated size of X.
+         * However X may fit if its leading bytes are zero. */
+        bytes_to_copy = buflen;
+        p = buf;
+        for( i = bytes_to_copy; i < stored_bytes; i++ )
+        {
+            if( GET_BYTE( X, i ) != 0 )
+                return( MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL );
+        }
+    }
+    for( i = 0; i < bytes_to_copy; i++ )
+        p[i] = GET_BYTE( X, i );
+
+    return( 0 );
+}
+
+/*
  * Left-shift: X <<= count
  */
 int mbedtls_mpi_shift_l( mbedtls_mpi *X, size_t count )

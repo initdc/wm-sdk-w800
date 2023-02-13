@@ -20,11 +20,6 @@
 #include "mbedtls/error.h"
 #include "mbedtls/certs.h"
 
-#else
-//#include "cryptoApi.h"
-#include "core/coreApi.h"
-#include "matrixssl/matrixsslApi.h"
-#include "matrixssl/matrixssllib.h"
 #endif
 #endif
 // Compilation mode
@@ -91,8 +86,6 @@ typedef struct _ssl_t
 	mbedtls_x509_crt cacert;
 #endif
 }tls_ssl_t;
-#else
-typedef ssl_t   tls_ssl_t;
 #endif
 #endif
 

@@ -29,7 +29,7 @@ static void con_net_status_changed_event(u8 status )
     }
     break;
     default:
-        printf("UNKONWN STATE:%d\n", status);
+        //printf("UNKONWN STATE:%d\n", status);
         break;
     }
 }

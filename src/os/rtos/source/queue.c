@@ -302,7 +302,7 @@ xQueueHandle xReturn = NULL;
 }
 /*-----------------------------------------------------------*/
 
-//封装该接口的目的是上面的接口队列地址是内部申请的，但是之前ucos的接口是外部申请的
+
 xQueueHandle xQueueCreateExt( void *QueueStart, unsigned portBASE_TYPE uxQueueLength, unsigned portBASE_TYPE uxItemSize )
 {
 xQUEUE *pxNewQueue;
@@ -516,6 +516,24 @@ xQueueHandle xReturn = NULL;
 	}
 
 #endif /* configUSE_COUNTING_SEMAPHORES */
+
+/*-----------------------------------------------------------*/
+
+UBaseType_t xQueueMessagesWaiting( const xQueueHandle pxQueue )
+{
+    UBaseType_t uxReturn;
+
+	configASSERT( pxQueue );
+
+	taskENTER_CRITICAL();
+	{
+		uxReturn = ( ( xQUEUE * ) pxQueue )->uxMessagesWaiting;
+	}
+	taskEXIT_CRITICAL();
+
+	return uxReturn;
+} /*lint !e818 Pointer cannot be declared const as xQueue is a typedef not pointer. */
+
 /*-----------------------------------------------------------*/
 
 signed portBASE_TYPE xQueueGenericSend( xQueueHandle pxQueue, const void * const pvItemToQueue, portTickType xTicksToWait, portBASE_TYPE xCopyPosition )

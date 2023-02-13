@@ -216,6 +216,21 @@ tls_os_status_t tls_os_task_create(tls_os_task_t *task,
  */
 tls_os_status_t tls_os_task_del(u8 prio, void (*freefun)(void));
 
+/**
+ * @brief          This function allows you to delete a task.  The calling
+                   task can delete itself by taks's handler.
+                   The deleted task is returned to the dormant state
+                   and can be re-activated by creating the deleted task
+                   again.
+ *
+ * @param[in]      prio                task handler to delete
+ * @param[in]      (*freefun)(void)    function to free resource
+ *
+ * @retval         TLS_OS_SUCCESS     the call is successful
+ * @retval         TLS_OS_ERROR       failed
+ *
+ */
+tls_os_status_t tls_os_task_del_by_task_handle(void *handle, void (*freefun)(void));
 
 /**
  * @brief          This function creates a mutual exclusion semaphore

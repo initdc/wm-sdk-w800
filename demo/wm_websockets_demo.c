@@ -17,10 +17,7 @@
  2, Unzip it and excute 
     "websocketd --port=8080 --ssl --sslcert="certificate.pem" --sslkey="key.pem" echo_client.bat" 
     in your CLI window.
- 3, Mask lines(X509.c line:2516,2517)
-         //sc->authFailFlags |= PS_CERT_AUTH_FAIL_KEY_USAGE_FLAG;
-         //sc->authStatus = PS_CERT_AUTH_FAIL_EXTENSION;
- 4, Run function lwsDemoTest() in your main entrance or demo console.
+ 3, Run function lwsDemoTest() in your main entrance or demo console.
 
  Need to see detail logs? Please mask NDEBUG and LWS_WITH_NO_LOGS from file lws_config.h.
  ****************************************************************************************

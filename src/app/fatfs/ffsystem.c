@@ -56,8 +56,8 @@ int ff_cre_syncobj (	/* 1:Function succeeded, 0:Could not create the sync object
 )
 {
 	/* Win32 */
-	*sobj = CreateMutex(NULL, FALSE, NULL);
-	return (int)(*sobj != INVALID_HANDLE_VALUE);
+	//*sobj = CreateMutex(NULL, FALSE, NULL);
+	//return (int)(*sobj != INVALID_HANDLE_VALUE);
 
 	/* uITRON */
 //	T_CSEM csem = {TA_TPRI,1,1};
@@ -72,6 +72,9 @@ int ff_cre_syncobj (	/* 1:Function succeeded, 0:Could not create the sync object
 	/* FreeRTOS */
 //	*sobj = xSemaphoreCreateMutex();
 //	return (int)(*sobj != NULL);
+    int ret = -1;
+    ret = tls_os_sem_create(sobj, 1);
+	return (int)(ret == 0);
 
 	/* CMSIS-RTOS */
 //	*sobj = osMutexCreate(&Mutex[vol]);
@@ -92,7 +95,7 @@ int ff_del_syncobj (	/* 1:Function succeeded, 0:Could not delete due to an error
 )
 {
 	/* Win32 */
-	return (int)CloseHandle(sobj);
+	//return (int)CloseHandle(sobj);
 
 	/* uITRON */
 //	return (int)(del_sem(sobj) == E_OK);
@@ -105,6 +108,8 @@ int ff_del_syncobj (	/* 1:Function succeeded, 0:Could not delete due to an error
 	/* FreeRTOS */
 //  vSemaphoreDelete(sobj);
 //	return 1;
+    tls_os_sem_delete(sobj);
+    return 1;
 
 	/* CMSIS-RTOS */
 //	return (int)(osMutexDelete(sobj) == osOK);
@@ -123,7 +128,7 @@ int ff_req_grant (	/* 1:Got a grant to access the volume, 0:Could not get a gran
 )
 {
 	/* Win32 */
-	return (int)(WaitForSingleObject(sobj, FF_FS_TIMEOUT) == WAIT_OBJECT_0);
+	//return (int)(WaitForSingleObject(sobj, FF_FS_TIMEOUT) == WAIT_OBJECT_0);
 
 	/* uITRON */
 //	return (int)(wai_sem(sobj) == E_OK);
@@ -135,6 +140,9 @@ int ff_req_grant (	/* 1:Got a grant to access the volume, 0:Could not get a gran
 
 	/* FreeRTOS */
 //	return (int)(xSemaphoreTake(sobj, FF_FS_TIMEOUT) == pdTRUE);
+    int ret = -1;
+    ret = tls_os_sem_acquire(sobj, FF_FS_TIMEOUT);
+    return (int)(ret == 0);
 
 	/* CMSIS-RTOS */
 //	return (int)(osMutexWait(sobj, FF_FS_TIMEOUT) == osOK);
@@ -152,7 +160,7 @@ void ff_rel_grant (
 )
 {
 	/* Win32 */
-	ReleaseMutex(sobj);
+	//ReleaseMutex(sobj);
 
 	/* uITRON */
 //	sig_sem(sobj);
@@ -162,6 +170,7 @@ void ff_rel_grant (
 
 	/* FreeRTOS */
 //	xSemaphoreGive(sobj);
+    tls_os_sem_release(sobj);
 
 	/* CMSIS-RTOS */
 //	osMutexRelease(sobj);

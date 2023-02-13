@@ -42,6 +42,7 @@
 #endif
 #include "wm_gpio_afsel.h"
 #include "wm_pmu.h"
+#include "wm_ram_config.h"
 
 /* c librayr mutex */
 tls_os_sem_t    *libc_sem;
@@ -82,13 +83,15 @@ void _mutex_release (u32 *mutex)
 #endif
 
 #define     TASK_START_STK_SIZE         640     /* Size of each task's stacks (# of WORDs)  */
+/*If you want to delete main task after it works, you can open this MACRO below*/
+#define MAIN_TASK_DELETE_AFTER_START_FTR  0
 
-u32 TaskStartStk[TASK_START_STK_SIZE];
-
+u8 *TaskStartStk = NULL;
+tls_os_task_t tststarthdl = NULL;
 
 #define FW_MAJOR_VER           0x1
 #define FW_MINOR_VER           0x0
-#define FW_PATCH_VER           0x1
+#define FW_PATCH_VER           0x2
 
 const char FirmWareVer[4] =
 {
@@ -136,8 +139,23 @@ void wm_gpio_config()
 
     wm_uart1_rx_config(WM_IO_PB_07);
     wm_uart1_tx_config(WM_IO_PB_06);
+#if (TLS_CONFIG_LS_SPI)	
+	wm_spi_ck_config(WM_IO_PB_01);
+	wm_spi_cs_config(WM_IO_PB_04);
+	wm_spi_do_config(WM_IO_PB_05);
+	wm_spi_di_config(WM_IO_PB_00);	
+#endif
 }
-
+#if MAIN_TASK_DELETE_AFTER_START_FTR
+void task_start_free()
+{
+	if (TaskStartStk)
+	{
+		tls_mem_free(TaskStartStk);
+		TaskStartStk = NULL;
+	}
+}
+#endif
 int main(void)
 {
     u32 value = 0;
@@ -196,22 +214,30 @@ int main(void)
     csi_vic_set_wakeup_irq(TIMER_IRQn);
     csi_vic_set_wakeup_irq(WDG_IRQn);
     /*configure wake up source end*/
-
+	TaskStartStk = tls_mem_alloc(sizeof(u32)*TASK_START_STK_SIZE);
+	if (TaskStartStk)
     {
-        tls_os_task_create(NULL, NULL,
+        tls_os_task_create(&tststarthdl, NULL,
                            task_start,
                            (void *)0,
-                           (void *)&TaskStartStk[0],          /* 任务栈的起始地址 */
-                           TASK_START_STK_SIZE * sizeof(u32), /* 任务栈的大小     */
+                           (void *)TaskStartStk,          /* 浠诲姟鏍堢殑璧峰鍦板潃 */
+                           TASK_START_STK_SIZE * sizeof(u32), /* 浠诲姟鏍堢殑澶у皬     */
                            1,
                            0);
+	   tls_os_start_scheduler();
     }
-
-    tls_os_start_scheduler();
+	else
+	{
+		while(1);
+	}	
 
     return 0;
 }
 
+unsigned int tls_get_wifi_ver(void)
+{
+	return (WiFiVer[0]<<16)|(WiFiVer[1]<<8)|WiFiVer[2];
+}
 
 void disp_version_info(void)
 {
@@ -230,13 +256,11 @@ void disp_version_info(void)
     TLS_DBGPRT_INFO("****************************************************************\n");
 }
 
-u32 total_mem_size;
-extern u32 __heap_end;
-extern u32 __heap_start;
+unsigned int total_mem_size;
 void tls_mem_get_init_available_size(void)
 {
 	u8 *p = NULL;
-	total_mem_size = (u32)&__heap_end - (u32)&__heap_start;
+	total_mem_size = (unsigned int)&__heap_end - (unsigned int)&__heap_start;
 	while(total_mem_size > 512)
 	{
 		p = malloc(total_mem_size);
@@ -302,7 +326,7 @@ void task_start (void *data)
     tls_get_tx_gain(&tx_gain_group[0]);
     TLS_DBGPRT_INFO("tx gain ");
     TLS_DBGPRT_DUMP((char *)(&tx_gain_group[0]), 27);
-    if (tls_wifi_mem_cfg((u32)&__heap_end, 7, 7)) /*wifi tx&rx mem customized interface*/
+    if (tls_wifi_mem_cfg(WIFI_MEM_START_ADDR, 7, 7)) /*wifi tx&rx mem customized interface*/
     {
         TLS_DBGPRT_INFO("wl mem initial failured\n");
     }
@@ -361,6 +385,12 @@ void task_start (void *data)
 
     for (;;)
     {
+#if MAIN_TASK_DELETE_AFTER_START_FTR
+		if (tststarthdl)
+		{
+    		tls_os_task_del_by_task_handle(tststarthdl,task_start_free);
+		}
+#endif		
 #if 1
         tls_os_time_delay(0x10000000);
 #else

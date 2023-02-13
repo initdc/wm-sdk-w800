@@ -10,33 +10,18 @@
 
 #include "wm_ble_client.h"
 #include "wm_ble_client_api_multi_conn_demo.h"
-#include "wm_ble_dm.h"
+#include "wm_ble_gap.h"
 #include "wm_ble_gatt.h"
 #include "wm_ble.h"
 #include "wm_bt_util.h"
 #include "wm_mem.h"
 
+/*
+ * DEFINES
+ ****************************************************************************************
+ */
 
-#define BTA_GATT_AUTH_REQ_NONE           0
-#define BTA_GATT_AUTH_REQ_NO_MITM        1            /* unauthenticated encryption */
-#define BTA_GATT_AUTH_REQ_MITM           2               /* authenticated encryption */
-#define BTA_GATT_AUTH_REQ_SIGNED_NO_MITM 3
-#define BTA_GATT_AUTH_REQ_SIGNED_MITM    4
-
-
-
-#define BTA_GATT_PERM_READ              (1 << 0) /* bit 0 */
-#define BTA_GATT_PERM_READ_ENCRYPTED    (1 << 1) /* bit 1 */
-#define BTA_GATT_PERM_READ_ENC_MITM     (1 << 2) /* bit 2 */
-#define BTA_GATT_PERM_WRITE             (1 << 4) /* bit 4 */
-#define BTA_GATT_PERM_WRITE_ENCRYPTED   (1 << 5) /* bit 5 */
-#define BTA_GATT_PERM_WRITE_ENC_MITM    (1 << 6) /* bit 6 */
-#define BTA_GATT_PERM_WRITE_SIGNED      (1 << 7) /* bit 7 */
-#define BTA_GATT_PERM_WRITE_SIGNED_MITM (1 << 8) /* bit 8 */
-
-static int g_mtu = 21;
-
-#define MAX_CONN_DEVCIE_COUNT    2 
+#define MAX_CONN_DEVCIE_COUNT    7
 
 typedef enum {
     DEV_DISCONNCTED = 0,
@@ -44,9 +29,23 @@ typedef enum {
     DEV_CONNECTED
 } conn_state_t;
 
+typedef enum {
+    DEV_IDLE = 0,
+    DEV_WAITING_CONFIGURE,
+    DEV_TRANSFERING,
+} transfer_state_t;
+
+typedef enum{
+    DEV_SCAN_IDLE,
+    DEV_SCAN_RUNNING,
+    DEV_SCAN_STOPPING,
+} conn_scan_t;
+
+
 typedef struct{
     
     conn_state_t conn_state;
+    transfer_state_t transfer_state;
     uint8_t conn_retry;
     uint32_t client_if;
     tls_bt_addr_t addr;
@@ -57,21 +56,52 @@ typedef struct{
     int      conn_min_interval;
     uint16_t indicate_handle;
     uint16_t write_handle;
+    uint16_t indicate_enable_handle;
     
 } connect_device_t;
 
-static connect_device_t conn_devices[MAX_CONN_DEVCIE_COUNT];
+/*
+ * GLOBAL VARIABLE DEFINITIONS
+ ****************************************************************************************
+ */
 
+static connect_device_t conn_devices[MAX_CONN_DEVCIE_COUNT];
+static conn_scan_t g_scan_state = DEV_SCAN_IDLE;
+
+/*
+ * LOCAL FUNCTION DECLARATIONS
+ ****************************************************************************************
+ */
 
 static int multi_conn_parse_adv_data(tls_bt_addr_t *addr, int rssi, uint8_t *adv_data);
 static tls_bt_status_t wm_ble_client_multi_conn_demo_api_connect(int id);
 static void ble_client_demo_api_scan_result_callback(tls_bt_addr_t *addr, int rssi, uint8_t *adv_data);
 
-/**
-*
-*
-*
-*/
+
+/*
+ * LOCAL FUNCTION DEFINITIONS
+ ****************************************************************************************
+ */
+
+static int get_conn_devices_index_wait_for_configure()
+{
+    int ret = -1;
+    int i = 0;
+
+    for(i=0; i<MAX_CONN_DEVCIE_COUNT; i++)
+    {
+        //then check if all devcies connected
+        if((conn_devices[i].conn_state == DEV_CONNECTED) && (conn_devices[i].transfer_state == DEV_WAITING_CONFIGURE))
+        {
+            ret = i;
+            break;
+        }
+
+    }
+    
+    return ret;    
+}
+
 static int get_conn_devices_index_pending()
 {
     int ret = -1;
@@ -147,13 +177,14 @@ static int get_conn_devices_index_to_connect_by_name(uint8_t len, const char *pn
         //first check if one is connecting, we connect remote device one by one;
         if(conn_devices[i].conn_state == DEV_CONNECTING)
         {
+            //printf("!!!!devices [%s] is connecting...\r\n", conn_devices[i].remote_name);
             return ret;
         }
     }
     for(i=0; i<MAX_CONN_DEVCIE_COUNT; i++)
     {
         //then check if all devcies connected
-        printf("len=%d, strlen=%d,state=%d,%s\r\n", len, strlen(conn_devices[i].remote_name),conn_devices[i].conn_state,conn_devices[i].remote_name);
+        //printf("len=%d, strlen=%d,state=%d,%s\r\n", len, strlen(conn_devices[i].remote_name),conn_devices[i].conn_state,conn_devices[i].remote_name);
         if((conn_devices[i].conn_state == DEV_DISCONNCTED) && (strncmp(conn_devices[i].remote_name, pname, len) == 0) &&(strlen(conn_devices[i].remote_name) == len))
         {
             ret = i;
@@ -197,7 +228,19 @@ static int get_conn_devices_index_to_connect_by_conn_id(int conn_id)
     return ret;    
 }
 
-
+static void dump_conn_devices_status()
+{
+    int i = 0;
+    TLS_BT_APPL_TRACE_DEBUG("=============================conn device information==============================\r\n");
+    for(i=0; i<MAX_CONN_DEVCIE_COUNT; i++)
+    {
+       TLS_BT_APPL_TRACE_DEBUG("%s[%02x:%02x:%02x:%02x:%02x:%02x],conn_state[%d], conn_id[%04d], conn_mtu[%03d]\r\n",
+            conn_devices[i].remote_name,conn_devices[i].addr.address[0],conn_devices[i].addr.address[1],conn_devices[i].addr.address[2],
+            conn_devices[i].addr.address[3],conn_devices[i].addr.address[4],conn_devices[i].addr.address[5],conn_devices[i].conn_state, conn_devices[i].conn_id, conn_devices[i].conn_mtu); 
+    }
+    TLS_BT_APPL_TRACE_DEBUG("scanning state=%d\r\n", g_scan_state);
+    
+}
 /**
 *Description:  anayse the adv data and return device index need to be connected, return -1 when all devices connected ;
 *
@@ -209,16 +252,19 @@ static int multi_conn_parse_adv_data(tls_bt_addr_t *addr, int rssi, uint8_t *adv
     uint8_t offset = 0, len = 0, type = 0;  //MAX_BLE_DEV_COUNT
     int ret = -1;
     int scan_ret = -1;
+    uint8_t dev_name[64];
 
     //02 01 02 07 09 48 55 41 57 45 49 00 00
     while(offset < 62)
     {
         len = adv_data[offset++];
         type = adv_data[offset++];
-        //printf("parse adv data, type=%d\r\n", type);
         if(len == 0) break;
         if(type == 0x09)
         {
+            memcpy(dev_name, adv_data+offset, len-1);
+            dev_name[len-1] = 0x00;
+            //TLS_BT_APPL_TRACE_DEBUG("parsing device name:%s\r\n", dev_name);
             ret = get_conn_devices_index_to_connect_by_name(len-1, adv_data+offset);
 
             if(ret >= 0)
@@ -259,7 +305,10 @@ static void ble_report_evt_cb(tls_ble_dm_evt_t event, tls_ble_dm_msg_t *p_data)
 		msg = (tls_ble_dm_scan_res_msg_t *)&p_data->dm_scan_result;
 		memcpy(address.address, msg->address, 6);
 		ble_client_demo_api_scan_result_callback(&address, msg->rssi, msg->value);
-	}
+	}else if(event == WM_BLE_DM_SCAN_RES_CMPL_EVT)
+    {
+        g_scan_state = DEV_SCAN_IDLE;
+    }   
 }
 
 
@@ -278,12 +327,13 @@ static void ble_client_demo_api_register_client_callback(int status, int client_
             conn_devices[i].client_if = client_if;
         }
         TLS_BT_APPL_TRACE_DEBUG("Start to scan...\r\n");
-        tls_ble_set_scan_param(0x40, 0x60 , 0);
+        tls_ble_set_scan_param(0x08, 0x10 , 0);
+        g_scan_state = DEV_SCAN_RUNNING;
 		status = tls_ble_scan(1);
         
 		if(status == TLS_BT_STATUS_SUCCESS)
 		{
-			wm_ble_register_report_evt(WM_BLE_DM_SCAN_RES_EVT, ble_report_evt_cb);
+			tls_ble_register_report_evt(WM_BLE_DM_SCAN_RES_EVT|WM_BLE_DM_SCAN_RES_CMPL_EVT, ble_report_evt_cb);
 		}
     }
 }
@@ -298,7 +348,6 @@ static void ble_client_demo_api_scan_result_callback(tls_bt_addr_t *addr, int rs
     int index = -1;
     int pending_index = -1;
 	tls_bt_status_t status;
-    //hci_dbg_hexstring("scan result callback:", adv_data, 32);
     index = multi_conn_parse_adv_data(addr, rssi, adv_data);
 
     if(index >= 0)
@@ -316,16 +365,21 @@ static void ble_client_demo_api_scan_result_callback(tls_bt_addr_t *addr, int rs
             TLS_BT_APPL_TRACE_DEBUG("%s is  pending return...\r\n", conn_devices[pending_index].remote_name);
             return;
         }
-		///delay///	
 
         conn_devices[index].conn_state = DEV_CONNECTING;
-        tls_dm_start_timer(tls_dm_get_timer_id() ,1000, wm_ble_client_multi_conn_demo_api_connect);
+        tls_dm_start_timer(tls_dm_get_timer_id() ,2000, wm_ble_client_multi_conn_demo_api_connect);
         
     }else if(index == -1)
     {
         //all devices connected
-        TLS_BT_APPL_TRACE_DEBUG("<><><><>wm_ble_deregister_report_evt\r\n");
-        wm_ble_deregister_report_evt(WM_BLE_DM_SCAN_RES_EVT, ble_report_evt_cb);
+        
+        TLS_BT_APPL_TRACE_DEBUG("wm_ble_deregister_report_evt\r\n");
+        
+        status = tls_ble_scan(0);
+        if(status == TLS_BT_STATUS_SUCCESS)
+        {
+            tls_ble_deregister_report_evt(WM_BLE_DM_SCAN_RES_EVT|WM_BLE_DM_SCAN_RES_CMPL_EVT, ble_report_evt_cb);
+        }
     }else
     {
         //contine to parse scan data;
@@ -333,10 +387,17 @@ static void ble_client_demo_api_scan_result_callback(tls_bt_addr_t *addr, int rs
 }
 static void wm_ble_client_multi_conn_scan(int id)
 {
+    tls_bt_status_t status;
+    
     TLS_BT_APPL_TRACE_DEBUG("Continue to SCAN next device to connect...\r\n");
     tls_dm_free_timer_id(id);
-    tls_ble_set_scan_param(0x40, 0x60 , 0);
-    tls_ble_scan(true);    
+    tls_ble_set_scan_param(0x10, 0x20 , 0);
+    g_scan_state = DEV_SCAN_RUNNING;
+    status = tls_ble_scan(true);
+    if(status == TLS_BT_STATUS_SUCCESS)
+    {
+        tls_ble_register_report_evt(WM_BLE_DM_SCAN_RES_EVT|WM_BLE_DM_SCAN_RES_CMPL_EVT, ble_report_evt_cb);
+    }
 }
 
 /** GATT open callback invoked in response to open */
@@ -363,25 +424,41 @@ static void ble_client_demo_api_connect_callback(int conn_id, int status, int cl
         index = get_conn_devices_index_to_connect();
         if(index >= 0)
         {
-            tls_dm_start_timer(tls_dm_get_timer_id(), 5000, wm_ble_client_multi_conn_scan);
+            g_scan_state = DEV_SCAN_RUNNING;
+            tls_dm_start_timer(tls_dm_get_timer_id(), 7000, wm_ble_client_multi_conn_scan);
         }else
         {
             //unregister report evt;
             TLS_BT_APPL_TRACE_DEBUG("All devices connected, unregister scan report callback\r\n");
             //There is no need to unregister it; if disconnect, we need to scan and connect again;
-            //wm_ble_deregister_report_evt(WM_BLE_DM_SCAN_RES_EVT, ble_report_evt_cb);
+            //wm_ble_deregister_report_evt(WM_BLE_DM_SCAN_RES_EVT|WM_BLE_DM_SCAN_RES_CMPL_EVT, ble_report_evt_cb);
         }
         
     }
     else
     {
-        TLS_BT_APPL_TRACE_WARNING("!!!Try to connect(%s) again, retry=%d...\r\n", conn_devices[index].remote_name, conn_devices[index].conn_retry);
-        //
-        conn_devices[index].conn_state = DEV_CONNECTING;
+        TLS_BT_APPL_TRACE_WARNING("!!!Try to connect(%s) again, retry=%d, scanning__state=%d\r\n", conn_devices[index].remote_name, conn_devices[index].conn_retry,g_scan_state);
+
         //tls_dm_evt_triger(index,wm_ble_client_multi_conn_demo_api_connect);
-        tls_dm_start_timer(tls_dm_get_timer_id(), 1000, wm_ble_client_multi_conn_demo_api_connect);
+        conn_devices[index].conn_state = DEV_DISCONNCTED;
+        
         conn_devices[index].conn_retry++;
+        if(conn_devices[index].conn_retry < 5)
+        {
+            if(g_scan_state != DEV_SCAN_RUNNING)
+            {
+                conn_devices[index].conn_state = DEV_CONNECTING;
+                tls_dm_start_timer(tls_dm_get_timer_id(), 1000, wm_ble_client_multi_conn_demo_api_connect);
+            }
+        }else
+        {
+            conn_devices[index].conn_retry = 0;
+            conn_devices[index].conn_state = DEV_DISCONNCTED;
+            g_scan_state = DEV_SCAN_RUNNING;
+           tls_dm_start_timer(tls_dm_get_timer_id(), 1000, wm_ble_client_multi_conn_scan); 
+        }
     }
+    dump_conn_devices_status();
 }
 
 /** Callback invoked in response to close */
@@ -389,16 +466,29 @@ static void ble_client_demo_api_disconnect_callback(int conn_id, int status,int 
         int client_if, tls_bt_addr_t *bda)
 {
     int index = -1;
-    TLS_BT_APPL_TRACE_DEBUG("%s, disconnect,status = %d,reason=%d,  conn_id=%d\r\n", __FUNCTION__, status, reason, conn_id);
+    int index_next = -1;
 
     index = get_conn_devices_index_to_connect_by_conn_id(conn_id);
+    
+    TLS_BT_APPL_TRACE_DEBUG("%s, [%s]disconnected,status = %d,reason=%d,  conn_id=%d\r\n", __FUNCTION__,conn_devices[index].remote_name, status, reason, conn_id);
 
     if(index >= 0)
     {
+        
         conn_devices[index].conn_state = DEV_DISCONNCTED;
-        tls_ble_set_scan_param(0x40, 0x60 , 0);
-        tls_ble_scan(true);
+        /*check connection pending devices, if no, so scan*/
+        index_next = get_conn_devices_index_pending();
+        if(index_next<0)
+        {
+            g_scan_state = DEV_SCAN_RUNNING;
+            TLS_BT_APPL_TRACE_DEBUG("%s changed to DISCONNECTED, and continue to scan\r\n",conn_devices[index].remote_name);
+            tls_dm_start_timer(tls_dm_get_timer_id(), 1000, wm_ble_client_multi_conn_scan);
+        }else
+        {
+            TLS_BT_APPL_TRACE_DEBUG("%s changed to DISCONNECTED, but %s is connecting\r\n",conn_devices[index].remote_name,conn_devices[index_next].remote_name);
+        }
     }
+    dump_conn_devices_status();
 }
 
 /**
@@ -415,25 +505,51 @@ static void ble_client_demo_api_search_service_result_callback(int conn_id, tls_
 {
     TLS_BT_APPL_TRACE_DEBUG("%s, conn_id=%d\r\n", __FUNCTION__, conn_id);
 }
-static tls_bt_status_t wm_ble_client_demo_api_enable_indication(int conn_id)
+static tls_bt_status_t wm_ble_client_multi_demo_api_enable_indication(int id)
 {
-    uint8_t ind_enable[2];
-    TLS_BT_APPL_TRACE_DEBUG(">>>>%s, conn_id=%d, handle=%d\r\n", __FUNCTION__, conn_id, 45);
+    int index = -1;
+    uint8_t ind_enable[2]= {0x02, 0x00};
     
-    ind_enable[0] = 0x02;
-    ind_enable[1] = 0x00;
-    tls_ble_client_write_characteristic(conn_id, 45, 2, 2,0,ind_enable);
-    tls_ble_client_write_characteristic(conn_id, 45, 2, 2,0,ind_enable);
+    tls_dm_free_timer_id(id);
+
+    index = get_conn_devices_index_wait_for_configure();
+
+    if(index < 0)
+    {
+        TLS_BT_APPL_TRACE_ERROR("%s failed, cannot found valid device\r\n", __FUNCTION__);
+        return ;
+    }
+    conn_devices[index].transfer_state = DEV_TRANSFERING;
     
+    TLS_BT_APPL_TRACE_DEBUG("%s, conn_id=%d, handle=%d\r\n", __FUNCTION__, conn_devices[index].conn_id, conn_devices[index].indicate_enable_handle);
+    
+    tls_ble_client_write_characteristic(conn_devices[index].conn_id, conn_devices[index].indicate_enable_handle, 2, 2,0,ind_enable);
+    //tls_ble_client_write_characteristic(conn_devices[index].conn_id, conn_devices[index].indicate_enable_handle, 2, 2,0,ind_enable);
 }
 
 /** Callback invoked in response to [de]register_for_notification */
 static void ble_client_demo_api_register_for_notification_callback(int conn_id,
         int registered, int status, uint16_t handle)
 {
+    int index = -1;
     TLS_BT_APPL_TRACE_DEBUG("%s, conn_id=%d, handle=%d,status=%d\r\n", __FUNCTION__, conn_id, handle,status);
+    
+    index = get_conn_devices_index_to_connect_by_conn_id(conn_id);
+
+    if(index < 0)
+    {
+        TLS_BT_APPL_TRACE_ERROR("%s failed, cannot found valid device\r\n", __FUNCTION__);
+        return ;
+    }
+
     tls_ble_client_configure_mtu(conn_id, 247);
-    tls_dm_evt_triger(conn_id, wm_ble_client_demo_api_enable_indication);
+
+    conn_devices[index].transfer_state = DEV_WAITING_CONFIGURE;
+
+    tls_dm_start_timer(tls_dm_get_timer_id(), 1000, wm_ble_client_multi_demo_api_enable_indication);
+    
+    //tls_dm_evt_triger(conn_id, wm_ble_client_demo_api_enable_indication);
+
 }
 
 /**
@@ -444,6 +560,8 @@ static uint32_t g_recv_size = 0;
 static uint32_t g_recv_count = 0;
 static void ble_client_demo_api_notify_callback(int conn_id, uint8_t *value, tls_bt_addr_t *addr, uint16_t handle, uint16_t len, uint8_t is_notify)
 {
+#if 0
+
     g_recv_size += len;
     g_recv_count++;
     if(g_recv_count > 100)
@@ -452,7 +570,7 @@ static void ble_client_demo_api_notify_callback(int conn_id, uint8_t *value, tls
         printf("Recv bytes(%d)(is_notify=%d)\r\n", g_recv_size, is_notify);
     }
 
-   #if 0 
+    
     int i = 0;
     int j = 0;
     printf("recv indication, len=%d(%d)\r\n", len,is_notify);
@@ -520,8 +638,16 @@ static void ble_client_demo_api_listen_callback(int status, int server_if)
 /** Callback invoked when the MTU for a given connection changes */
 static void ble_client_demo_api_configure_mtu_callback(int conn_id, int status, int mtu)
 {
+    int index = -1;
+
+    index = get_conn_devices_index_to_connect_by_conn_id(conn_id);
+
     TLS_BT_APPL_TRACE_DEBUG("!!!!%s, conn_id=%d,mtu=%d\r\n", __FUNCTION__, conn_id, mtu);
-    g_mtu = mtu-3;
+
+    if(index >= 0)
+    {
+        conn_devices[index].conn_mtu = mtu - 3;
+    }
 }
 
 /**
@@ -550,7 +676,7 @@ static void ble_client_demo_api_get_gatt_db_callback(int status, int conn_id, tl
         TLS_BT_APPL_TRACE_ERROR("%s, can not found conn_id=%d in conn_devices table\r\n", __FUNCTION__, conn_id);
         return;
     }
-    #if 1
+    #if 0
 
     for(i = 0; i < count; i++)
     {
@@ -578,8 +704,8 @@ static void ble_client_demo_api_get_gatt_db_callback(int status, int conn_id, tl
 
     conn_devices[index].indicate_handle = 44;
     conn_devices[index].write_handle = 42;
-	//TLS_BT_APPL_TRACE_DEBUG("read handle=%d\r\n", cared_handle);
-    //tls_ble_client_read_characteristic(conn_id, cared_handle, 0);
+    conn_devices[index].indicate_enable_handle = 45;
+	TLS_BT_APPL_TRACE_DEBUG("tls_ble_client_register_for_notification,[%s]\r\n", conn_devices[index].remote_name);
     tls_ble_client_register_for_notification(conn_devices[index].client_if, &conn_devices[index].addr, conn_devices[index].indicate_handle, conn_id);
 
 }
@@ -619,13 +745,37 @@ static const wm_ble_client_callbacks_t  swmbleclientcb =
     ble_client_demo_api_services_removed_callback,
     ble_client_demo_api_services_added_callback,
 } ;
+static tls_bt_status_t wm_ble_client_multi_conn_demo_api_connect(int id)
+{
+    int index = -1;
 
-tls_bt_status_t wm_ble_client_multi_conn_demo_api_init()
+    tls_dm_free_timer_id(id);
+    index = get_conn_devices_index_pending();
+    if(index<0)
+    {
+        TLS_BT_APPL_TRACE_DEBUG("%s, invalid device index\r\n", __FUNCTION__);
+        return;
+    }
+    TLS_BT_APPL_TRACE_DEBUG("%s  to:%s, address:%02x:%02x:%02x:%02x:%02x:%02x\r\n", __FUNCTION__, conn_devices[index].remote_name,
+        conn_devices[index].addr.address[0],conn_devices[index].addr.address[1],conn_devices[index].addr.address[2],
+        conn_devices[index].addr.address[3],conn_devices[index].addr.address[4],conn_devices[index].addr.address[5]);
+    tls_ble_conn_parameter_update(&conn_devices[index].addr, conn_devices[index].conn_min_interval, conn_devices[index].conn_min_interval+2, 0 , 0xA00);
+    
+    return tls_ble_client_connect(conn_devices[index].client_if,&conn_devices[index].addr, 1, WM_BLE_GATT_TRANSPORT_LE);
+}
+
+
+/*
+ * EXPORTED FUNCTION DEFINITIONS
+ ****************************************************************************************
+ */
+
+int tls_ble_client_multi_conn_demo_api_init()
 {
     tls_bt_status_t status;
     int i = 0;
     
-    status = wm_ble_client_register_client(0x1234, &swmbleclientcb);
+    status = tls_ble_client_register_client(0x1234, &swmbleclientcb);
 	if(status == TLS_BT_STATUS_SUCCESS)
 	{	
 		TLS_BT_APPL_TRACE_DEBUG("### %s success\r\n", __FUNCTION__);
@@ -633,12 +783,13 @@ tls_bt_status_t wm_ble_client_multi_conn_demo_api_init()
         memset(&conn_devices, 0 , sizeof(connect_device_t)*MAX_CONN_DEVCIE_COUNT);
 
         /**filled with cared device name, the client will connect them*/
-        //for demo, I run 7 ble servers, the name is WMBL1,WMBL2,.....WMBL7;
+        //for demo, I run 7 ble servers, the name is WMBL1,WMBL2,.....WMBL8;
         for(i=0; i<MAX_CONN_DEVCIE_COUNT; i++)
         {
-            sprintf(conn_devices[i].remote_name, "WMBL%d", i+1);
+            sprintf(conn_devices[i].remote_name, "WMBLEDEMO0%d", i+1);
             conn_devices[i].conn_state = DEV_DISCONNCTED;
-            conn_devices[i].conn_min_interval = 50 + i*10;
+            conn_devices[i].conn_min_interval = 0x20 + i*16;
+            conn_devices[i].conn_mtu = 21; /*default GATT mtu*/
         }
         
 	}else
@@ -650,30 +801,13 @@ tls_bt_status_t wm_ble_client_multi_conn_demo_api_init()
     return status;
 }
 
-tls_bt_status_t wm_ble_client_multi_conn_demo_api_deinit()
+int tls_ble_client_multi_conn_demo_api_deinit()
 {
-    //return wm_ble_client_unregister_client(conn_devices[0].client_if);
-    ///TODO //TODO//TODO//TODO
-
-    return TLS_BT_STATUS_SUCCESS;
+    /*All connected devices share the same client if, anyone will be ok for unregistering;*/
+    return tls_ble_client_unregister_client(conn_devices[0].client_if); 
+ 
 }
-
-static tls_bt_status_t wm_ble_client_multi_conn_demo_api_connect(int id)
-{
-    int index = -1;
-
-    tls_dm_free_timer_id(id);
-    index = get_conn_devices_index_pending();
-    if(index<0)
-    {
-        printf("Error\r\n");
-        return;
-    }
-    
-    TLS_BT_APPL_TRACE_DEBUG("!!!!!!!! %s to\r\n", __FUNCTION__, conn_devices[index].remote_name);
-    return tls_ble_client_connect(conn_devices[index].client_if,&conn_devices[index].addr, 1, WM_BLE_GATT_TRANSPORT_LE);
-}
-tls_bt_status_t wm_ble_client_multi_conn_demo_send_msg(uint8_t *ptr, int length)
+int tls_ble_client_multi_conn_demo_send_msg(uint8_t *ptr, int length)
 {    
 }
 

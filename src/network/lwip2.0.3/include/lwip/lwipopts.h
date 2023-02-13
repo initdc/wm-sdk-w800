@@ -31,7 +31,7 @@
  * TCP_WND: The size of a TCP window.  This must be at least 
  * (2 * TCP_MSS) for things to work well
  */
-#define TCP_WND                         (6 * TCP_MSS)
+#define TCP_WND                         (8* TCP_MSS)
 
 /**
  * TCP_MSS: TCP Maximum segment size. (default is 536, a conservative default,
@@ -40,7 +40,7 @@
  * when opening a connection. For the transmit size, this MSS sets
  * an upper limit on the MSS advertised by the remote host.
  */
-#define TCP_MSS                   1024
+#define TCP_MSS                   1460
 //#define TCP_MSS                 (1500 - 40)	  /* TCP_MSS = (Ethernet MTU - IP header size - TCP header size) */
 
 /**
@@ -101,7 +101,9 @@
 
 #define LWIP_IGMP                       TLS_CONFIG_IGMP
 #define LWIP_RAND                   rand
-//#define LWIP_SO_RCVTIMEO         1
+#define LWIP_SO_RCVTIMEO         1
+#define LWIP_SO_RCVBUF 			1
+#define LWIP_SO_SNDTIMEO                1
 
 #define DHCP_DOES_ARP_CHECK     0
 
@@ -112,13 +114,28 @@
 #define TCP_LISTEN_BACKLOG              1
 #define TCP_DEFAULT_LISTEN_BACKLOG      8
 #define SO_REUSE                        1
+#define SO_REUSE_RXTOALL                1
 #define LWIP_ND6_MAX_MULTICAST_SOLICIT  10
 
 #define LWIP_HAVE_LOOPIF 1
 #define ETHARP_SUPPORT_STATIC_ENTRIES   1
+#define ARP_QUEUEING					1
+#define TCPIP_THREAD_STACKSIZE          1000
+#define MEM_ALIGNMENT                   4
+#define LWIP_TCPIP_TIMEOUT              1
 #define LWIP_NETIF_HOSTNAME             1
 #define LWIP_TCP_KEEPALIVE              1
 
 #define LWIP_HOOK_IP4_ROUTE_SRC         wm_ip4_route_src
+
+//#define LWIP_NETCONN_SEM_PER_THREAD     1
+//#define LWIP_NETCONN_FULLDUPLEX 1
+
+#if LWIP_NETCONN_SEM_PER_THREAD
+#define LWIP_NETCONN_THREAD_SEM_ALLOC()  
+#define LWIP_NETCONN_THREAD_SEM_GET()     sys_lwip_netconn_thread_sem_get()
+#define LWIP_NETCONN_THREAD_SEM_FREE()  do { } while(0)
+#endif
+
 
 #endif /* end of __LWIP_OPTS_H */

@@ -56,14 +56,14 @@ CRYPTO
 #define TLS_CONFIG_HTTP_CLIENT_AUTH_BASIC				CFG_OFF
 #define TLS_CONFIG_HTTP_CLIENT_AUTH_DIGEST				CFG_OFF
 #define TLS_CONFIG_HTTP_CLIENT_AUTH						(TLS_CONFIG_HTTP_CLIENT_AUTH_BASIC || TLS_CONFIG_HTTP_CLIENT_AUTH_DIGEST)
-#define TLS_CONFIG_HTTP_CLIENT_SECURE					CFG_ON
+#define TLS_CONFIG_HTTP_CLIENT_SECURE					(CFG_ON && (TLS_CONFIG_USE_POLARSSL || TLS_CONFIG_USE_MBEDTLS))
 #define TLS_CONFIG_HTTP_CLIENT_TASK						(CFG_ON && TLS_CONFIG_HTTP_CLIENT)
 
 /*MatrixSSL will be used except one of the following two Macros is CFG_ON*/
 #define TLS_CONFIG_USE_POLARSSL           				CFG_OFF
 #define TLS_CONFIG_USE_MBEDTLS           				CFG_ON
 
-#define TLS_CONFIG_SERVER_SIDE_SSL                      (CFG_ON&& TLS_CONFIG_HTTP_CLIENT_SECURE)         /*MUST configure TLS_CONFIG_HTTP_CLIENT_SECURE CFG_ON */
+#define TLS_CONFIG_SERVER_SIDE_SSL                      (CFG_ON && TLS_CONFIG_HTTP_CLIENT_SECURE && TLS_CONFIG_USE_MBEDTLS)         /*MUST configure TLS_CONFIG_HTTP_CLIENT_SECURE CFG_ON */
 
 
 /**IGMP**/
@@ -75,7 +75,6 @@ CRYPTO
 
 #define TLS_CONFIG_BR_EDR								CFG_OFF
 #define TLS_CONFIG_BLE                                  CFG_ON
-#define TLS_CONFIG_BT_NTO                               CFG_ON
 
 #define TLS_CONFIG_BT                                  (TLS_CONFIG_BR_EDR || TLS_CONFIG_BLE)
 

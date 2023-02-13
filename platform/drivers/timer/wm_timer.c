@@ -125,12 +125,14 @@ u8 tls_timer_create(struct tls_timer_cfg *cfg)
     }
 
     if (TLS_TIMER_ID_MAX == i)
-        return WM_TIMER_ID_INVALID;
+    {
+    	return WM_TIMER_ID_INVALID;
+    }
 
-	if (wm_timer_bitmap == 0)
-	{
-		tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_TIMER);
-	}
+    if (wm_timer_bitmap == 0)
+    {
+        tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_TIMER);
+    }
 
     wm_timer_bitmap  |= BIT(i);
     timer_context[i].callback = cfg->callback;

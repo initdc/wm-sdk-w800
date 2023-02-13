@@ -596,11 +596,7 @@ static int ssl_write_client_key_exchange( ssl_context *ssl )
             return( ret );
 
         i = 4;
-#if defined(POLARSSL_RSA_C)
         n = ssl->peer_cert->rsa.len;
-#else
-        n = ssl->peer_cert->rsa.size;
-#endif
 
         if( ssl->minor_ver != SSL_MINOR_VERSION_0 )
         {
@@ -678,11 +674,7 @@ static int ssl_write_certificate_verify( ssl_context *ssl )
     ssl_calc_verify( ssl, hash );
 
     if ( ssl->rsa_key )
-#if defined(POLARSSL_RSA_C)
         n = ssl->rsa_key->len;
-#else
-        n = ssl->rsa_key->size;
-#endif
 #if defined(POLARSSL_PKCS11_C)
     else
         n = ssl->pkcs11_key->len;

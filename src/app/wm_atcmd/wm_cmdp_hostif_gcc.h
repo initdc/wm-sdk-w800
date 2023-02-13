@@ -317,7 +317,7 @@ typedef  struct _HOSTIF_CMD_PARAMS_BTNAME {
 
 typedef  struct _HOSTIF_CMD_PARAMS_BLEADV {
     u8      len;
-    u8      data[21];
+    u8      data[31];
 	u8      include_name;
 	enum    tls_cmd_mode cmd_mode;
 }__attribute__((packed))HOSTIF_CMD_PARAMS_BLEADV;
@@ -1000,7 +1000,7 @@ typedef struct _HOSTIF_CMDRSP_PARAMS_WPS {
 }__attribute__((packed))HOSTIF_CMDRSP_PARAMS_WPS; 
 
 typedef struct _HOSTIF_CMDRSP_PARAMS_BT {
-    u8      status;
+    u16      status;
 }__attribute__((packed))HOSTIF_CMDRSP_PARAMS_BT;
 
 typedef struct _HOSTIF_CMDRSP_PARAMS_BLEPOW {
@@ -1296,6 +1296,8 @@ union HOSTIF_CMDRSP_PARAMS_UNION{
         HOSTIF_CMDRSP_PARAMS_BLECONN bleconn;
 
         HOSTIF_CMDRSP_PARAMS_BLEGATT blegatt;
+
+        HOSTIF_CMD_PARAMS_BTNAME btname;
 
         HOSTIF_CMDRSP_PARAMS_NIP nip; 
 

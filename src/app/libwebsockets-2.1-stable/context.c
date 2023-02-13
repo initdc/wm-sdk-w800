@@ -461,7 +461,6 @@ lws_create_vhost(struct lws_context *context,
 #endif
 
 	vh->listen_port = info->port;
-#if !defined(LWS_WITH_ESP8266)
 	vh->http_proxy_port = 0;
 	vh->http_proxy_address[0] = '\0';
 
@@ -479,7 +478,7 @@ lws_create_vhost(struct lws_context *context,
 			lws_set_proxy(vh, p);
 #endif
 	}
-#endif
+
 	vh->ka_time = info->ka_time;
 	vh->ka_interval = info->ka_interval;
 	vh->ka_probes = info->ka_probes;

@@ -38,7 +38,7 @@
 
 #define TLS_CONFIG_LOG_PRINT			    CFG_WIFI_ON
 
-#define TLS_PS_MODE_NEW_FTR                CFG_WIFI_ON
+#define TLS_PS_MODE_NEW_FTR                CFG_WIFI_OFF
 
 #endif /*__WM_WIFI_CONFIG_H__*/
 

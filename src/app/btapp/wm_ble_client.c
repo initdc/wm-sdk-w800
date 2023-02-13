@@ -11,22 +11,39 @@
 #include "wm_ble_gatt.h"
 #include "wm_ble_client.h"
 #include "wm_bt_util.h"
+/*
+ * STRUCTURE DEFINITIONS
+ ****************************************************************************************
+ */
 
 typedef struct
 {
     uint16_t uuid;
     int client_if;
-    int connect_id;
+    int connect_id[WM_BLE_MAX_CONNECTION];
     wm_ble_client_callbacks_t *ps_callbak;
-    tls_bt_addr_t addr;
-    uint8_t connected_status;
     uint8_t in_use;
 
 } app_ble_client_t;
 
+/*
+ * DEFINES
+ ****************************************************************************************
+ */
+
 #define GATT_MAX_CNT_SUPPORT    7
 
+/*
+ * GLOBAL VARIABLE DEFINITIONS
+ ****************************************************************************************
+ */
+
 static app_ble_client_t app_env[GATT_MAX_CNT_SUPPORT] = {0};
+
+/*
+ * LOCAL FUNCTION DEFINITIONS
+ ****************************************************************************************
+ */
 
 static int get_free_app_env_index()
 {
@@ -74,12 +91,18 @@ static int get_app_env_index_by_client_if(int client_if)
 static int get_app_env_index_by_conn_id(int conn_id)
 {
     int index = 0;
-
+    int conn_id_index = 0;
     for(index = 0; index < GATT_MAX_CNT_SUPPORT; index++)
     {
-        if(app_env[index].in_use == 1 && app_env[index].connect_id == conn_id)
+        if(app_env[index].in_use == 1) 
         {
-            return index;
+            for(conn_id_index=0; conn_id_index < WM_BLE_MAX_CONNECTION; conn_id_index++)
+            {
+                if(app_env[index].connect_id[conn_id_index] == conn_id)
+                {
+                    return index;
+                }
+            }
         }
     }
 
@@ -130,6 +153,7 @@ void btgattc_deregister_client_callback(int status, int client_if)
 void btgattc_connect_callback(int conn_id, int status, int client_if, tls_bt_addr_t *bda)
 {
     int index = -1;
+    int conn_id_index = 0;
     TLS_BT_APPL_TRACE_VERBOSE("%s, conn_id=%d\r\n", __FUNCTION__, conn_id);
     index = get_app_env_index_by_client_if(client_if);
 	if(index<0)
@@ -138,9 +162,29 @@ void btgattc_connect_callback(int conn_id, int status, int client_if, tls_bt_add
 		return;
 	}
 
-    app_env[index].connected_status = status;
-    app_env[index].connect_id = conn_id;
-    memcpy(&app_env[index].addr, bda, sizeof(tls_bt_addr_t));
+    //app_env[index].connected_status = status;
+    //app_env[index].connect_id = conn_id;
+    //memcpy(&app_env[index].addr, bda, sizeof(tls_bt_addr_t));
+    /*find a free pos to store the connection id belongs to the client_if*/
+    for(conn_id_index = 0; conn_id_index < WM_BLE_MAX_CONNECTION; conn_id_index++)
+    {
+        if((status == 0))
+        {    
+            if(app_env[index].connect_id[conn_id_index] == 0)
+            {
+                app_env[index].connect_id[conn_id_index] = conn_id;
+                break;
+            }
+        }else
+        {
+            if(app_env[index].connect_id[conn_id_index] == conn_id)
+            {
+                app_env[index].connect_id[conn_id_index] = 0;
+                break;
+            }
+        }
+    }
+    
     TLS_HAL_CBACK(app_env[index].ps_callbak, open_cb, conn_id, status, client_if, bda);
 }
 
@@ -149,14 +193,26 @@ void btgattc_disconnect_callback(int conn_id, int status, int reason,
                                  int client_if, tls_bt_addr_t *bda)
 {
     int index = -1;
-    TLS_BT_APPL_TRACE_VERBOSE("%s, conn_id=%d\r\n", __FUNCTION__, conn_id);
-    index = get_app_env_index_by_conn_id(conn_id);
+    int conn_id_index = 0;
+
+    TLS_BT_APPL_TRACE_VERBOSE("%s, client_if=%d, conn_id=%d\r\n", __FUNCTION__, client_if,conn_id);
+
+    index = get_app_env_index_by_client_if(client_if);
 	if(index<0)
 	{
 		TLS_BT_APPL_TRACE_ERROR("%s, status=%d, reason=%d, client_if=%d, conn_id=%d\r\n", __FUNCTION__, status, reason, client_if, conn_id);
 		return;
 	}
-
+    
+    for(conn_id_index = 0; conn_id_index < WM_BLE_MAX_CONNECTION; conn_id_index++)
+    {
+        if(app_env[index].connect_id[conn_id_index] == conn_id)
+        {
+            app_env[index].connect_id[conn_id_index] = 0;
+            break;
+        }
+    }
+    
     TLS_HAL_CBACK(app_env[index].ps_callbak, close_cb, conn_id, status, reason, client_if, bda);
 }
 
@@ -219,11 +275,11 @@ void btgattc_register_for_notification_callback(int conn_id,
 void btgattc_notify_callback(int conn_id,  uint8_t *value, tls_bt_addr_t *bda, uint16_t handle, uint16_t len, uint8_t is_notify)
 {
     int index = -1;
-    TLS_BT_APPL_TRACE_VERBOSE("%s, is_notify=%d, conn_id=%d,len=%d, handle\r\n", __FUNCTION__, is_notify,  conn_id,len, handle);
+    //TLS_BT_APPL_TRACE_VERBOSE("%s, is_notify=%d, conn_id=%d,len=%d, handle=%d\r\n", __FUNCTION__, is_notify,  conn_id,len, handle);
     index = get_app_env_index_by_conn_id(conn_id);
 	if(index<0)
 	{
-		TLS_BT_APPL_TRACE_ERROR("%s, is_notify=%d, conn_id=%d,len=%d, handle\r\n", __FUNCTION__, is_notify,  conn_id,len, handle);
+		TLS_BT_APPL_TRACE_ERROR("%s, is_notify=%d, conn_id=%d,len=%d, handle=%d\r\n", __FUNCTION__, is_notify,  conn_id,len, handle);
 		return;
 	}
 
@@ -474,21 +530,25 @@ static void tls_ble_client_event_handler(tls_ble_evt_t evt, tls_ble_msg_t *msg)
 			
 	}
 }
+/*
+ * EXPORTED FUNCTION DEFINITIONS
+ ****************************************************************************************
+ */
 
-tls_bt_status_t wm_ble_client_init()
+tls_bt_status_t tls_ble_client_init()
 {
 	memset(&app_env, 0, sizeof(app_ble_client_t)*GATT_MAX_CNT_SUPPORT);
 	tls_ble_client_app_init(tls_ble_client_event_handler);
 	return TLS_BT_STATUS_SUCCESS;
 }
 
-tls_bt_status_t wm_ble_client_deinit()
+tls_bt_status_t tls_ble_client_deinit()
 {
 	tls_ble_client_app_deinit();
 	return TLS_BT_STATUS_SUCCESS;
 }
 
-tls_bt_status_t wm_ble_client_register_client(uint16_t app_uuid, wm_ble_client_callbacks_t *callback)
+tls_bt_status_t tls_ble_client_register_client(uint16_t app_uuid, wm_ble_client_callbacks_t *callback)
 {
     int index = -1;
 	tls_bt_status_t status;
@@ -519,7 +579,7 @@ tls_bt_status_t wm_ble_client_register_client(uint16_t app_uuid, wm_ble_client_c
 
 
 /** Unregister a client application from the stack */
-tls_bt_status_t wm_ble_client_unregister_client(int client_if)
+tls_bt_status_t tls_ble_client_unregister_client(int client_if)
 {
 	int index = -1;
 

@@ -727,6 +727,12 @@ int tls_wifi_ibss_create(struct tls_ibss_info_t *ibssinfo, struct tls_ibssip_inf
  */
 void tls_wifi_disconnect(void);
 
+/* void *connectinfo (about 1024 bytes buf) */
+int tls_wifi_faslink_connect(void *connectinfo);
+
+/* void *connectinfo (about 1024 bytes buf) */
+int tls_wifi_get_fastlink_info(void *connectinfo);
+
 /**
  * @brief          This function is used to connect AP
  *

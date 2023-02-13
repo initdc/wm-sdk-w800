@@ -1534,7 +1534,7 @@ int tls_socket_udp_sendto(u16 localport, u8  *ip_addr, u16 port, void *pdata, u1
 	    conn = tls_net_get_socket(i);
 	    if (conn != NULL 
 			&& conn->used 
-			&& (localport== conn->port) 
+			&& (localport== conn->localport) 
 			&& (conn->proto == TLS_NETCONN_UDP)) {
 	        found = true;
 	        break;

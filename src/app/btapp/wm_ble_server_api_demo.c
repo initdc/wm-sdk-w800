@@ -156,15 +156,20 @@ static void ble_server_cfg_and_enable_adv()
 {
     tls_ble_dm_adv_data_t data;
     uint8_t bt_mac[6] = {0};
+    uint8_t dev_name[31] = {0};
     
     uint8_t adv_data[31] = {
-           0x0C,0x09, 'W', 'M', '-', '0', '0', '0', '0', '0','0','0', '0',
+           0x0C,0x09, 'T', 'M', '-', '0', '0', '0', '0', '0','0','0', '0',
            0x02,0x01,0x05,
            0x03,0x19,0xc1, 0x03};
     memset(&data, 0, sizeof(data));
     extern int tls_get_bt_mac_addr(uint8_t *mac);
     tls_get_bt_mac_addr(bt_mac);
     sprintf(adv_data+5,"%02X:%02X:%02X",bt_mac[3], bt_mac[4], bt_mac[5]);
+
+    /*for updating device name, stack use it*/
+    sprintf(dev_name, "TM-%02X:%02X:%02X",bt_mac[3], bt_mac[4], bt_mac[5]);
+    
     adv_data[13] = 0x02;  //byte 13 was overwritten to zero by sprintf; recover it;
     data.set_scan_rsp = false;   //advertisement data;
     data.pure_data = true;       //only manufacture data is inclucded in the advertisement payload
@@ -177,6 +182,8 @@ static void ble_server_cfg_and_enable_adv()
     adv_param.adv_int_max = 0x40; //interval max;
     adv_param.dir_addr = NULL;    //directed address NULL;
     tls_ble_set_adv_param(&adv_param); //configure advertisement parameters;
+
+    tls_ble_gap_set_name(dev_name, 0);
 
 
     /*enable advertisement*/
@@ -343,7 +350,7 @@ static void ble_server_service_deleted_cb(int status, int server_if, int srvc_ha
 {
     TLS_BT_APPL_TRACE_API("%s , status=%d\r\n", __FUNCTION__, status);
 
-	wm_ble_server_unregister_server(g_server_if);
+	tls_ble_server_unregister_server(g_server_if);
 
 }
 
@@ -402,7 +409,7 @@ static void ble_server_request_write_cb(int conn_id, int trans_id,
             }else
             {
                 /*check and send*/
-                len = wm_uart_ble_buffer_size();
+                len = tls_ble_uart_buffer_size();
                 len = MIN(len, g_mtu);
 
                 if(len)
@@ -413,13 +420,13 @@ static void ble_server_request_write_cb(int conn_id, int trans_id,
                        TLS_BT_APPL_TRACE_WARNING("!!!ble_server_indication_sent_cb NO enough memory\r\n"); 
                        return;
                     }
-                    wm_uart_ble_buffer_peek(tmp_ptr, len);
+                    tls_ble_uart_buffer_peek(tmp_ptr, len);
                     g_send_pending = 1;
                     status = tls_ble_server_send_indication(g_server_if,gatt_uuid[DEMO_KEY_VALUE_INDEX].attr_handle,conn_id,len,1,tmp_ptr);
                     tls_mem_free(tmp_ptr);
                     if(status == TLS_BT_STATUS_SUCCESS)
                     {
-                        wm_uart_ble_buffer_delete(len);
+                        tls_ble_uart_buffer_delete(len);
                     }else
                     {
                        TLS_BT_APPL_TRACE_DEBUG("No enough memory, retry..."); 
@@ -475,7 +482,7 @@ static void ble_server_indication_sent_cb(int conn_id, int status)
         //tls_dm_start_timer(demo_server_notification_timer_id, 1000, ble_demo_server_notification_started);
     }else
     {
-        len = wm_uart_ble_buffer_size();
+        len = tls_ble_uart_buffer_size();
 
         len = MIN(len, g_mtu);
 
@@ -487,13 +494,13 @@ static void ble_server_indication_sent_cb(int conn_id, int status)
                TLS_BT_APPL_TRACE_WARNING("!!!ble_server_indication_sent_cb NO enough memory\r\n"); 
                return;
             }
-            wm_uart_ble_buffer_peek(tmp_ptr, len);
+            tls_ble_uart_buffer_peek(tmp_ptr, len);
             g_send_pending = 1;
             ret = tls_ble_server_send_indication(g_server_if,gatt_uuid[DEMO_KEY_VALUE_INDEX].attr_handle,conn_id,len,1,tmp_ptr);
             tls_mem_free(tmp_ptr);
             if(ret == TLS_BT_STATUS_SUCCESS)
             {
-                wm_uart_ble_buffer_delete(len);
+                tls_ble_uart_buffer_delete(len);
             }else
             {
                TLS_BT_APPL_TRACE_DEBUG("No enough memory, retry..."); 
@@ -543,12 +550,13 @@ static const wm_ble_server_callbacks_t servercb =
     ble_server_congestion_cb,
     ble_server_mtu_changed_cb
 };
+    
 
-tls_bt_status_t wm_ble_server_api_demo_init(tls_ble_output_func_ptr output_func_ptr)
+int tls_ble_server_demo_api_init(tls_ble_output_func_ptr output_func_ptr)
 {
 	tls_bt_status_t status;
 
-    status = wm_ble_server_register_server(DEMO_SERVICE_UUID, &servercb);
+    status = tls_ble_server_register_server(DEMO_SERVICE_UUID, &servercb);
 
 	if(status == TLS_BT_STATUS_SUCCESS)
 	{	
@@ -565,24 +573,24 @@ tls_bt_status_t wm_ble_server_api_demo_init(tls_ble_output_func_ptr output_func_
     
 	return status;
 }
-tls_bt_status_t wm_ble_server_api_demo_deinit()
+int tls_ble_server_demo_api_deinit()
 {
 	tls_bt_status_t status;
 
     return tls_ble_server_stop_service(g_server_if, gatt_uuid[DEMO_SERVICE_INDEX].attr_handle);
 
 }
-tls_bt_status_t wm_ble_server_api_demo_connect(int status)
+int tls_ble_server_demo_api_connect(int status)
 {
     return tls_ble_server_connect(g_server_if, (tls_bt_addr_t *)&g_addr, 1, 0);
 }
 
-tls_bt_status_t wm_ble_server_api_demo_disconnect(int status)
+int tls_ble_server_demo_api_disconnect(int status)
 {
     return tls_ble_server_disconnect(g_server_if, (tls_bt_addr_t *)&g_addr, g_conn_id);
 }
 
-tls_bt_status_t wm_ble_server_api_demo_send_msg(uint8_t *ptr, int length)
+int tls_ble_server_demo_api_send_msg(uint8_t *ptr, int length)
 {
     if(g_send_pending) return TLS_BT_STATUS_BUSY;
     
@@ -590,26 +598,26 @@ tls_bt_status_t wm_ble_server_api_demo_send_msg(uint8_t *ptr, int length)
     return tls_ble_server_send_indication(g_server_if, gatt_uuid[DEMO_KEY_VALUE_INDEX].attr_handle, g_conn_id, length, 1, ptr);
 }
 
-tls_bt_status_t wm_ble_server_api_demo_send_response(uint8_t *ptr, int length)
+int tls_ble_server_demo_api_send_response(uint8_t *ptr, int length)
 {
     return tls_ble_server_send_response(g_conn_id, g_trans_id,0, g_offset, gatt_uuid[DEMO_KEY_VALUE_INDEX].attr_handle, 0, ptr, length);
 }
 
 
-tls_bt_status_t wm_ble_server_api_demo_clean_up(int status)
+int tls_ble_server_demo_api_clean_up(int status)
 {
     return tls_ble_server_delete_service(g_server_if, gatt_uuid[DEMO_SERVICE_INDEX].attr_handle);
 }
 
-tls_bt_status_t wm_ble_server_api_demo_disable(int status)
+int tls_ble_server_demo_api_disable(int status)
 {
     return tls_ble_server_stop_service(g_server_if, gatt_uuid[DEMO_SERVICE_INDEX].attr_handle);
 }
-tls_bt_status_t wm_ble_server_api_demo_read_remote_rssi()
+int tls_ble_server_demo_api_read_remote_rssi()
 {
 	return tls_dm_read_remote_rssi(&g_addr);
 }
-uint32_t wm_ble_server_api_demo_get_mtu()
+uint32_t tls_ble_server_demo_api_get_mtu()
 {
     return g_mtu;
 }

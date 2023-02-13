@@ -20,6 +20,7 @@
 #include "wm_dma.h"
 #include "wm_io.h"
 #include "wm_irq.h"
+#include "wm_mem.h"
 
 #define  ATTRIBUTE_ISR __attribute__((isr))
 
@@ -27,7 +28,7 @@
 //TODO
 #define HR_SD_ADC_CONFIG_REG 0
 static int adc_offset = 0;
-
+static int *adc_dma_buffer = NULL;
 volatile ST_ADC gst_adc;
 
 ATTRIBUTE_ISR void ADC_IRQHandler(void)
@@ -45,7 +46,7 @@ ATTRIBUTE_ISR void ADC_IRQHandler(void)
 	    if(gst_adc.adc_cb)
 		{
 		    adcvalue = tls_read_adc_result();
-			gst_adc.adc_cb(&adcvalue,1);
+			gst_adc.adc_cb((int *)&adcvalue,1);
 	    }
 	}
 	if(reg & CMP_INT_MASK)
@@ -61,7 +62,12 @@ ATTRIBUTE_ISR void ADC_IRQHandler(void)
 static void adc_dma_isr_callbk(void)
 {
 	if(gst_adc.adc_dma_cb)
-		gst_adc.adc_dma_cb((int *)(ADC_DEST_BUFFER_DMA), gst_adc.valuelen);	
+	{
+		if (adc_dma_buffer)
+		{
+			gst_adc.adc_dma_cb((int *)(adc_dma_buffer), gst_adc.valuelen);	
+		}
+	}
 }
 
 
@@ -104,7 +110,7 @@ void tls_adc_clear_irq(int inttype)
 	}
 }
 
-void tls_adc_irq_register(int inttype, void (*callback)(u32 *buf, u16 len))
+void tls_adc_irq_register(int inttype, void (*callback)(int *buf, u16 len))
 {
 	if(ADC_INT_TYPE_ADC == inttype)
 	{
@@ -166,6 +172,19 @@ void tls_adc_start_with_dma(int Channel, int Length)
 
 	gst_adc.valuelen = len;
 
+	if (adc_dma_buffer)
+	{
+		tls_mem_free(adc_dma_buffer);
+		adc_dma_buffer = NULL;
+	}
+
+	adc_dma_buffer = tls_mem_alloc(len*4);
+	if (adc_dma_buffer == NULL)
+	{
+		wm_printf("adc dma buffer alloc failed\r\n");
+		return;
+	}
+
 	Channel &= 0xF;
 
 	/*disable adc:set adc pd, rstn and ldo disable*/
@@ -181,9 +200,9 @@ void tls_adc_start_with_dma(int Channel, int Length)
 	}
 
     DMA_SRCADDR_REG(gst_adc.dmachannel) = HR_SD_ADC_RESULT_REG;
-	DMA_DESTADDR_REG(gst_adc.dmachannel) = ADC_DEST_BUFFER_DMA;
+	DMA_DESTADDR_REG(gst_adc.dmachannel) = adc_dma_buffer;
 	DMA_SRCWRAPADDR_REG(gst_adc.dmachannel) = HR_SD_ADC_RESULT_REG;
-	DMA_DESTWRAPADDR_REG(gst_adc.dmachannel) = ADC_DEST_BUFFER_DMA;
+	DMA_DESTWRAPADDR_REG(gst_adc.dmachannel) = adc_dma_buffer;
     DMA_WRAPSIZE_REG(gst_adc.dmachannel) = (len*4) << 16;
 
 	/* Dest_add_inc, halfword,  */
@@ -228,6 +247,12 @@ void tls_adc_stop(int ifusedma)
 
 	if(ifusedma)
 		tls_dma_free(gst_adc.dmachannel);
+
+	if (adc_dma_buffer)
+	{
+		tls_mem_free(adc_dma_buffer);
+		adc_dma_buffer = NULL;
+	}
 }
 
 void tls_adc_config_cmp_reg(int cmp_data, int cmp_pol)
@@ -356,7 +381,7 @@ void tls_adc_set_pga(int gain1, int gain2)
 	tls_reg_write32(HR_SD_ADC_PGA_CTRL, val);
 }
 
-void signedToUnsignedData(u32 *adcValue)
+void signedToUnsignedData(int *adcValue)
 {
 	if (*adcValue &0x20000)
 	{
@@ -515,13 +540,13 @@ int adc_temp(void)
 	tls_reg_write32(HR_SD_ADC_TEMP_CTRL, val);		
 	waitForAdcDone();
     code1 = tls_read_adc_result(); 
-	signedToUnsignedData(&code1);
+	signedToUnsignedData((int *)&code1);
 
 	val |= TEMP_CAL_OFFSET_MASK;
 	tls_reg_write32(HR_SD_ADC_TEMP_CTRL, val);
 	waitForAdcDone();
     code2 = tls_read_adc_result(); 
-	signedToUnsignedData(&code2);
+	signedToUnsignedData((int *)&code2);
 
 	val &= ~(TEMP_EN_VAL(1));
 	tls_reg_write32(HR_SD_ADC_TEMP_CTRL, val);

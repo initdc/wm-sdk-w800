@@ -32,7 +32,7 @@
 
 #include "config.h"
 #ifndef POLARSSL_BIGNUM_C
-#include "cryptoApi.h"
+//#include "cryptoApi.h"
 #endif
 
 #define POLARSSL_ERR_MPI_FILE_IO_ERROR                     -0x0002  /**< An error occurred while reading from or writing to a file. */
@@ -120,9 +120,7 @@ typedef unsigned long  t_udbl;
 /**
  * \brief          MPI structure
  */
-#ifndef POLARSSL_BIGNUM_C
-typedef pstm_int mpi;
-#else
+#ifdef POLARSSL_BIGNUM_C
 typedef struct
 {
     int s;              /*!<  integer sign      */
@@ -238,8 +236,6 @@ size_t mpi_msb( const mpi *X );
  */
 #ifdef POLARSSL_BIGNUM_C
 size_t mpi_size( const mpi *X );
-#else
-#define mpi_size(X)         ( ( pstm_count_bits( X ) + 7 ) >> 3 )
 #endif //POLARSSL_BIGNUM_C
 
 /**
@@ -309,8 +305,6 @@ int mpi_write_file( const char *p, const mpi *X, int radix, FILE *fout );
  */
 #ifdef POLARSSL_BIGNUM_C
 int mpi_read_binary( mpi *X, const unsigned char *buf, size_t buflen );
-#else
-#define mpi_read_binary(X,buf,buflen)    pstm_read_unsigned_bin(X,buf,buflen)
 #endif
 
 /**

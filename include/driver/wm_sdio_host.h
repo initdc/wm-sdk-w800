@@ -90,7 +90,7 @@ int wm_sd_card_set_bus_width(uint32_t rca, uint8_t bus_width);
  *
  * @note           None
  */
-int wm_sd_card_block_read(uint32_t sd_addr, char *buf);
+int wm_sd_card_block_read(uint32_t rca, uint32_t sd_addr, char *buf);
 
 /**
  * @brief          This function is used to write one block data into the sd card with irq mode .
@@ -115,7 +115,7 @@ int wm_sd_card_block_write(uint32_t rca, uint32_t sd_addr, char *buf);
  *
  * @note           None
  */
-int wm_sd_card_blocks_read(uint32_t sd_addr, char *buf, uint32_t buflen);
+int wm_sd_card_blocks_read(uint32_t rca, uint32_t sd_addr, char *buf, uint32_t buflen);
 
 /**
  * @brief          This function is used to write blocks of data into the sd card with dma mode .

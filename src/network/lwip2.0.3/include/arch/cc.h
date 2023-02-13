@@ -57,7 +57,7 @@ typedef u32_t mem_ptr_t;
     Refer CHANGELOG
 */
 #define  LWIP_COMPAT_MUTEX  1
-
+#define LWIP_COMPAT_MUTEX_ALLOWED   1
 #ifndef LWIP_PLATFORM_ASSERT
 #define LWIP_PLATFORM_ASSERT(x) \
     do \

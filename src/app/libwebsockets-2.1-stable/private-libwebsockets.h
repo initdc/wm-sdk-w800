@@ -116,14 +116,6 @@
 #endif
 //#include <netdb.h>
 //#include <signal.h>
-#ifdef LWS_WITH_ESP8266
-#include <sockets.h>
-#define vsnprintf ets_vsnprintf
-#define snprintf ets_snprintf
-#define sprintf ets_sprintf
-#else
-//#include <sys/socket.h>
-#endif
 #ifdef LWS_WITH_HTTP_PROXY
 #include <hubbub/hubbub.h>
 #include <hubbub/parser.h>
@@ -131,9 +123,6 @@
 #if defined(LWS_BUILTIN_GETIFADDRS)
  #include <getifaddrs.h>
 #else
- #if !defined(LWS_WITH_ESP8266)
-// #include <ifaddrs.h>
- #endif
 #endif
 #if defined (__ANDROID__)
 #include <syslog.h>
@@ -141,19 +130,10 @@
 #elif defined (__sun)
 #include <syslog.h>
 #else
-#if !defined(LWS_WITH_ESP8266)
-//#include <sys/syslog.h>
-#endif
+
 #endif
 #include "lwip/netdb.h"
-#if !defined(LWS_WITH_ESP8266)
-//#include <sys/mman.h>
-//#include <sys/un.h>
-//#include <netinet/in.h>
-//#include <netinet/tcp.h>
-//#include <arpa/inet.h>
-//#include <poll.h>
-#endif
+
 #ifdef LWS_USE_LIBEV
 #include <ev.h>
 #endif
@@ -188,7 +168,7 @@
 
 #define lws_set_blocking_send(wsi)
 
-#if defined(MBED_OPERATORS) || defined(LWS_WITH_ESP8266)
+#if defined(MBED_OPERATORS)
 #define lws_socket_is_valid(x) ((x) != NULL)
 #define LWS_SOCK_INVALID (NULL)
 struct lws;
@@ -276,23 +256,6 @@ static inline int compatible_close(int fd) { return close(fd); }
 #endif
 #endif
 
-#if defined(LWS_WITH_ESP8266)
-#undef compatible_close
-#define compatible_close(fd) { fd->state=ESPCONN_CLOSE; espconn_delete(fd); }
-lws_sockfd_type
-esp8266_create_tcp_stream_socket(void);
-void
-esp8266_tcp_stream_bind(lws_sockfd_type fd, int port, struct lws *wsi);
-#ifndef BIG_ENDIAN
-#define BIG_ENDIAN    4321  /* to show byte order (taken from gcc) */
-#endif
-#ifndef LITTLE_ENDIAN
-#define LITTLE_ENDIAN 1234
-#endif
-#ifndef BYTE_ORDER
-#define BYTE_ORDER LITTLE_ENDIAN
-#endif
-#endif
 
 
 #if defined(WIN32) || defined(_WIN32)
@@ -641,9 +604,6 @@ struct lws_context_per_thread {
 	pthread_mutex_t lock;
 #endif
 	struct lws_pollfd *fds;
-#if defined(LWS_WITH_ESP8266)
-	struct lws **lws_vs_fds_index;
-#endif
 	struct lws *rx_draining_ext_list;
 	struct lws *tx_draining_ext_list;
 	struct lws *timeout_list;
@@ -718,14 +678,9 @@ struct lws_context_per_thread {
  */
 
 struct lws_vhost {
-#if !defined(LWS_WITH_ESP8266)
 	char http_proxy_address[128];
 	char proxy_basic_auth_token[128];
-#endif
-#if defined(LWS_WITH_ESP8266)
-	/* listen sockets need a place to hang their hat */
-	esp_tcp tcp;
-#endif
+
 	struct lws_context *context;
 	struct lws_vhost *vhost_next;
 	const struct lws_http_mount *mount_list;
@@ -785,14 +740,8 @@ struct lws_context {
 /* different implementation between unix and windows */
 	struct lws_fd_hashtable fd_hashtable[FD_HASHTABLE_MODULUS];
 #else
-#if defined(LWS_WITH_ESP8266)
-	struct espconn **connpool; /* .reverse points to the wsi */
-	void *rxd;
-	int rxd_len;
-	os_timer_t to_timer;
-#else
+
 	struct lws **lws_lookup;  /* fd to wsi */
-#endif
 #endif
 	struct lws_vhost *vhost_list;
 	struct lws_plugin *plugin_list;
@@ -1320,10 +1269,6 @@ struct lws {
 	/* truncated send handling */
 	unsigned char *trunc_alloc; /* non-NULL means buffering in progress */
 
-#if defined (LWS_WITH_ESP8266)
-	void *premature_rx;
-	unsigned short prem_rx_size, prem_rx_pos;
-#endif
 
 #ifndef LWS_NO_EXTENSIONS
 	const struct lws_extension *active_extensions[LWS_MAX_EXTENSIONS_ACTIVE];
@@ -1373,10 +1318,7 @@ struct lws {
 	unsigned int sending_chunked:1;
 	unsigned int already_did_cce:1;
 	unsigned int told_user_closed:1;
-#if defined(LWS_WITH_ESP8266)
-	unsigned int pending_send_completion:3;
-	unsigned int close_is_pending_send_completion:1;
-#endif
+
 #ifdef LWS_WITH_ACCESS_LOG
 	unsigned int access_log_pending:1;
 #endif
@@ -1481,7 +1423,7 @@ lws_b64_selftest(void);
 LWS_EXTERN int
 lws_service_flag_pending(struct lws_context *context, int tsi);
 
-#if defined(_WIN32) || defined(MBED_OPERATORS) || defined(LWS_WITH_ESP8266)
+#if defined(_WIN32) || defined(MBED_OPERATORS)
 LWS_EXTERN struct lws *
 wsi_from_fd(const struct lws_context *context, lws_sockfd_type fd);
 
@@ -1659,7 +1601,7 @@ LWS_EXTERN int get_daemonize_pid();
 #define get_daemonize_pid() (0)
 #endif
 
-#if !defined(MBED_OPERATORS) && !defined(LWS_WITH_ESP8266)
+#if !defined(MBED_OPERATORS)
 LWS_EXTERN int LWS_WARN_UNUSED_RESULT
 interface_to_sa(struct lws_vhost *vh, const char *ifname,
 		struct sockaddr_in *addr, size_t addrlen);

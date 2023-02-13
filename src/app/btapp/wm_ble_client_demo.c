@@ -10,7 +10,7 @@
 
 #include "wm_ble_client.h"
 #include "wm_ble_client_demo.h"
-#include "wm_ble_dm.h"
+#include "wm_ble_gap.h"
 #include "wm_bt_util.h"
 
 static tls_ble_callback_t tls_demo_at_cb_ptr;
@@ -294,7 +294,7 @@ static const wm_ble_client_callbacks_t  swmbleclientcb =
     ble_client_demo_services_added_callback,
 } ;
 
-tls_bt_status_t wm_demo_cli_init(uint16_t demo_uuid,tls_ble_callback_t at_cb_ptr)
+int tls_ble_demo_cli_init(uint16_t demo_uuid,tls_ble_callback_t at_cb_ptr)
 {
 	tls_bt_status_t status;
 	if(tls_demo_at_cb_ptr)
@@ -304,7 +304,7 @@ tls_bt_status_t wm_demo_cli_init(uint16_t demo_uuid,tls_ble_callback_t at_cb_ptr
 	}
 	
 	tls_demo_at_cb_ptr = at_cb_ptr;
-    status = wm_ble_client_register_client(demo_uuid, &swmbleclientcb);
+    status = tls_ble_client_register_client(demo_uuid, &swmbleclientcb);
 	if(status != TLS_BT_STATUS_SUCCESS)
 	{
 		tls_demo_at_cb_ptr = NULL;
@@ -313,7 +313,7 @@ tls_bt_status_t wm_demo_cli_init(uint16_t demo_uuid,tls_ble_callback_t at_cb_ptr
 	return status;
 }
 
-tls_bt_status_t wm_demo_cli_deinit(int client_if)
+int tls_ble_demo_cli_deinit(int client_if)
 {
 	if(tls_demo_at_cb_ptr == NULL)
 	{
@@ -321,7 +321,7 @@ tls_bt_status_t wm_demo_cli_deinit(int client_if)
 		return TLS_BT_STATUS_DONE;
 	}
 	
-    return wm_ble_client_unregister_client(client_if);
+    return tls_ble_client_unregister_client(client_if);
 }
 
 

@@ -207,7 +207,7 @@ extern void vClearInterruptMaskFromISR( int ulMask );
 
 	#ifndef configTIMER_QUEUE_LENGTH
 		//#error If configUSE_TIMERS is set to 1 then configTIMER_QUEUE_LENGTH must also be defined.
-		#define configTIMER_QUEUE_LENGTH	50
+		#define configTIMER_QUEUE_LENGTH	128
 	#endif /* configTIMER_QUEUE_LENGTH */
 
 	#ifndef configTIMER_TASK_STACK_DEPTH
