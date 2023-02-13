@@ -1,7 +1,7 @@
 TOP_DIR = ../../..
 sinclude $(TOP_DIR)/tools/w800/conf.mk
 
-EXCLUDES = wm_hspi_task.c
+EXCLUDES =
 
 CSRCS = $(filter-out $(EXCLUDES), $(wildcard *.c))
 

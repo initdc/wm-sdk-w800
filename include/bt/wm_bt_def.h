@@ -60,18 +60,18 @@ typedef enum
 /** bluetooth host statck events */
 typedef enum
 {
-    WM_BT_ADAPTER_STATE_CHG_EVT,        
-    WM_BT_ADAPTER_PROP_CHG_EVT,   
-    WM_BT_RMT_DEVICE_PROP_EVT,               
-    WM_BT_DEVICE_FOUND_EVT, 
-    WM_BT_DISCOVERY_STATE_CHG_EVT,
-    WM_BT_REQUEST_EVT,
-    WM_BT_SSP_REQUEST_EVT,
-    WM_BT_PIN_REQUEST_EVT,
-    WM_BT_BOND_STATE_CHG_EVT,
-    WM_BT_ACL_STATE_CHG_EVT,
-    WM_BT_ENERGY_INFO_EVT,
-    WM_BT_LE_TEST_EVT
+    WM_BT_ADAPTER_STATE_CHG_EVT = (0x01<<0),        
+    WM_BT_ADAPTER_PROP_CHG_EVT  = (0x01<<1),   
+    WM_BT_RMT_DEVICE_PROP_EVT   = (0x01<<2),               
+    WM_BT_DEVICE_FOUND_EVT      = (0x01<<3), 
+    WM_BT_DISCOVERY_STATE_CHG_EVT=(0x01<<4),
+    WM_BT_REQUEST_EVT           = (0x01<<5),
+    WM_BT_SSP_REQUEST_EVT       = (0x01<<6),
+    WM_BT_PIN_REQUEST_EVT       = (0x01<<7),
+    WM_BT_BOND_STATE_CHG_EVT    = (0x01<<8),
+    WM_BT_ACL_STATE_CHG_EVT     = (0x01<<9),
+    WM_BT_ENERGY_INFO_EVT       = (0x01<<10),
+    WM_BT_LE_TEST_EVT           = (0x01<<11),
 } tls_bt_host_evt_t;
 
 typedef struct
@@ -283,6 +283,7 @@ typedef struct
 {
 	tls_bt_status_t status;
 	tls_bt_addr_t *remote_address;
+    uint8_t link_type;
 	tls_bt_acl_state_t state;
 } tls_bt_acl_state_chg_msg_t;
 
@@ -425,6 +426,14 @@ typedef struct
 #define WM_BLE_GATT_TRANSPORT_LE_BR_EDR                    0x03
 
 #define WM_BLE_MAX_PDU_LENGTH                              251
+
+/** BLE advertisement mode*/
+typedef enum
+{
+    WM_BLE_ADV_STOP = 0,
+    WM_BLE_ADV_START,
+    WM_BLE_NONCONN_ADV_START
+} tls_adv_mode_t;
 
 /** BLE events */
 typedef enum
@@ -649,6 +658,7 @@ typedef struct
     uint16_t conn_id;
     uint8_t         server_if; /**< Server interface ID */
     bool connected;
+    uint16_t reason;
     uint8_t addr[6];
 } tls_ble_se_connect_msg_t;
 
@@ -802,6 +812,7 @@ typedef union
 /** WM BLE Client callback function */
 typedef void (*tls_ble_callback_t)(tls_ble_evt_t event, tls_ble_msg_t *p_data);
 
+typedef void (*tls_ble_output_func_ptr)(uint8_t *p_data, uint32_t length);
 
 
 /** BLE dm events */
@@ -890,6 +901,19 @@ typedef struct
     uint16_t      adv_int_max;            /* maximum adv interval */
     tls_bt_addr_t   *dir_addr;
 } __attribute__((packed)) tls_ble_dm_adv_param_t;
+
+typedef struct
+{
+    uint16_t      adv_int_min;            /* minimum adv interval */
+    uint16_t      adv_int_max;            /* maximum adv interval */
+    uint8_t       adv_type;
+    uint8_t       own_addr_type;
+    uint8_t       chnl_map;
+    uint8_t         afp;
+    uint8_t         peer_addr_type;
+    tls_bt_addr_t   *dir_addr;
+} __attribute__((packed)) tls_ble_dm_adv_ext_param_t;
+
 
 /** WM BLE device manager callback function */
 typedef void (*tls_ble_dm_callback_t)(tls_ble_dm_evt_t event, tls_ble_dm_msg_t *p_data);
@@ -1087,11 +1111,6 @@ typedef union
     uint32_t song_pos;
     tls_btrc_player_settings_t player_setting;
 } tls_btrc_register_notification_t;
-
-
-
-
-
 
 
 typedef enum
@@ -1683,6 +1702,120 @@ typedef union
 /** WM BT HFP CLIENT callback function */
 typedef void (*tls_bthf_client_callback_t)(tls_bthf_client_evt_t event, tls_bthf_client_msg_t *p_data);
 
+
+/******************************************************************************************/
+/* Security Setting Mask */
+#define WM_SPP_SEC_NONE            0x0000    /* No security*/
+#define WM_SPP_SEC_AUTHORIZE       0x0001    /*Authorization required (only needed for out going connection ) */
+#define WM_SPP_SEC_AUTHENTICATE    0x0012    /*Authentication required*/
+#define WM_SPP_SEC_ENCRYPT         0x0024    /*Encryption required*/
+#define WM_SPP_SEC_MODE4_LEVEL4    0x0040    /*Mode 4 level 4 service, i.e. incoming/outgoing MITM and P-256 encryption*/
+#define WM_SPP_SEC_MITM            0x3000    /*Man-In-The_Middle protection*/
+#define WM_SPP_SEC_IN_16_DIGITS    0x4000    /*Min 16 digit for pin code*/
+typedef uint16_t wm_spp_sec_t;
+
+#define WM_SPP_MAX_SCN             31
+
+typedef enum {
+    WM_SPP_ROLE_CLIENT     = 0,          
+    WM_SPP_ROLE_SERVER      = 1,
+} tls_spp_role_t;
+
+typedef enum {
+    WM_SPP_INIT_EVT                    = 0,               
+    WM_SPP_DISCOVERY_COMP_EVT          = 8,               
+    WM_SPP_OPEN_EVT                    = 26,              
+    WM_SPP_CLOSE_EVT                   = 27,              
+    WM_SPP_START_EVT                   = 28,               
+    WM_SPP_CL_INIT_EVT                 = 29,              
+    WM_SPP_DATA_IND_EVT                = 30,              
+    WM_SPP_CONG_EVT                    = 31,               
+    WM_SPP_WRITE_EVT                   = 33,              
+    WM_SPP_SRV_OPEN_EVT                = 34,              
+} tls_spp_event_t;
+
+typedef struct {
+    uint8_t    status;         
+} tls_spp_init_msg_t ;
+
+typedef struct {
+    uint8_t    status;        
+    uint8_t    scn_num;       
+    uint8_t    scn[WM_SPP_MAX_SCN];   
+} tls_spp_disc_comp_msg_t;
+
+typedef struct {
+        uint8_t      status;        
+        uint32_t     handle;                   
+        uint8_t     addr[6];        
+} tls_spp_open_msg_t;
+
+typedef struct {
+        uint8_t    status;        
+        uint32_t   handle;        
+        uint32_t   new_listen_handle;         
+        uint8_t     addr[6];       
+} tls_spp_srv_open_msg_t;
+
+typedef struct {
+        uint8_t    status;         
+        uint32_t   port_status;    
+        uint32_t   handle;        
+        bool       local;         
+} tls_spp_close_msg_t; 
+
+typedef struct {
+        uint8_t    status;        
+        uint32_t   handle;         
+        uint8_t    sec_id;         
+        bool       use_co_rfc;        
+} tls_spp_start_msg_t; 
+
+typedef struct {
+        uint8_t    status;         
+        uint32_t   handle;         
+        uint8_t    sec_id;        
+        bool       use_co_rfc;         
+} tls_spp_cli_init_msg_t;
+
+typedef struct {
+        uint8_t    status;         
+        uint32_t   handle;         
+        int        length;            
+        bool       congest;          
+} tls_spp_write_msg_t;
+
+typedef struct {
+        uint8_t    status;        
+        uint32_t   handle;        
+        uint16_t   length;           
+        uint8_t    *data;         
+} tls_spp_data_ind_msg_t; 
+
+typedef struct {
+        uint8_t    status;        
+        uint32_t   handle;        
+        bool       congest;           
+} tls_spp_cong_msg_t; 
+
+typedef union
+{
+	tls_spp_init_msg_t	            init_msg;
+	tls_spp_disc_comp_msg_t		    disc_comp_msg;
+	tls_spp_open_msg_t			    open_msg;
+	tls_spp_srv_open_msg_t	 	    srv_open_msg;
+	tls_spp_close_msg_t	            close_msg;
+	tls_spp_start_msg_t             start_msg;
+	tls_spp_cli_init_msg_t	        cli_init_msg;
+	tls_spp_write_msg_t	            write_msg;
+	tls_spp_data_ind_msg_t 			data_ind_msg;
+	tls_spp_cong_msg_t 		        congest_msg;
+
+} tls_spp_msg_t;
+
+/** WM BT SPP callback function */
+typedef void (*tls_bt_spp_callback_t)(tls_spp_event_t event, tls_spp_msg_t *p_data);
+
 #define TLS_HAL_CBACK(P_CB, P_CBACK, ...)\
     if (P_CB && P_CB->P_CBACK) {            \
         P_CB->P_CBACK(__VA_ARGS__);         \
@@ -1690,7 +1823,6 @@ typedef void (*tls_bthf_client_callback_t)(tls_bthf_client_evt_t event, tls_bthf
     else {                                  \
         assert(0);  \
     }
-
 
 #endif /* WM_BT_DEF_H */
 

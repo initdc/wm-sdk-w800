@@ -46,13 +46,13 @@ tls_bt_status_t tls_ble_dm_init(tls_ble_dm_callback_t callback);
 /**
  * @brief          start/stop ble advertisement
  *
- * @param[in]      start      TRUE enable; FALSE disable
+ * @param[in]      start      1 connectable and discoverable; 2 disconnectable and discoverable; 0 stop
  *
  * @return         @ref tls_bt_status_t
  *
  * @note           None
  */
-tls_bt_status_t tls_ble_adv(bool start);
+tls_bt_status_t tls_ble_adv(uint8_t adv_state);
 
 /**
  * @brief          configure the advertisment content
@@ -61,7 +61,9 @@ tls_bt_status_t tls_ble_adv(bool start);
  *
  * @retval         @ref tls_bt_status_t
  *
- * @note           None
+ * @note           if pure_data equals to true, the filed of manufacturer equals to all fileds of advetisement data.
+ *                     otherwise, the filed manufacturer will be advertised in 0xFF filed. 
+ *
  */
 tls_bt_status_t tls_ble_set_adv_data(tls_ble_dm_adv_data_t *data);
 
@@ -75,6 +77,18 @@ tls_bt_status_t tls_ble_set_adv_data(tls_ble_dm_adv_data_t *data);
  * @note           None
  */
 tls_bt_status_t tls_ble_set_adv_param(tls_ble_dm_adv_param_t *param);
+
+/**
+ * @brief          configure the advertisment extented parameters
+ *
+ * @param[in]      *param        @ref tls_ble_dm_adv_ext_param_t
+ *
+ * @retval         @ref tls_bt_status_t
+ *
+ * @note           if you know how to config all the parameters, you can use this function; otherwise, tls_ble_set_adv_param will be recommanded strongly;
+ */
+tls_bt_status_t tls_ble_set_adv_ext_param(tls_ble_dm_adv_ext_param_t *param);
+
 
 /**
  * @brief          start/stop ble scan
@@ -92,13 +106,14 @@ tls_bt_status_t tls_ble_scan(bool start);
  *
  * @param[in]      window        scan window size
  * @param[in]      interval      scan interval length
+ * @param[in]     scan mode    0 passive scan; 1 active scan;
  *
  * @retval         @ref tls_bt_status_t
  *
  * @note           interval should greater or equals to windows,
  *                 both range should be within (0x0004, 0x4000)
  */
-tls_bt_status_t tls_ble_set_scan_param(int window, int interval);
+tls_bt_status_t tls_ble_set_scan_param(int window, int interval, uint8_t scan_mode);
 
 /**
  * @brief          enable a async process evt

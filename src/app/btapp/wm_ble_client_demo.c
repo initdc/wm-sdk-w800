@@ -3,9 +3,10 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#include "wm_config.h"
+#include "wm_bt_config.h"
 
-#if (TLS_CONFIG_BLE == CFG_ON)
+#if (WM_BLE_INCLUDED == CFG_ON)
+
 
 #include "wm_ble_client.h"
 #include "wm_ble_client_demo.h"

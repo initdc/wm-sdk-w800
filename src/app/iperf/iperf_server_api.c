@@ -309,6 +309,7 @@ iperf_run_server(struct iperf_test *test)
             if (FD_ISSET(test->listener, &temp_read_set)) {
                 if (test->state != CREATE_STREAMS) {
                     if (iperf_accept(test) < 0) {
+						FD_CLR(test->listener, &temp_read_set);
                         cleanup_server(test);
                         return (-1);
                     }
@@ -317,6 +318,7 @@ iperf_run_server(struct iperf_test *test)
             }
             if (FD_ISSET(test->ctrl_sck, &temp_read_set)) {
                 if (iperf_handle_message_server(test) < 0){
+					FD_CLR(test->ctrl_sck, &temp_read_set);  
                     cleanup_server(test);
                     return (-1);
                 }
@@ -327,6 +329,7 @@ iperf_run_server(struct iperf_test *test)
                 if (FD_ISSET(test->prot_listener, &temp_read_set)) {
     				IPF_DBG("CREATE_STREAMS  \n");
                     if ((s = test->protocol->accept(test)) < 0){
+						FD_CLR(test->prot_listener, &temp_read_set);
 						cleanup_server(test);
 						return (-1);
                     }
@@ -335,6 +338,7 @@ iperf_run_server(struct iperf_test *test)
 						IPF_DBG("!is_closed\n");
                         sp = iperf_new_stream(test, s);
                         if (!sp){
+							FD_CLR(test->prot_listener, &temp_read_set);
 							cleanup_server(test);
                             return (-1);
                         }

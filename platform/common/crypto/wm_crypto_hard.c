@@ -21,12 +21,36 @@
 #define RNG_LOAD_SEED    	29
 #define RNG_START         	30
 
+#define TRNG_EN             0
+#define TRNG_SEL            1
+#define TRNG_DIG_BYPASS     2
+#define TRNG_CP             3
+#define TRNG_INT_MASK       6
+#define USE_TRNG            1
+
+#define DES_KEY_LEN     8
+#define DES3_KEY_LEN	24
+#define DES3_IV_LEN     8
+
 //#define CRYPTO_LOG printf
 #define CRYPTO_LOG(...)
 //extern volatile uint32_t sys_count;
 #define sys_count tls_os_get_time()
 
-volatile u8 crypto_complete = 0;
+struct wm_crypto_ctx
+{
+	volatile u8 rsa_complete;
+	volatile u8 gpsec_complete;
+#ifndef CONFIG_KERNEL_NONE
+    tls_os_sem_t *gpsec_lock;
+#endif
+};
+struct wm_crypto_ctx  g_crypto_ctx = {0,0
+#ifndef CONFIG_KERNEL_NONE
+	,NULL
+#endif
+	};
+
 #if 0
 typedef s32 psPool_t;
 #include "libtommath.h"
@@ -49,12 +73,12 @@ typedef s32 psPool_t;
 void RSA_F_IRQHandler(void)
 {
     RSACON = 0x00;
-    crypto_complete = 1;
+    g_crypto_ctx.rsa_complete = 1;
 }
 void CRYPTION_IRQHandler(void)
 {
     tls_reg_write32(HR_CRYPTO_SEC_STS, 0x10000);
-    crypto_complete = 1;
+    g_crypto_ctx.gpsec_complete = 1;
 }
 
 #if 0
@@ -85,6 +109,27 @@ u32 Reflect(u32 ref, u8 ch)
     }
     return value;
 }
+#ifndef CONFIG_KERNEL_NONE
+void tls_crypto_sem_lock(void)
+{
+    if (g_crypto_ctx.gpsec_lock == NULL)
+    {
+        return;
+    }
+    tls_os_sem_acquire(g_crypto_ctx.gpsec_lock, 0);
+}
+void tls_crypto_sem_unlock(void)
+{
+    if (g_crypto_ctx.gpsec_lock == NULL)
+    {
+        return;
+    }
+    tls_os_sem_release(g_crypto_ctx.gpsec_lock);
+}
+#else
+#define         tls_crypto_sem_lock    
+#define         tls_crypto_sem_unlock    
+#endif
 void tls_crypto_set_key(void *key, int keylen)
 {
     uint32_t *key32 = (uint32_t *)key;
@@ -128,10 +173,18 @@ void tls_crypto_set_iv(void *iv, int ivlen)
 int tls_crypto_random_stop(void)
 {
     unsigned int sec_cfg, val;
+    tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);	
+#if USE_TRNG
+	sec_cfg = 0x40;
+	tls_reg_write32(HR_CRYPTO_TRNG_CR, sec_cfg);
+	g_crypto_ctx.gpsec_complete = 0;
+#else
     val = tls_reg_read32(HR_CRYPTO_SEC_CFG);
     sec_cfg = val & ~(1 << RNG_START);
     tls_reg_write32(HR_CRYPTO_SEC_CFG, sec_cfg);
-
+#endif
+    tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
+	tls_crypto_sem_unlock();
     return ERR_CRY_OK;
 }
 
@@ -149,10 +202,18 @@ int tls_crypto_random_stop(void)
 int tls_crypto_random_init(u32 seed, CRYPTO_RNG_SWITCH rng_switch)
 {
     unsigned int sec_cfg;
-    tls_crypto_random_stop();
+	tls_crypto_sem_lock();
+    tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);	
+#if USE_TRNG
+	sec_cfg = (1 << TRNG_INT_MASK) | (4 << TRNG_CP) | (1 << TRNG_SEL) | (1 << TRNG_EN);
+	sec_cfg &= ~(1 << TRNG_INT_MASK);
+	g_crypto_ctx.gpsec_complete = 0;
+	tls_reg_write32(HR_CRYPTO_TRNG_CR, sec_cfg);
+#else
     tls_reg_write32(HR_CRYPTO_KEY0, seed);
     sec_cfg = (rng_switch << RNG_SWITCH) | (1 << RNG_LOAD_SEED) | (1 << RNG_START);
     tls_reg_write32(HR_CRYPTO_SEC_CFG, sec_cfg);
+#endif
     return ERR_CRY_OK;
 }
 
@@ -172,10 +233,21 @@ int tls_crypto_random_bytes(unsigned char *out, u32 len)
     unsigned int val;
     uint32 inLen = len;
     int randomBytes = 2;
+#if USE_TRNG
+	randomBytes = 4;
+#else
     val = tls_reg_read32(HR_CRYPTO_SEC_CFG);
     randomBytes = val & (1 << RNG_SWITCH) ? 4 : 2;
+#endif
     while(inLen > 0)
     {
+#if USE_TRNG
+		while (!g_crypto_ctx.gpsec_complete)
+		{
+
+		}
+		g_crypto_ctx.gpsec_complete = 0;
+#endif
         val = tls_reg_read32(HR_CRYPTO_RNG_RESULT);
         if(inLen >= randomBytes)
         {
@@ -189,6 +261,7 @@ int tls_crypto_random_bytes(unsigned char *out, u32 len)
             inLen = 0;
         }
     }
+    tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);	
     return ERR_CRY_OK;
 }
 
@@ -239,6 +312,7 @@ int tls_crypto_rc4(psCipherContext_t *ctx, unsigned char *in, unsigned char *out
     unsigned int sec_cfg;
     unsigned char *key = ctx->arc4.state;
     u32 keylen = ctx->arc4.byteCount;
+	tls_crypto_sem_lock();
     tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
     tls_crypto_set_key(key, keylen);
     tls_reg_write32(HR_CRYPTO_SRC_ADDR, (unsigned int)in);
@@ -250,15 +324,16 @@ int tls_crypto_rc4(psCipherContext_t *ctx, unsigned char *in, unsigned char *out
     }
     tls_reg_write32(HR_CRYPTO_SEC_CFG, sec_cfg);
     CRYPTO_LOG("[%d]:rc4[%d] start\n", sys_count, len);
-    crypto_complete = 0;
+    g_crypto_ctx.gpsec_complete = 0;
     tls_reg_write32(HR_CRYPTO_SEC_CTRL, 0x1);//start crypto
-    while (!crypto_complete)
+    while (!g_crypto_ctx.gpsec_complete)
     {
 
     }
-    crypto_complete = 0;
+    g_crypto_ctx.gpsec_complete = 0;
     CRYPTO_LOG("[%d]:rc4 end status: %x\n", sys_count, tls_reg_read32(HR_CRYPTO_SEC_STS));
     tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
+	tls_crypto_sem_unlock();
     return ERR_CRY_OK;
 }
 
@@ -283,13 +358,16 @@ int tls_crypto_aes_init(psCipherContext_t *ctx, const unsigned char *IV, const u
     if (keylen != 16)
         return ERR_FAILURE;
 
-    memcpy(ctx->aes.key.eK, key, keylen);
-    ctx->aes.key.Nr = cbc;
-    ctx->aes.blocklen = 16;
-    for (x = 0; x < ctx->aes.blocklen; x++)
-    {
-        ctx->aes.IV[x] = IV[x];
-    }
+    memcpy(ctx->aes.key.skey, key, keylen);
+    ctx->aes.key.type = cbc;
+    ctx->aes.key.rounds = 16;
+	if(IV)
+	{
+	    for (x = 0; x < ctx->aes.key.rounds; x++)
+	    {
+	        ctx->aes.IV[x] = IV[x];
+	    }
+	}
     return ERR_CRY_OK;
 }
 
@@ -311,9 +389,10 @@ int tls_crypto_aes_encrypt_decrypt(psCipherContext_t *ctx, unsigned char *in, un
 {
     unsigned int sec_cfg;
     u32 keylen = 16;
-    unsigned char *key = (unsigned char *)ctx->aes.key.eK;
+    unsigned char *key = (unsigned char *)ctx->aes.key.skey;
     unsigned char *IV = ctx->aes.IV;
-    CRYPTO_MODE cbc = (CRYPTO_MODE)(ctx->aes.key.Nr & 0xFF);
+    CRYPTO_MODE cbc = (CRYPTO_MODE)(ctx->aes.key.type & 0xFF);
+	tls_crypto_sem_lock();
     tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
     tls_crypto_set_key(key, keylen);
     tls_crypto_set_iv(IV, 16);
@@ -324,15 +403,16 @@ int tls_crypto_aes_encrypt_decrypt(psCipherContext_t *ctx, unsigned char *in, un
     tls_reg_write32(HR_CRYPTO_SEC_CFG, sec_cfg);
     CRYPTO_LOG("[%d]:aes[%d] %s %s start\n", sys_count, len, dec == CRYPTO_WAY_ENCRYPT ? "ENCRYPT" : "DECRYPT",
                cbc == CRYPTO_MODE_ECB ? "ECB" : (cbc == CRYPTO_MODE_CBC ? "CBC" : (cbc == CRYPTO_MODE_CTR ? "CTR" : "MAC")));
-    crypto_complete = 0;
+    g_crypto_ctx.gpsec_complete = 0;
     tls_reg_write32(HR_CRYPTO_SEC_CTRL, 0x1);//start crypto
-    while (!crypto_complete)
+    while (!g_crypto_ctx.gpsec_complete)
     {
 
     }
-    crypto_complete = 0;
+    g_crypto_ctx.gpsec_complete = 0;
     CRYPTO_LOG("[%d]:aes end %d\n", sys_count, tls_reg_read32(HR_CRYPTO_SEC_STS) & 0xFFFF);
     tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
+	tls_crypto_sem_unlock();
     return ERR_CRY_OK;
 }
 
@@ -359,10 +439,13 @@ int tls_crypto_3des_init(psCipherContext_t *ctx, const unsigned char *IV, const 
     memcpy(ctx->des3.key.ek[0], key, keylen);
     ctx->des3.key.ek[1][0] =  cbc;
     ctx->des3.blocklen = DES3_IV_LEN;
-    for (x = 0; x < ctx->des3.blocklen; x++)
-    {
-        ctx->des3.IV[x] = IV[x];
-    }
+	if(IV)
+	{
+	    for (x = 0; x < ctx->des3.blocklen; x++)
+	    {
+	        ctx->des3.IV[x] = IV[x];
+	    }
+	}
 
     return ERR_CRY_OK;
 }
@@ -388,6 +471,7 @@ int tls_crypto_3des_encrypt_decrypt(psCipherContext_t *ctx, unsigned char *in, u
     unsigned char *key = (unsigned char *)(unsigned char *)ctx->des3.key.ek[0];
     unsigned char *IV = ctx->des3.IV;
     CRYPTO_MODE cbc = (CRYPTO_MODE)(ctx->des3.key.ek[1][0] & 0xFF);
+	tls_crypto_sem_lock();
     tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
     tls_crypto_set_key(key, keylen);
     tls_crypto_set_iv(IV, DES3_IV_LEN);
@@ -397,15 +481,16 @@ int tls_crypto_3des_encrypt_decrypt(psCipherContext_t *ctx, unsigned char *in, u
     tls_reg_write32(HR_CRYPTO_SEC_CFG, sec_cfg);
     CRYPTO_LOG("[%d]:3des[%d] %s %s start\n", sys_count, len, dec == CRYPTO_WAY_ENCRYPT ? "ENCRYPT" : "DECRYPT",
                cbc == CRYPTO_MODE_ECB ? "ECB" : "CBC");
-    crypto_complete = 0;
+    g_crypto_ctx.gpsec_complete = 0;
     tls_reg_write32(HR_CRYPTO_SEC_CTRL, 0x1);//start crypto
-    while (!crypto_complete)
+    while (!g_crypto_ctx.gpsec_complete)
     {
 
     }
-    crypto_complete = 0;
+    g_crypto_ctx.gpsec_complete = 0;
     CRYPTO_LOG("[%d]:3des end %d\n", sys_count, tls_reg_read32(HR_CRYPTO_SEC_STS) & 0xFFFF);
     tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
+	tls_crypto_sem_unlock();
     return ERR_CRY_OK;
 }
 
@@ -432,10 +517,13 @@ int tls_crypto_des_init(psCipherContext_t *ctx, const unsigned char *IV, const u
     memcpy(ctx->des3.key.ek[0], key, keylen);
     ctx->des3.key.ek[1][0] =  cbc;
     ctx->des3.blocklen = DES3_IV_LEN;
-    for (x = 0; x < ctx->des3.blocklen; x++)
-    {
-        ctx->des3.IV[x] = IV[x];
-    }
+	if(IV)
+	{
+	    for (x = 0; x < ctx->des3.blocklen; x++)
+	    {
+	        ctx->des3.IV[x] = IV[x];
+	    }
+	}
     return ERR_CRY_OK;
 }
 
@@ -463,6 +551,7 @@ int tls_crypto_des_encrypt_decrypt(psCipherContext_t *ctx, unsigned char *in, un
     CRYPTO_MODE cbc = (CRYPTO_MODE)(ctx->des3.key.ek[1][0] & 0xFF);
     //uint32_t *IV32 = (uint32_t *)IV;
 
+	tls_crypto_sem_lock();
     tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
     tls_crypto_set_key(key, keylen);
     tls_crypto_set_iv(IV, DES3_IV_LEN);
@@ -472,15 +561,16 @@ int tls_crypto_des_encrypt_decrypt(psCipherContext_t *ctx, unsigned char *in, un
     tls_reg_write32(HR_CRYPTO_SEC_CFG, sec_cfg);
     CRYPTO_LOG("[%d]:des[%d] %s %s start\n", sys_count, len, dec == CRYPTO_WAY_ENCRYPT ? "ENCRYPT" : "DECRYPT",
                cbc == CRYPTO_MODE_ECB ? "ECB" : "CBC");
-    crypto_complete = 0;
+    g_crypto_ctx.gpsec_complete = 0;
     tls_reg_write32(HR_CRYPTO_SEC_CTRL, 0x1);//start crypto
-    while (!crypto_complete)
+    while (!g_crypto_ctx.gpsec_complete)
     {
 
     }
-    crypto_complete = 0;
+    g_crypto_ctx.gpsec_complete = 0;
     CRYPTO_LOG("[%d]:des end %d\n", sys_count, tls_reg_read32(HR_CRYPTO_SEC_STS) & 0xFFFF);
     tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
+	tls_crypto_sem_unlock();
 
     return ERR_CRY_OK;
 }
@@ -507,7 +597,6 @@ int tls_crypto_crc_init(psCrcContext_t *ctx, u32 key, CRYPTO_CRC_TYPE crc_type, 
     ctx->state = key;
     ctx->type = crc_type;
     ctx->mode = mode;
-    tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
     return ERR_CRY_OK;
 }
 
@@ -527,6 +616,8 @@ int tls_crypto_crc_init(psCrcContext_t *ctx, u32 key, CRYPTO_CRC_TYPE crc_type, 
 int tls_crypto_crc_update(psCrcContext_t *ctx, unsigned char *in, u32 len)
 {
     unsigned int sec_cfg;
+	tls_crypto_sem_lock();
+    tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
     sec_cfg =  (CRYPTO_METHOD_CRC << 16) | (ctx->type << 21) | (ctx->mode << 23) | (len & 0xFFFF);
     tls_reg_write32(HR_CRYPTO_SEC_CFG, sec_cfg);
     if(ctx->mode & OUTPUT_REFLECT)
@@ -557,15 +648,17 @@ int tls_crypto_crc_update(psCrcContext_t *ctx, unsigned char *in, u32 len)
         tls_reg_write32(HR_CRYPTO_CRC_KEY, ctx->state);
 
     tls_reg_write32(HR_CRYPTO_SRC_ADDR, (unsigned int)in);
-    crypto_complete = 0;
+    g_crypto_ctx.gpsec_complete = 0;
     tls_reg_write32(HR_CRYPTO_SEC_CTRL, 0x1);//start crypto
-    while (!crypto_complete)
+    while (!g_crypto_ctx.gpsec_complete)
     {
 
     }
-    crypto_complete = 0;
+    g_crypto_ctx.gpsec_complete = 0;
     ctx->state = tls_reg_read32(HR_CRYPTO_CRC_RESULT);
     tls_reg_write32(HR_CRYPTO_SEC_CTRL, 0x4);//clear crc fifo
+    tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
+	tls_crypto_sem_unlock();
     return ERR_CRY_OK;
 }
 
@@ -584,7 +677,6 @@ int tls_crypto_crc_update(psCrcContext_t *ctx, unsigned char *in, u32 len)
 int tls_crypto_crc_final(psCrcContext_t *ctx, u32 *crc_val)
 {
     *crc_val = ctx->state;
-    tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
     return ERR_CRY_OK;
 }
 
@@ -592,27 +684,31 @@ static void hd_sha1_compress(psDigestContext_t *md)
 {
     unsigned int sec_cfg, val;
     int i = 0;
-    tls_reg_write32(HR_CRYPTO_SRC_ADDR, (unsigned int)md->sha1.buf);
+	tls_crypto_sem_lock();
+    tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
+    tls_reg_write32(HR_CRYPTO_SRC_ADDR, (unsigned int)md->u.sha1.buf);
 
     sec_cfg = (CRYPTO_METHOD_SHA1 << 16) | (64 & 0xFFFF); // TODO
     tls_reg_write32(HR_CRYPTO_SEC_CFG, sec_cfg);
-    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST0, md->sha1.state[0]);
-    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST1, md->sha1.state[1]);
-    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST2, md->sha1.state[2]);
-    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST3, md->sha1.state[3]);
-    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST4, md->sha1.state[4]);
-    crypto_complete = 0;
+    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST0, md->u.sha1.state[0]);
+    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST1, md->u.sha1.state[1]);
+    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST2, md->u.sha1.state[2]);
+    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST3, md->u.sha1.state[3]);
+    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST4, md->u.sha1.state[4]);
+    g_crypto_ctx.gpsec_complete = 0;
     tls_reg_write32(HR_CRYPTO_SEC_CTRL, 0x1);//start crypto
-    while (!crypto_complete)
+    while (!g_crypto_ctx.gpsec_complete)
     {
 
     }
-    crypto_complete = 0;
+    g_crypto_ctx.gpsec_complete = 0;
     for (i = 0; i < 5; i++)
     {
         val = tls_reg_read32(HR_CRYPTO_SHA1_DIGEST0 + (4 * i));
-        md->sha1.state[i] = val;
+        md->u.sha1.state[i] = val;
     }
+    tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
+	tls_crypto_sem_unlock();
 }
 
 
@@ -628,19 +724,18 @@ static void hd_sha1_compress(psDigestContext_t *md)
  */
 void tls_crypto_sha1_init(psDigestContext_t *md)
 {
-    md->sha1.state[0] = 0x67452301UL;
-    md->sha1.state[1] = 0xefcdab89UL;
-    md->sha1.state[2] = 0x98badcfeUL;
-    md->sha1.state[3] = 0x10325476UL;
-    md->sha1.state[4] = 0xc3d2e1f0UL;
-    md->sha1.curlen = 0;
+    md->u.sha1.state[0] = 0x67452301UL;
+    md->u.sha1.state[1] = 0xefcdab89UL;
+    md->u.sha1.state[2] = 0x98badcfeUL;
+    md->u.sha1.state[3] = 0x10325476UL;
+    md->u.sha1.state[4] = 0xc3d2e1f0UL;
+    md->u.sha1.curlen = 0;
 #ifdef HAVE_NATIVE_INT64
-    md->sha1.length = 0;
+    md->u.sha1.length = 0;
 #else
     md->sha1.lengthHi = 0;
     md->sha1.lengthLo = 0;
 #endif /* HAVE_NATIVE_INT64 */
-    tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
 }
 
 
@@ -663,27 +758,27 @@ void tls_crypto_sha1_update(psDigestContext_t *md, const unsigned char *buf, u32
     u32 n;
     while (len > 0)
     {
-        n = min(len, (64 - md->sha1.curlen));
-        memcpy(md->sha1.buf + md->sha1.curlen, buf, (size_t)n);
-        md->sha1.curlen		+= n;
+        n = min(len, (64 - md->u.sha1.curlen));
+        memcpy(md->u.sha1.buf + md->u.sha1.curlen, buf, (size_t)n);
+        md->u.sha1.curlen		+= n;
         buf					+= n;
         len					-= n;
 
         /* is 64 bytes full? */
-        if (md->sha1.curlen == 64)
+        if (md->u.sha1.curlen == 64)
         {
             hd_sha1_compress(md);
 #ifdef HAVE_NATIVE_INT64
-            md->sha1.length += 512;
+            md->u.sha1.length += 512;
 #else
-            n = (md->sha1.lengthLo + 512) & 0xFFFFFFFFL;
-            if (n < md->sha1.lengthLo)
+            n = (md->u.sha1.lengthLo + 512) & 0xFFFFFFFFL;
+            if (n < md->u.sha1.lengthLo)
             {
-                md->sha1.lengthHi++;
+                md->u.sha1.lengthHi++;
             }
-            md->sha1.lengthLo = n;
+            md->u.sha1.lengthLo = n;
 #endif /* HAVE_NATIVE_INT64 */
-            md->sha1.curlen = 0;
+            md->u.sha1.curlen = 0;
         }
     }
 }
@@ -710,7 +805,7 @@ int tls_crypto_sha1_final(psDigestContext_t *md, unsigned char *hash)
 #ifndef HAVE_NATIVE_INT64
     u32	n;
 #endif
-    if (md->sha1.curlen >= sizeof(md->sha1.buf) || hash == NULL)
+    if (md->u.sha1.curlen >= sizeof(md->u.sha1.buf) || hash == NULL)
     {
         return ERR_ARG_FAIL;
     }
@@ -719,7 +814,7 @@ int tls_crypto_sha1_final(psDigestContext_t *md, unsigned char *hash)
     	increase the length of the message
      */
 #ifdef HAVE_NATIVE_INT64
-    md->sha1.length += md->sha1.curlen << 3;
+    md->u.sha1.length += md->u.sha1.curlen << 3;
 #else
     n = (md->sha1.lengthLo + (md->sha1.curlen << 3)) & 0xFFFFFFFFL;
     if (n < md->sha1.lengthLo)
@@ -733,35 +828,35 @@ int tls_crypto_sha1_final(psDigestContext_t *md, unsigned char *hash)
     /*
     	append the '1' bit
      */
-    md->sha1.buf[md->sha1.curlen++] = (unsigned char)0x80;
+    md->u.sha1.buf[md->u.sha1.curlen++] = (unsigned char)0x80;
 
     /*
     	if the length is currently above 56 bytes we append zeros then compress.
     	Then we can fall back to padding zeros and length encoding like normal.
      */
-    if (md->sha1.curlen > 56)
+    if (md->u.sha1.curlen > 56)
     {
-        while (md->sha1.curlen < 64)
+        while (md->u.sha1.curlen < 64)
         {
-            md->sha1.buf[md->sha1.curlen++] = (unsigned char)0;
+            md->u.sha1.buf[md->u.sha1.curlen++] = (unsigned char)0;
         }
         hd_sha1_compress(md);
-        md->sha1.curlen = 0;
+        md->u.sha1.curlen = 0;
     }
 
     /*
     	pad upto 56 bytes of zeroes
      */
-    while (md->sha1.curlen < 56)
+    while (md->u.sha1.curlen < 56)
     {
-        md->sha1.buf[md->sha1.curlen++] = (unsigned char)0;
+        md->u.sha1.buf[md->u.sha1.curlen++] = (unsigned char)0;
     }
 
     /*
     	store length
      */
 #ifdef HAVE_NATIVE_INT64
-    STORE64H(md->sha1.length, md->sha1.buf + 56);
+    STORE64H(md->u.sha1.length, md->u.sha1.buf + 56);
 #else
     STORE32H(md->sha1.lengthHi, md->sha1.buf + 56);
     STORE32H(md->sha1.lengthLo, md->sha1.buf + 60);
@@ -776,9 +871,7 @@ int tls_crypto_sha1_final(psDigestContext_t *md, unsigned char *hash)
         val = tls_reg_read32(HR_CRYPTO_SHA1_DIGEST0 + (4 * i));
         STORE32H(val, hash + (4 * i));
     }
-    memset(md, 0x0, sizeof(psDigestContext_t));
-
-    tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
+    memset(md, 0x0, sizeof(psSha1_t));
 
     return SHA1_HASH_SIZE;
 }
@@ -786,25 +879,30 @@ int tls_crypto_sha1_final(psDigestContext_t *md, unsigned char *hash)
 static void hd_md5_compress(psDigestContext_t *md)
 {
     unsigned int sec_cfg, val, i;
-    tls_reg_write32(HR_CRYPTO_SRC_ADDR, (unsigned int)md->md5.buf);
+	tls_crypto_sem_lock();
+    tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
+    tls_reg_write32(HR_CRYPTO_SRC_ADDR, (unsigned int)md->u.md5.buf);
     sec_cfg = (CRYPTO_METHOD_MD5 << 16) |  (64 & 0xFFFF);
     tls_reg_write32(HR_CRYPTO_SEC_CFG, sec_cfg);
-    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST0, md->md5.state[0]);
-    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST1, md->md5.state[1]);
-    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST2, md->md5.state[2]);
-    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST3, md->md5.state[3]);
-    crypto_complete = 0;
+    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST0, md->u.md5.state[0]);
+    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST1, md->u.md5.state[1]);
+    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST2, md->u.md5.state[2]);
+    tls_reg_write32(HR_CRYPTO_SHA1_DIGEST3, md->u.md5.state[3]);
+    g_crypto_ctx.gpsec_complete = 0;
     tls_reg_write32(HR_CRYPTO_SEC_CTRL, 0x1);//start crypto
-    while (!crypto_complete)
+    while (!g_crypto_ctx.gpsec_complete)
     {
 
     }
-    crypto_complete = 0;
+    g_crypto_ctx.gpsec_complete = 0;
     for (i = 0; i < 4; i++)
     {
         val = tls_reg_read32(HR_CRYPTO_SHA1_DIGEST0 + (4 * i));
-        md->md5.state[i] = val;
+        md->u.md5.state[i] = val;
     }
+
+    tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
+	tls_crypto_sem_unlock();
 }
 
 
@@ -823,18 +921,17 @@ static void hd_md5_compress(psDigestContext_t *md)
  */
 void tls_crypto_md5_init(psDigestContext_t *md)
 {
-    md->md5.state[0] = 0x67452301UL;
-    md->md5.state[1] = 0xefcdab89UL;
-    md->md5.state[2] = 0x98badcfeUL;
-    md->md5.state[3] = 0x10325476UL;
-    md->md5.curlen = 0;
+    md->u.md5.state[0] = 0x67452301UL;
+    md->u.md5.state[1] = 0xefcdab89UL;
+    md->u.md5.state[2] = 0x98badcfeUL;
+    md->u.md5.state[3] = 0x10325476UL;
+    md->u.md5.curlen = 0;
 #ifdef HAVE_NATIVE_INT64
-    md->md5.length = 0;
+    md->u.md5.length = 0;
 #else
-    md->md5.lengthHi = 0;
-    md->md5.lengthLo = 0;
+    md->u.md5.lengthHi = 0;
+    md->u.md5.lengthLo = 0;
 #endif /* HAVE_NATIVE_INT64 */
-    tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
 }
 
 
@@ -858,29 +955,29 @@ void tls_crypto_md5_update(psDigestContext_t *md, const unsigned char *buf, u32 
 
     while (len > 0)
     {
-        n = min(len, (64 - md->md5.curlen));
-        memcpy(md->md5.buf + md->md5.curlen, buf, (size_t)n);
-        md->md5.curlen	+= n;
+        n = min(len, (64 - md->u.md5.curlen));
+        memcpy(md->u.md5.buf + md->u.md5.curlen, buf, (size_t)n);
+        md->u.md5.curlen	+= n;
         buf				+= n;
         len				-= n;
 
         /*
         		is 64 bytes full?
          */
-        if (md->md5.curlen == 64)
+        if (md->u.md5.curlen == 64)
         {
             hd_md5_compress(md);
 #ifdef HAVE_NATIVE_INT64
-            md->md5.length += 512;
+            md->u.md5.length += 512;
 #else
-            n = (md->md5.lengthLo + 512) & 0xFFFFFFFFL;
-            if (n < md->md5.lengthLo)
+            n = (md->u.md5.lengthLo + 512) & 0xFFFFFFFFL;
+            if (n < md->u.md5.lengthLo)
             {
-                md->md5.lengthHi++;
+                md->u.md5.lengthHi++;
             }
-            md->md5.lengthLo = n;
+            md->u.md5.lengthLo = n;
 #endif /* HAVE_NATIVE_INT64 */
-            md->md5.curlen = 0;
+            md->u.md5.curlen = 0;
         }
     }
 }
@@ -917,51 +1014,51 @@ s32 tls_crypto_md5_final(psDigestContext_t *md, unsigned char *hash)
     	increase the length of the message
      */
 #ifdef HAVE_NATIVE_INT64
-    md->md5.length += md->md5.curlen << 3;
+    md->u.md5.length += md->u.md5.curlen << 3;
 #else
-    n = (md->md5.lengthLo + (md->md5.curlen << 3)) & 0xFFFFFFFFL;
-    if (n < md->md5.lengthLo)
+    n = (md->u.md5.lengthLo + (md->u.md5.curlen << 3)) & 0xFFFFFFFFL;
+    if (n < md->u.md5.lengthLo)
     {
-        md->md5.lengthHi++;
+        md->u.md5.lengthHi++;
     }
-    md->md5.lengthHi += (md->md5.curlen >> 29);
-    md->md5.lengthLo = n;
+    md->u.md5.lengthHi += (md->u.md5.curlen >> 29);
+    md->u.md5.lengthLo = n;
 #endif /* HAVE_NATIVE_INT64 */
 
     /*
     	append the '1' bit
      */
-    md->md5.buf[md->md5.curlen++] = (unsigned char)0x80;
+    md->u.md5.buf[md->u.md5.curlen++] = (unsigned char)0x80;
 
     /*
     	if the length is currently above 56 bytes we append zeros then compress.
     	Then we can fall back to padding zeros and length encoding like normal.
      */
-    if (md->md5.curlen > 56)
+    if (md->u.md5.curlen > 56)
     {
-        while (md->md5.curlen < 64)
+        while (md->u.md5.curlen < 64)
         {
-            md->md5.buf[md->md5.curlen++] = (unsigned char)0;
+            md->u.md5.buf[md->u.md5.curlen++] = (unsigned char)0;
         }
         hd_md5_compress(md);
-        md->md5.curlen = 0;
+        md->u.md5.curlen = 0;
     }
 
     /*
     	pad upto 56 bytes of zeroes
      */
-    while (md->md5.curlen < 56)
+    while (md->u.md5.curlen < 56)
     {
-        md->md5.buf[md->md5.curlen++] = (unsigned char)0;
+        md->u.md5.buf[md->u.md5.curlen++] = (unsigned char)0;
     }
     /*
     	store length
      */
 #ifdef HAVE_NATIVE_INT64
-    STORE64L(md->md5.length, md->md5.buf + 56);
+    STORE64L(md->u.md5.length, md->u.md5.buf + 56);
 #else
-    STORE32L(md->md5.lengthLo, md->md5.buf + 56);
-    STORE32L(md->md5.lengthHi, md->md5.buf + 60);
+    STORE32L(md->u.md5.lengthLo, md->u.md5.buf + 56);
+    STORE32L(md->u.md5.lengthHi, md->u.md5.buf + 60);
 #endif /* HAVE_NATIVE_INT64 */
     hd_md5_compress(md);
 
@@ -973,9 +1070,7 @@ s32 tls_crypto_md5_final(psDigestContext_t *md, unsigned char *hash)
         val = tls_reg_read32(HR_CRYPTO_SHA1_DIGEST0 + (4 * i));
         STORE32L(val, hash + (4 * i));
     }
-    memset(md, 0x0, sizeof(psDigestContext_t));
-
-    tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);
+    memset(md, 0x0, sizeof(psMd5_t));
 
     return MD5_HASH_SIZE;
 }
@@ -1048,6 +1143,25 @@ static int rsaMulModRead(unsigned char w, pstm_int *a)
     }
     return 0;
 }
+static void rsaMulModDump(unsigned char w)
+{
+	int addr = 0;
+    switch(w)
+    {
+    case 'A':
+		addr = 0;
+        break;
+    case 'B':
+        addr = 0x100;
+        break;
+    case 'D':
+        addr = 0x300;
+        break;
+    }
+	printf("%c", w);
+	dumpUint32(" Val:",((volatile u32*) (RSA_BASE_ADDRESS + addr )), RSAN);
+}
+
 static void rsaMulModWrite(unsigned char w, pstm_int *a)
 {
     u32 in[64];
@@ -1068,43 +1182,47 @@ static void rsaMulModWrite(unsigned char w, pstm_int *a)
 }
 static void rsaMonMulAA(void)
 {
+    g_crypto_ctx.rsa_complete = 0;
     RSACON = 0x2c;
 
-    while (!crypto_complete)
+    while (!g_crypto_ctx.rsa_complete)
     {
 
     }
-    crypto_complete = 0;
+    g_crypto_ctx.rsa_complete = 0;
 }
 static void rsaMonMulDD(void)
 {
+    g_crypto_ctx.rsa_complete = 0;
     RSACON = 0x20;
 
-    while (!crypto_complete)
+    while (!g_crypto_ctx.rsa_complete)
     {
 
     }
-    crypto_complete = 0;
+    g_crypto_ctx.rsa_complete = 0;
 }
 static void rsaMonMulAB(void)
 {
+    g_crypto_ctx.rsa_complete = 0;
     RSACON = 0x24;
 
-    while (!crypto_complete)
+    while (!g_crypto_ctx.rsa_complete)
     {
 
     }
-    crypto_complete = 0;
+    g_crypto_ctx.rsa_complete = 0;
 }
 static void rsaMonMulBD(void)
 {
+    g_crypto_ctx.rsa_complete = 0;
     RSACON = 0x28;
 
-    while (!crypto_complete)
+    while (!g_crypto_ctx.rsa_complete)
     {
 
     }
-    crypto_complete = 0;
+    g_crypto_ctx.rsa_complete = 0;
 }
 /******************************************************************************
 compute mc, s.t. mc * in = 0xffffffff
@@ -1146,12 +1264,12 @@ int tls_crypto_exptmod(pstm_int *a, pstm_int *e, pstm_int *n, pstm_int *res)
 {
     int i = 0;
     u32 k = 0, mc = 0, dp0;
-    u8 monmulFlag = 0;
+    volatile u8 monmulFlag = 0;
     pstm_int R, X, Y;
 
     tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_RSA);
 
-#ifndef TLS_CONFIG_FPGA
+#ifndef CONFIG_KERNEL_NONE
     tls_fls_sem_lock();
 #endif
     pstm_init(NULL, &X);
@@ -1197,11 +1315,13 @@ int tls_crypto_exptmod(pstm_int *a, pstm_int *e, pstm_int *n, pstm_int *res)
         {
             rsaMonMulAA();
             monmulFlag = 1;
+			//rsaMulModDump('D');
         }
         else
         {
             rsaMonMulDD();
             monmulFlag = 0;
+			//rsaMulModDump('A');
         }
 
         if(pstm_get_bit(e, i))
@@ -1210,11 +1330,13 @@ int tls_crypto_exptmod(pstm_int *a, pstm_int *e, pstm_int *n, pstm_int *res)
             {
                 rsaMonMulAB();
                 monmulFlag = 1;
+				//rsaMulModDump('D');
             }
             else
             {
                 rsaMonMulBD();
                 monmulFlag = 0;
+				//rsaMulModDump('A');
             }
         }
     }
@@ -1235,7 +1357,7 @@ int tls_crypto_exptmod(pstm_int *a, pstm_int *e, pstm_int *n, pstm_int *res)
     pstm_clear(&X);
     pstm_clear(&Y);
     pstm_clear(&R);
-#ifndef TLS_CONFIG_FPGA
+#ifndef CONFIG_KERNEL_NONE
     tls_fls_sem_unlock();
 #endif
     tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_RSA);
@@ -1253,9 +1375,23 @@ int tls_crypto_exptmod(pstm_int *a, pstm_int *e, pstm_int *n, pstm_int *res)
  *
  * @note			None
  */
-void tls_crypto_init(void)
+int tls_crypto_init(void)
 {
+#ifndef CONFIG_KERNEL_NONE
+	int err = 0;
+	if(g_crypto_ctx.gpsec_lock != NULL)
+	{
+		return 0;
+	}
+	err = tls_os_sem_create(&g_crypto_ctx.gpsec_lock, 1);
+    if (err != TLS_OS_SUCCESS)
+    {
+        TLS_DBGPRT_ERR("create semaphore @gpsec_lock fail!\n");
+        return -1;
+    }
+#endif
     tls_irq_enable(RSA_IRQn);
     tls_irq_enable(CRYPTION_IRQn);
+	return 0;
 }
 

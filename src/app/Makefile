@@ -10,7 +10,7 @@ COMPONENTS_libapp = cjson/libcjson$(LIB_EXT) 	\
 					iperf/libiperf$(LIB_EXT) 	\
 					libcoap/libcoap$(LIB_EXT) 	\
 					libwebsockets-2.1-stable/libwebsockets$(LIB_EXT) 	\
-					matrixssl/libmatrixssl$(LIB_EXT) 	\
+					matrixssl-4-3-0-open/libmatrixssl-4-3-0-open$(LIB_EXT) 	\
 					mdns/libmdns$(LIB_EXT) 	\
 					mqtt/libmqtt$(LIB_EXT) 	\
 					ntp/libntp$(LIB_EXT) 	\
@@ -22,7 +22,8 @@ COMPONENTS_libapp = cjson/libcjson$(LIB_EXT) 	\
 					web/libweb$(LIB_EXT) 	\
 					wm_atcmd/libwm_atcmd$(LIB_EXT) \
 					mbedtls/libmbedtls$(LIB_EXT) \
-					btapp/libbtapp$(LIB_EXT)
+					btapp/libbtapp$(LIB_EXT) \
+					fatfs/libfatfs$(LIB_EXT)
 endif
 
 #DEFINES +=

@@ -1,23 +1,55 @@
  ==========================================================
 |	CHANGELOG: WinnerMicro Software Development Kit	   |
  ==========================================================
-W800 SDK v1.00.00 | 2020/08/07
+W800 SDK v1.00.01 | 2020/12/29
 ==========================
 *********
 SDK功能
 *********
 *ld调整：
-     因增加标准蓝牙BT功能，代码空间超过1MB，当前设定为1MB+128KB，相应的用户区要减少128KB
+     因增加BT功能，代码空间超过1MB，当前设定为1MB+64KB，相应的用户区要减少64KB
      用户区宏调整（wm_flash_map.h）：#define USER_ADDR_START    (0x81E0000UL)
      当前升级区针对超过1MB的情况，只能选择使用压缩的ota固件
-     如果使用的是BLE功能，则可以不调整相关的部分gcc_csky.ld和宏USER_ADDR_START。
+
+*二级BOOT更新：
+    1）发布SDK里添加secboot.bin文件生成img的操作，以免客户调整运行区起始地址时，因为secboot的头信息与其不匹配导致升级fls启动不了	 
+
+*蓝牙：
+     1）提供三种蓝牙的库，bt和ble都有的lib，单独标准bt的lib，单独ble的lib
+        用户可根据实际需要配合wm_config.h里的TLS_CONFIG_BR_EDR和TLS_CONFIG_BLE的设置，把相关的lib更名为libbt.a。
+     2）发布时默认使用ble都有的lib
+	 3）优化蓝牙参数
+	 4）增加蓝牙demo
+
+*Wi-Fi：
+    1）优化低功耗功能
+	2）优化异常恢复处理
+
+*系统参数及驱动：
+    1）增加关键参数区写保护操作
+	2）优化参数区使用内存，改为只使用一块静态内存
+    3）解决SDIO多block写操作失败问题
+	4）Master SPI使用的任务栈改为使用申请创建任务，不再使用静态内存
+
+*芯片的sleep和standby功能修改：
+    1）sleep和standby的进入条件修改
+    2）at指令里的AT+ENTS需要的芯片Sleep和standby功能函数从wifi lib移至wm_cmdp.c
+
+	
+W800 SDK v1.00.00 | 2020/08/04
+==========================
+*********
+SDK功能
+*********
+*ld调整：
+     因增加BT功能，代码空间超过1MB，当前设定为1MB+64KB，相应的用户区要减少64KB
+     用户区宏调整（wm_flash_map.h）：#define USER_ADDR_START    (0x81E0000UL)
+     当前升级区针对超过1MB的情况，只能选择使用压缩的ota固件
 *蓝牙：
      1）支持BT功能，提供Audio sink和免提电话相关的API
-     2）提供两种蓝牙的库，单独ble的lib，单独标准bt的lib，lib目下看到(libbt.a,libbt_ble.a,libbt_br_edr.a)
-        用户可根据实际需要配合wm_config.h里的TLS_CONFIG_BR_EDR和TLS_CONFIG_BLE的设置，并把相关的lib更名为libbt.a。
-     3）发布时默认使用ble的lib
-      （即当前的libbt.a和libbt_ble.a是一致的，wm_config.h里的宏定义TLS_CONFIG_BLE为CFG_ON，宏定义TLS_CONFIG_BR_EDR为CFG_OFF）
-     4）如果使用标准BT的lib，命令行编译方式，需要在设定完成相关宏和bt的lib后，编译一下libapp.a库。
+     2）提供三种蓝牙的库，bt和ble都有的lib，单独标准bt的lib，单独ble的lib
+        用户可根据实际需要配合wm_config.h里的TLS_CONFIG_BR_EDR和TLS_CONFIG_BLE的设置，把相关的lib更名为libbt.a。
+     3）发布时默认使用bt和ble都有的lib
 *Wi-Fi：
     1）解决设定参数扫描，时间过长扫描个数反而少的问题
 *增加DSP功能（以lib和demo方式提供）
@@ -28,7 +60,7 @@ SDK功能
 *修改PWM demo，支持PWM两组复用的测试demo
 *SDK提供CDK编译工程（编译限制路径长度80字符以内）
 *CDK（CSKY Development Kit）的版本：>V2.2.2，获取路径：https://occ.t-head.cn/community/download?id=575997419775328256
-*增加BLE数据通信的demo（需要wm_config.h里的宏定义TLS_CONFIG_BLE为CFG_ON，宏定义TLS_CONFIG_BR_EDR为CFG_OFF，并使用BLE的库文件）
+*增加BLE数据通信的demo
 
 W800 SDK v0.00.06 | 2020/07/07
 ==========================

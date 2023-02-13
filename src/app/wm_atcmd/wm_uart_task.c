@@ -68,7 +68,11 @@ void uart_rx_timeout_handler(void * arg);
 void uart_rx(struct tls_uart *uart);
 void uart_tx(struct uart_tx_msg *tx_data);
 #if TLS_CONFIG_CMD_USE_RAW_SOCKET
+#if TLS_CONFIG_CMD_NET_USE_LIST_FTR	
+extern struct tls_uart_net_msg*sockrecvmit[TLS_MAX_NETCONN_NUM];
+#else
 extern struct tls_uart_circ_buf *sockrecvmit[TLS_MAX_NETCONN_NUM];
+#endif
 #else
 extern struct tls_uart_circ_buf *sockrecvmit[MEMP_NUM_NETCONN];
 extern fd_set fdatsockets;
@@ -803,6 +807,8 @@ static void parse_atcmd_line(struct tls_uart *uart)
 //  TLS_DBGPRT_INFO("A2 %d, %d\r\n", recv->tail, recv->head);
 }
 #if TLS_CONFIG_SOCKET_RAW || TLS_CONFIG_SOCKET_STD
+char uart_net_send_data[UART_NET_SEND_DATA_SIZE];
+
 void uart_net_send(struct tls_uart *uart, u32 head, u32 tail, int count)
 {
     struct tls_uart_circ_buf *recv = &uart->uart_port->recv;
@@ -811,19 +817,20 @@ void uart_net_send(struct tls_uart *uart, u32 head, u32 tail, int count)
     struct tls_hostif_socket_info skt_info;
     u8 def_socket;
     int err = 0;
-    char uart_net_send_data[UART_NET_SEND_DATA_SIZE];
+    int remaincount = count;
+
     static u16 printfFreq = 0;
     //printf("uart_net_send count %d\n", count);
 RESENDBUF:
-    if (count >= UART_NET_SEND_DATA_SIZE)
+    if (remaincount >= UART_NET_SEND_DATA_SIZE)
     {
         buflen = UART_NET_SEND_DATA_SIZE;
-        count = count - UART_NET_SEND_DATA_SIZE;
+        remaincount = remaincount - UART_NET_SEND_DATA_SIZE;
     }
     else
     {
-        buflen = count;
-        count = 0;
+        buflen = remaincount;
+        remaincount = 0;
     }
     if ((tail + buflen) > TLS_UART_RX_BUF_SIZE)
     {
@@ -876,13 +883,24 @@ RESENDBUF:
         while (err == ERR_MEM);
     }
     recv->tail = (recv->tail + buflen) & (TLS_UART_RX_BUF_SIZE - 1);
-    if ((count >= UART_NET_SEND_DATA_SIZE) && (buflen != count))
+    if (uart->cmd_mode == UART_ATSND_MODE)
     {
-        tail = recv->tail;
-        goto RESENDBUF;
+        if (remaincount > 0)
+        {
+            tail = recv->tail;
+            goto RESENDBUF;
+        }
+    }
+    else
+    {
+        if (remaincount >= UART_NET_SEND_DATA_SIZE)
+        {
+            tail = recv->tail;
+            goto RESENDBUF;
+        }
     }
 
-    buflen = count;
+    buflen = remaincount;
     if (buflen)
     {
         tls_wl_task_untimeout(&wl_task_param_hostif, uart_rx_timeout_handler, uart);
@@ -1571,7 +1589,32 @@ void uart_tx(struct uart_tx_msg *tx_data)
             }
             else
             {
-                cache_tcp_recv(tx_msg);
+#if TLS_CONFIG_CMD_NET_USE_LIST_FTR			
+				struct tls_uart_net_buf *net_buf;
+				struct tls_uart_net_msg *net_msg;            
+
+				net_msg = tls_hostif_get_recvmit(tx_msg->u.msg_tcp.sock);
+				net_buf = tls_mem_alloc(sizeof(struct tls_uart_net_buf));
+				p = (struct pbuf *) tx_msg->u.msg_tcp.p;
+				if (net_buf == NULL)
+				{
+					pbuf_free(p);
+					goto out;
+				}
+
+				dl_list_init(&net_buf->list);
+				net_buf->buf = p->payload;
+				net_buf->pbuf = p;
+				net_buf->buflen = p->tot_len;
+				net_buf->offset = 0;
+				
+				cpu_sr = tls_os_set_critical();
+				dl_list_add_tail(&net_msg->tx_msg_pending_list,
+								 &net_buf->list);
+				tls_os_release_critical(cpu_sr);    
+#else				
+				cache_tcp_recv(tx_msg);
+#endif				            
             }
             break;
 #endif // TLS_CONFIG_SOCKET_RAW

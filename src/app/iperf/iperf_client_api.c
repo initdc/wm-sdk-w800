@@ -307,8 +307,14 @@ printf("connected\r\n");
 						else{
 							dtargus = (s64) test->settings->blksize * SEC_TO_US * 8;
 							dtargus /= test->settings->rate;
-						
-							delay_1us(dtargus);
+							if (dtargus >=2000 )
+							{
+								tls_os_time_delay(dtargus/2000);
+							}
+							else
+							{
+								delay_1us(dtargus);
+							}
 						}
 					}
 #endif

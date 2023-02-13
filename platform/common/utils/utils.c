@@ -501,7 +501,7 @@ void dumpUint32(char *name, uint32_t* buffer, int len)
 	printf("%s:\n", name);
 	for(; i < len; i++)
 	{
-		printf("%08X ", buffer[i]);
+		printf("%08x ", buffer[i]);
 		if((i + 1) % 8 == 0)
 		{
 			printf("\n");

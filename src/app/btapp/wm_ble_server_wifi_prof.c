@@ -3,10 +3,9 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#include "wm_config.h"
+#include "wm_bt_config.h"
 
-
-#if (TLS_CONFIG_BLE == CFG_ON)
+#if (WM_BLE_INCLUDED == CFG_ON)
 
 #include "wm_ble_server.h"
 #include "wm_ble_gatt.h"
@@ -92,19 +91,22 @@ void ble_server_deregister_app_cb(int status, int server_if)
     }
 }
 
-void ble_server_connection_cb(int conn_id, int server_if, int connected, tls_bt_addr_t *bda)
+void ble_server_connection_cb(int conn_id, int server_if, int connected, tls_bt_addr_t *bda, uint16_t reason)
 {
     g_conn_id = conn_id;
     memcpy(&g_addr, bda, sizeof(tls_bt_addr_t));
-
     if(connected)
     {
+        TLS_BT_APPL_TRACE_DEBUG("ble_server_connection_cb status=%d, addr:%02x%02x%02x%02x%02x%02x\r\n", connected, 
+            bda->address[0],bda->address[1],bda->address[2],bda->address[3],bda->address[4],bda->address[5]);
         TLS_HAL_CBACK(ps_wifi_prof_callback, connected_cb, 0);
 		/*Update connection parameter 5s timeout*/
 		tls_ble_conn_parameter_update(bda, 16, 32, 0, 300);
     }
     else
     {
+        TLS_BT_APPL_TRACE_DEBUG("ble_server_connection_cb status=%d, addr:%02x%02x%02x%02x%02x%02x, reason=0x%04x\r\n", connected, 
+            bda->address[0],bda->address[1],bda->address[2],bda->address[3],bda->address[4],bda->address[5], reason);
         TLS_HAL_CBACK(ps_wifi_prof_callback, disconnected_cb, 0);
     }
 }

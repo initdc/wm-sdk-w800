@@ -107,6 +107,26 @@ int tls_get_mac_addr(u8 *mac);
 * @retval		TLS_EFUSE_STATUS_EIO			set failed
 */
 int tls_set_mac_addr(u8 *mac);
+/**
+* @brief 	This function is used to get bluetooth mac addr
+*
+* @param[in]	mac		mac addr,6 byte
+*
+* @retval	 	TLS_EFUSE_STATUS_OK			get success
+* @retval		TLS_EFUSE_STATUS_EIO			get failed
+*/
+int tls_get_bt_mac_addr(u8 *mac);
+
+/**
+* @brief 	This function is used to set bluetooth mac addr
+*
+* @param[in]	mac		mac addr,6 byte
+*
+* @retval	 	TLS_EFUSE_STATUS_OK			set success
+* @retval		TLS_EFUSE_STATUS_EIO			set failed
+*/
+int tls_set_bt_mac_addr(u8 *mac);
+
 
 /**
 * @brief 	This function is used to get tx gain

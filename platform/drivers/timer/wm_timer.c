@@ -54,7 +54,7 @@ static void timer_irq_callback(void *p)
 
     timer_id = (u8)(u32)p;
 
-    timer_clear_irq(timer_id);
+    //timer_clear_irq(timer_id);
 
     if (NULL != timer_context[timer_id].callback)
         timer_context[timer_id].callback(timer_context[timer_id].arg);

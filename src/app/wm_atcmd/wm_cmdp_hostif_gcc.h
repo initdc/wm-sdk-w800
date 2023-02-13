@@ -406,6 +406,7 @@ typedef struct _HOSTIF_CMD_PARAMS_BLENTY {
     u8      client_if;
     u8      addr[6];
     u16     attr_handle;
+    u16     conn_id;
     enum    tls_cmd_mode cmd_mode;
 }__attribute__((packed))HOSTIF_CMD_PARAMS_BLENTY;
 
@@ -1487,7 +1488,14 @@ struct tls_hostif_tx_msg {
 #define HOSTIF_TX_MSG_TYPE_UDP         2
 #define HOSTIF_TX_MSG_TYPE_TCP         3
 
-#define TLS_SOCKET_RECV_BUF_SIZE   512
+/*buf size must be power of 2, like 2,4,8,16,...512,1024,2048,4096,8192....*/
+#define TLS_SOCKET_RECV_BUF_SIZE   1024
+
+/*AT SKRCV command max size received from buffer each time command executed*/
+#define AT_SKRCV_CMD_RECV_MAX_SIZE_PER_TIME  1024
+/*AT command response buf size*/
+#define AT_CMD_RSP_BUF_SIZE    (512 + AT_SKRCV_CMD_RECV_MAX_SIZE_PER_TIME) 
+
 
 #define ATCMD_MAX_ARG      10
 #define ATCMD_NAME_MAX_LEN 10
@@ -1603,7 +1611,12 @@ int tls_hostif_set_net_status_callback(void);
 int tls_hostif_send_data(struct tls_hostif_socket_info *skt_info, char *buf, u32 buflen);
 int tls_hostif_create_default_socket(void);
 int tls_hostif_close_default_socket(void);
+
+#if TLS_CONFIG_CMD_NET_USE_LIST_FTR	
+struct tls_uart_net_msg * tls_hostif_get_recvmit(int socket_num);
+#else
 struct tls_uart_circ_buf * tls_hostif_get_recvmit(int socket_num);
+#endif
 int tls_cmd_create_socket(struct tls_cmd_socket_t *skt,
         enum tls_cmd_mode cmd_mode);
 int tls_cmd_close_socket(u8 skt_num);

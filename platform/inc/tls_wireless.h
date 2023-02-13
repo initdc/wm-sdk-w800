@@ -309,6 +309,7 @@ struct tls_wl_event_ops {
     int (*rx_mgmt)(struct tls_wif *wif,
             struct wl_event_rx_mgmt *mgmt);
 	int (*mac_wdg)(struct tls_wif *wif);
+	int (*chip_wakeup)(struct tls_wif *wif);
 #if TLS_CONFIG_AP_OPT_PS
     int (*beacon_done)(struct tls_wif *wif);
     int (*rx_ps)(struct tls_wif *wif,
@@ -324,6 +325,9 @@ struct tls_wl_event_ops {
 	int (*net_fail)(struct tls_wif *wif);
     int (*net_up)(struct tls_wif *wif);
     int (*update_stat)(struct tls_wif *wif, void *cur_bss);/* struct ieee80211_bss *cur_bss */
+#if TLS_PS_MODE_NEW_FTR		
+	int (*sleep_func)(struct tls_wif *wif);
+#endif
 };
 
 /* sk_buff allocated by wlan driver  */
@@ -425,8 +429,6 @@ int tls_wl_if_set_max_rate(struct tls_wif *wif, u8 max_rate_idx);
 int tls_wl_if_get_max_rate(struct tls_wif *wif, u8 *max_rate_idx);
 int tls_wl_if_set_adhoc(struct tls_wif *wif, int adhoc_automode);
 int tls_wl_if_ps(int wake_up);
-int tls_wl_if_standby(int type, int delay, int wake_time);
-int tls_wl_if_sleep(int type, int delay, int wake_time);
 void tls_wl_if_set_errno(int eno);
 int  tls_wl_if_get_errno(void);
 void  tls_wl_if_perror(const char *info);

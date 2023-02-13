@@ -80,6 +80,37 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 
 
 /***************************************************************
+ * SDIO模块寄存器定义
+ ***************************************************************/
+#define HR_SDIO_BASE_ADDR     (DEVICE_BASE_ADDR + 0x2400)
+#define HR_SDIO_CIS0                (HR_SDIO_BASE_ADDR + 0x008)
+#define HR_SDIO_CIS1                (HR_SDIO_BASE_ADDR + 0x00C)
+#define HR_SDIO_CSA                 (HR_SDIO_BASE_ADDR + 0x010)
+#define HR_SDIO_READ                (HR_SDIO_BASE_ADDR + 0x014)
+#define HR_SDIO_WRITE               (HR_SDIO_BASE_ADDR + 0x018)
+#define HR_SDIO_INTEN               (HR_SDIO_BASE_ADDR + 0x030)
+#define HR_SDIO_OCR                 (HR_SDIO_BASE_ADDR + 0x034)
+#define HR_SDIO_CIA                 (HR_SDIO_BASE_ADDR + 0x024)
+#define HR_SDIO_PROG                (HR_SDIO_BASE_ADDR + 0x028)
+
+/***************************************************************
+ * SDIO HOST模块寄存器定义
+ ***************************************************************/
+#define HR_SDIO_HOST_BASE_ADDR     (DEVICE_BASE_ADDR + 0xA00)
+#define HR_SDIO_HOST_MMC_CTRL      (HR_SDIO_HOST_BASE_ADDR + 0x0)
+
+/***************************************************************
+ * SPI模块寄存器定义
+ ***************************************************************/
+#define HR_HSPI_BASE_ADDR       (DEVICE_BASE_ADDR + 0x2600)
+#define HR_HSPI_CLEAR_FIFO          (HR_HSPI_BASE_ADDR)
+#define HR_HSPI_SPI_CFG             (HR_HSPI_BASE_ADDR + 0x04)
+#define HR_HSPI_MODE_CFG            (HR_HSPI_BASE_ADDR + 0x08)
+#define HR_HSPI_INT_MASK            (HR_HSPI_BASE_ADDR + 0x0C)
+#define HR_HSPI_INT_STTS            (HR_HSPI_BASE_ADDR + 0x10)
+#define HR_HSPI_RXDAT_LEN           (HR_HSPI_BASE_ADDR + 0x18)
+
+/***************************************************************
  * Inner Flash模块寄存器定义
  ***************************************************************/
 #define HR_FLASH_BASE_ADDR          (DEVICE_BASE_ADDR + 0x2000)
@@ -87,6 +118,30 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define HR_FLASH_CMD_START          (HR_FLASH_BASE_ADDR + 0x004)
 #define HR_FLASH_CR                 (HR_FLASH_BASE_ADDR + 0x008)
 #define HR_FLASH_ADDR               (HR_FLASH_BASE_ADDR + 0x010)
+/***************************************************************
+ * SDIO WRAPPER寄存器定义
+ ***************************************************************/
+#define HR_SDIO_WRAPPER_BASE_ADDR   (DEVICE_BASE_ADDR + 0x2800)
+#define HR_SDIO_INT_SRC             (HR_SDIO_WRAPPER_BASE_ADDR + 0x000)
+#define HR_SDIO_INT_MASK            (HR_SDIO_WRAPPER_BASE_ADDR + 0x004)
+#define HR_SDIO_UPCMDVALID          (HR_SDIO_WRAPPER_BASE_ADDR + 0x008)
+#define HR_SDIO_DOWNCMDVALID        (HR_SDIO_WRAPPER_BASE_ADDR + 0x00C)
+#define HR_SDIO_TXBD_LINKEN         (HR_SDIO_WRAPPER_BASE_ADDR + 0x010)
+#define HR_SDIO_TXBD_ADDR           (HR_SDIO_WRAPPER_BASE_ADDR + 0x014)
+#define HR_SDIO_TXEN                (HR_SDIO_WRAPPER_BASE_ADDR + 0x018)
+#define HR_SDIO_TX_STTS             (HR_SDIO_WRAPPER_BASE_ADDR + 0x01C)
+#define HR_SDIO_RXBD_LINKEN         (HR_SDIO_WRAPPER_BASE_ADDR + 0x020)
+#define HR_SDIO_RXBD_ADDR           (HR_SDIO_WRAPPER_BASE_ADDR + 0x024)
+#define HR_SDIO_RXEN                (HR_SDIO_WRAPPER_BASE_ADDR + 0x028)
+#define HR_SDIO_RX_STTS             (HR_SDIO_WRAPPER_BASE_ADDR + 0x02C)
+#define HR_SDIO_CMD_ADDR            (HR_SDIO_WRAPPER_BASE_ADDR + 0x030)
+#define HR_SDIO_CMD_SIZE            (HR_SDIO_WRAPPER_BASE_ADDR + 0x034)
+
+/* SDIO interrupt bit definition */
+#define SDIO_WP_INT_SRC_CMD_DOWN         (1UL<<3)
+#define SDIO_WP_INT_SRC_CMD_UP           (1UL<<2)
+#define SDIO_WP_INT_SRC_DATA_DOWN        (1UL<<1)
+#define SDIO_WP_INT_SRC_DATA_UP          (1UL<<0)
 
 
 /***************************************************************
@@ -206,6 +261,12 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define HR_MEM_AGGR_CFG             (HR_MEM_BASE_ADDR + 0x10)
 #define HR_MEM_BUF_EN               (HR_MEM_BASE_ADDR + 0x14)
 
+/***************************************************************
+* PSRAM CTRL Register
+****************************************************************/
+#define HR_PSRRAM_BASE_ADDR      (DEVICE_BASE_ADDR + 0x2200)
+#define HR_PSRAM_CTRL_ADDR       (HR_PSRRAM_BASE_ADDR+ 0x00)
+#define HR_PSRAM_OVERTIMER_ADDR  (HR_PSRRAM_BASE_ADDR+ 0x04)
 
 /* APB基地址*/
 #define HR_APB_BASE_ADDR 0x40010000
@@ -639,6 +700,58 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define HR_WDG_INT_MIS              (HR_WDG_BASE_ADDR + 0x14)
 #define HR_WDG_LOCK                 (HR_WDG_BASE_ADDR + 0x40)
 
+/** bit field of the lcd gate control in CLK gating register */
+#define HR_CLK_LCD_GATE_Pos			(14)
+
+/***********************************************************//**
+ * LCD寄存器定义
+ ***************************************************************/
+
+#define HR_LCD_REG_BASE     		 (HR_APB_BASE_ADDR + 0x1C00) //(0x4001 1C00)
+#define HR_LCD_CR				     (HR_LCD_REG_BASE+0x000)
+#define HR_LCD_FRAME_CNT     		 (HR_LCD_REG_BASE+0x004)
+#define HR_LCD_COM0_SEG     	     (HR_LCD_REG_BASE+0x008)
+#define HR_LCD_COM1_SEG     	     (HR_LCD_REG_BASE+0x00C)
+#define HR_LCD_COM2_SEG     	     (HR_LCD_REG_BASE+0x010)
+#define HR_LCD_COM3_SEG     	     (HR_LCD_REG_BASE+0x014)
+#define HR_LCD_COM4_SEG     	     (HR_LCD_REG_BASE+0x018)
+#define HR_LCD_COM5_SEG     	     (HR_LCD_REG_BASE+0x01C)
+#define HR_LCD_COM6_SEG     	     (HR_LCD_REG_BASE+0x020)
+#define HR_LCD_COM7_SEG     	     (HR_LCD_REG_BASE+0x024)
+#define HR_LCD_COM_EN			     (HR_LCD_REG_BASE+0x028)
+#define HR_LCD_SEG_EN			     (HR_LCD_REG_BASE+0x02C)
+
+#define LCD_CR_EN_Pos				 (8)
+#define LCD_CR_PD_Pos				 (9)
+
+#define LCD_VDD_ON				     (1UL<<9)
+#define LCD_VDD_OFF				     (0UL<<9)
+#define LCD_EN						 (1UL<<8)
+
+#define LCD_BIAS_MASK				 (3UL<<6)
+#define LCD_BIAS_MASK_Pos			 (6)
+#define LCD_BIAS_ONEFOURTH			 (0UL<<6)
+#define LCD_BIAS_ONEHALF			 (1UL<<6)
+#define LCD_BIAS_ONETHIRD			 (2UL<<6)
+#define LCD_BIAS_STATIC				 (3UL<<6)
+
+#define LCD_VLCD_MASK				 (7UL<<3)
+#define LCD_VLCD_MASK_Pos			 (3)
+#define LCD_VLCD_27					 (0UL<<3)
+#define LCD_VLCD_29					 (1UL<<3)
+#define LCD_VLCD_31					 (2UL<<3)
+#define LCD_VLCD_33					 (3UL<<3)
+
+#define LCD_DUTY_MASK				 (7UL<<0)
+#define LCD_DUTY_MASK_Pos			 (0)
+#define LCD_DUTY_STATIC				 (0UL<<0)
+#define LCD_DUTY_ONEHALF			 (1UL<<0)
+#define LCD_DUTY_ONETHIRD			 (2UL<<0)
+#define LCD_DUTY_ONEFOURTH			 (3UL<<0)
+#define LCD_DUTY_ONEFIFTH			 (4UL<<0)
+#define LCD_DUTY_ONESIXTH			 (5UL<<0)
+#define LCD_DUTY_ONESEVENTH			 (6UL<<0)
+#define LCD_DUTY_ONEEIGHTH			 (7UL<<0)
 
 /***********************************************************//**
  * I2S寄存器定义

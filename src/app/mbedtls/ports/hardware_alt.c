@@ -31,10 +31,14 @@
 
 int mbedtls_hardware_poll( void *data, unsigned char *output, size_t len, size_t *olen )
 {
+#if 0
     tls_crypto_random_init(tls_os_get_time(), CRYPTO_RNG_SWITCH_32);
     tls_os_time_delay(0);
     tls_crypto_random_bytes(output, len);
     tls_crypto_random_stop();
+#else
+    random_get_bytes(output, len);
+#endif
     *olen = len;
     return 0;
 }

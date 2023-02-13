@@ -34,9 +34,10 @@ ATTRIBUTE_ISR void ADC_IRQHandler(void)
 {
 	u32 adcvalue;
 	int reg;
+	csi_kernel_intrpt_enter();
 
 	reg = tls_reg_read32(HR_SD_ADC_INT_STATUS);
-	if(reg & ADC_INT_MASK)      //ADC中断
+	if(reg & ADC_INT_MASK)      //ADC涓柇
 	{
 		tls_adc_clear_irq(ADC_INT_TYPE_ADC);
 
@@ -54,13 +55,13 @@ ATTRIBUTE_ISR void ADC_IRQHandler(void)
 	    if(gst_adc.adc_bigger_cb)
 			gst_adc.adc_bigger_cb(NULL, 0);
 	}
-	
+	csi_kernel_intrpt_exit();
 }
 
 static void adc_dma_isr_callbk(void)
 {
 	if(gst_adc.adc_dma_cb)
-		gst_adc.adc_dma_cb((u16 *)(ADC_DEST_BUFFER_DMA), gst_adc.valuelen);	
+		gst_adc.adc_dma_cb((int *)(ADC_DEST_BUFFER_DMA), gst_adc.valuelen);	
 }
 
 
@@ -69,11 +70,15 @@ void tls_adc_init(u8 ifusedma,u8 dmachannel)
 	tls_reg_write32(HR_SD_ADC_CTRL, ANALOG_SWITCH_TIME_VAL(0x50)|ANALOG_INIT_TIME_VAL(0x50)|ADC_IRQ_EN_VAL(0x1));
 	tls_irq_enable(ADC_IRQn);
 
-	//注册中断和channel有关，所以需要先请求
+	//娉ㄥ唽涓柇鍜宑hannel鏈夊叧锛屾墍浠ラ渶瑕佸厛璇锋眰
 	if(ifusedma)
 	{
-		gst_adc.dmachannel = tls_dma_request(dmachannel, 0);	//请求dma，不要直接指定，因为请求的dma可能会被别的任务使用
-		tls_dma_irq_register(gst_adc.dmachannel, (void(*)(void*))adc_dma_isr_callbk, NULL, TLS_DMA_IRQ_TRANSFER_DONE);
+		gst_adc.dmachannel = tls_dma_request(dmachannel, TLS_DMA_FLAGS_CHANNEL_SEL(TLS_DMA_SEL_SDADC_CH0 + dmachannel) |
+                            TLS_DMA_FLAGS_HARD_MODE);	//璇锋眰dma锛屼笉瑕佺洿鎺ユ寚瀹氾紝鍥犱负璇锋眰鐨刣ma鍙兘浼氳鍒殑浠诲姟浣跨敤
+        if (gst_adc.dmachannel != 0xFF)
+       	{
+			tls_dma_irq_register(gst_adc.dmachannel, (void(*)(void*))adc_dma_isr_callbk, NULL, TLS_DMA_IRQ_TRANSFER_DONE);
+        }
 	}
 
 	//printf("\ndma channel = %d\n",gst_adc.dmachannel);
@@ -175,11 +180,14 @@ void tls_adc_start_with_dma(int Channel, int Length)
 		DMA_CHNLCTRL_REG(gst_adc.dmachannel) = 2;
 	}
 
-	DMA_SRCADDR_REG(gst_adc.dmachannel) = HR_SD_ADC_RESULT_REG;
+    DMA_SRCADDR_REG(gst_adc.dmachannel) = HR_SD_ADC_RESULT_REG;
 	DMA_DESTADDR_REG(gst_adc.dmachannel) = ADC_DEST_BUFFER_DMA;
+	DMA_SRCWRAPADDR_REG(gst_adc.dmachannel) = HR_SD_ADC_RESULT_REG;
+	DMA_DESTWRAPADDR_REG(gst_adc.dmachannel) = ADC_DEST_BUFFER_DMA;
+    DMA_WRAPSIZE_REG(gst_adc.dmachannel) = (len*4) << 16;
 
 	/* Dest_add_inc, halfword,  */
-	DMA_CTRL_REG(gst_adc.dmachannel) = (1<<3)|(1<<5)|((len*2)<<8);
+	DMA_CTRL_REG(gst_adc.dmachannel) = (3<<3)|(2<<5)|((len*4)<<8)|(1<<0);
 	DMA_INTMASK_REG &= ~(0x01 << (gst_adc.dmachannel *2 + 1));
 	DMA_CHNLCTRL_REG(gst_adc.dmachannel) = 1;		/* Enable dma */
 
@@ -189,6 +197,7 @@ void tls_adc_start_with_dma(int Channel, int Length)
 	tls_reg_write32(HR_SD_ADC_CTRL, value); 
 
 	value = tls_reg_read32(HR_SD_ADC_ANA_CTRL);
+    value &= ~(CONFIG_ADC_CHL_SEL_MASK);
 	value |= CONFIG_ADC_CHL_SEL(Channel);
 	value &= ~(CONFIG_PD_ADC_VAL(1));
 	value |= (CONFIG_RSTN_ADC_VAL(1)|CONFIG_EN_LDO_ADC_VAL(1));	
@@ -199,6 +208,8 @@ void tls_adc_start_with_dma(int Channel, int Length)
 void tls_adc_stop(int ifusedma)
 {
 	u32 value;
+
+	tls_reg_write32(HR_SD_ADC_PGA_CTRL, 0);
 
 	value = tls_reg_read32(HR_SD_ADC_ANA_CTRL);
 	value |= CONFIG_PD_ADC_VAL(1);
@@ -261,6 +272,7 @@ void tls_adc_cmp_start(int Channel, int cmp_data, int cmp_pol)
 	tls_reg_write32(HR_SD_ADC_CTRL, value);	
 }
 
+
 void tls_adc_reference_sel(int ref)
 {
     u32 value;
@@ -285,6 +297,9 @@ void tls_adc_set_clk(int div)
     value &= ~(0xFF<<8);
     value |=  (div&0xFF)<<8;
     tls_reg_write32(HR_CLK_SEL_CTL, value);
+    value = tls_reg_read32(HR_CLK_DIV_CTL);
+    value |= (1 << 31);
+    tls_reg_write32(HR_CLK_DIV_CTL, value);
 }
 
 void tls_adc_set_pga(int gain1, int gain2)
@@ -355,27 +370,35 @@ void signedToUnsignedData(u32 *adcValue)
 
 static void waitForAdcDone(void)
 {
-	int cnt = 2;
-    while(cnt--)
-    {
-#if 0    
-        int reg = tls_reg_read32(HR_SD_ADC_INT_STATUS);
-		//printf("reg:%x\r\n", reg);
-        if(reg & ADC_INT_MASK)      //ADC中断
-        {
-            tls_adc_clear_irq(ADC_INT_TYPE_ADC);
-            break;
-        }
+    u32 counter = 0;
+	u32 timeout = 10000;
+	u32 reg = 0;
 
-        if(reg & CMP_INT_MASK)      //ADC中断
+	/*wait for transfer success*/
+	tls_irq_disable(ADC_IRQn);
+	while(timeout--)
+	{
+		reg = tls_reg_read32(HR_SD_ADC_INT_STATUS);
+		if (reg & ADC_INT_MASK)
+		{
+			counter++;
+		    tls_reg_write32(HR_SD_ADC_INT_STATUS, reg|ADC_INT_MASK);			
+			if (counter == 4)
+			{
+				break;
+			}
+		}
+		else if(reg & CMP_INT_MASK)
         {
-            tls_adc_clear_irq(ADC_INT_TYPE_ADC_COMP);
-            break;
-        }		
-#else
-		tls_os_time_delay(1);
-#endif
-    }
+        	counter++;
+			tls_reg_write32(HR_SD_ADC_INT_STATUS, reg|CMP_INT_MASK);
+			if (counter == 4)
+			{
+				break;
+			}
+        }
+	}
+	tls_irq_enable(ADC_IRQn);
 }
 
 u32 adc_get_offset(void)
@@ -388,7 +411,7 @@ u32 adc_get_offset(void)
 	tls_adc_set_clk(0x28);		
 
     waitForAdcDone();
-	adc_offset = tls_read_adc_result(); //获取adc转换结果
+	adc_offset = tls_read_adc_result(); //鑾峰彇adc杞崲缁撴灉
 	signedToUnsignedData(&adc_offset);
 	tls_adc_stop(0);
 
@@ -499,6 +522,9 @@ int adc_temp(void)
 	waitForAdcDone();
     code2 = tls_read_adc_result(); 
 	signedToUnsignedData(&code2);
+
+	val &= ~(TEMP_EN_VAL(1));
+	tls_reg_write32(HR_SD_ADC_TEMP_CTRL, val);
 
 	tls_adc_stop(0);
 

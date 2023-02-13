@@ -16,6 +16,7 @@
 
 #define WM_CONFIG_DEBUG_UART1							CFG_OFF/*PRINTF PORT USE UART1*/
 /**Driver Support**/
+#define TLS_CONFIG_HS_SPI          						CFG_ON /*High Speed SPI*/
 #define TLS_CONFIG_LS_SPI          						CFG_ON /*Low Speed SPI*/
 #define TLS_CONFIG_UART									CFG_ON  /*UART*/
 
@@ -34,6 +35,7 @@
 #define TLS_CONFIG_SOCKET_STD							CFG_ON
 #define TLS_CONFIG_SOCKET_RAW							CFG_ON
 #define TLS_CONFIG_CMD_USE_RAW_SOCKET                   (CFG_ON && TLS_CONFIG_SOCKET_RAW)
+#define TLS_CONFIG_CMD_NET_USE_LIST_FTR                     CFG_ON
 
 
 
@@ -57,8 +59,10 @@ CRYPTO
 #define TLS_CONFIG_HTTP_CLIENT_SECURE					CFG_ON
 #define TLS_CONFIG_HTTP_CLIENT_TASK						(CFG_ON && TLS_CONFIG_HTTP_CLIENT)
 
-
+/*MatrixSSL will be used except one of the following two Macros is CFG_ON*/
 #define TLS_CONFIG_USE_POLARSSL           				CFG_OFF
+#define TLS_CONFIG_USE_MBEDTLS           				CFG_ON
+
 #define TLS_CONFIG_SERVER_SIDE_SSL                      (CFG_ON&& TLS_CONFIG_HTTP_CLIENT_SECURE)         /*MUST configure TLS_CONFIG_HTTP_CLIENT_SECURE CFG_ON */
 
 

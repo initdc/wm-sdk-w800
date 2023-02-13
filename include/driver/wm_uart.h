@@ -222,6 +222,26 @@ volatile   u32 head;
 volatile   u32 tail;
 } tls_uart_circ_buf_t;
 
+#if TLS_CONFIG_CMD_NET_USE_LIST_FTR
+/**
+ * @typedef struct tls_uart_net_buf
+ */
+typedef struct tls_uart_net_buf
+{
+    struct dl_list list;
+    char *buf;
+	void *pbuf;
+    u16 buflen;
+    u16 offset;
+} tls_uart_net_buf_t;
+
+typedef struct tls_uart_net_msg
+{
+    struct dl_list tx_msg_pending_list;
+} tls_uart_net_msg_t;
+#endif
+
+
 /**
  * @typedef struct TLS_UART_REGS
  */
@@ -380,6 +400,19 @@ void tls_uart_tx_callback_register(u16 uart_no, s16(*tx_callback) (struct tls_ua
  * @note           None
  */
 int tls_uart_read(u16 uart_no, u8 * buf, u16 readsize);
+
+/**
+ * @brief          This function is used to check the available data in the cache buffer.
+ *
+ * @param[in]      uart_no    is the uart numer
+ * @param[in]      readsize   is the user read size
+ *
+ * @retval         if the cache buffer size is greater or equals to readsize , then return readsize; otherwise return 0;
+ *
+ * @note           None
+ */
+
+int tls_uart_try_read(u16 uart_no, int32_t read_size);
 
 
 /**

@@ -39,6 +39,15 @@
 extern const char FirmWareVer[];
 extern const char HwVer[];
 tls_os_timer_t *RSTTIMER = NULL;
+tls_os_timer_t *chippowersavetimer = NULL;
+typedef struct chip_lowpower_st{
+	u32 lowpowertype;
+	u32 lowpowertime;
+	u32 wakesource;	
+}chip_lowerpower_struct;
+
+chip_lowerpower_struct st_chiplowpower;
+
 
 u8 gfwupdatemode = 0;
 u8 tls_get_fwup_mode(void){
@@ -212,6 +221,56 @@ int tls_cmd_reset_flash(void)
     return err;
 }
 
+static void delay_enter_chip_lowpower_timeout(void *ptmr, void *parg)
+{
+    chip_lowerpower_struct *stchiplp = (chip_lowerpower_struct *)parg;
+    if (stchiplp->wakesource == 1)
+    {
+		tls_pmu_timer0_start(stchiplp->lowpowertime/1000);
+    }
+
+	switch(stchiplp->lowpowertype)
+	{
+		case 1:
+			tls_pmu_standby_start();
+			break;
+		case 2:
+	    	tls_pmu_sleep_start();
+			break;
+		default:
+			break;
+	}
+}
+
+
+void tls_cmd_chip_low_power_function(u32 lowpowertype, u32 wakesource, u32 delaytime, u32 lowpowertime)
+{
+	int err;
+
+	st_chiplowpower.lowpowertype = lowpowertype;
+	st_chiplowpower.wakesource = wakesource;
+	st_chiplowpower.lowpowertime = lowpowertime;	
+
+	if(chippowersavetimer == NULL)
+	{
+		err = tls_os_timer_create(&chippowersavetimer,
+							delay_enter_chip_lowpower_timeout,
+							&st_chiplowpower,
+							delaytime/2,
+							FALSE,
+							NULL);
+		if(TLS_OS_SUCCESS == err)
+		{
+			tls_os_timer_start(chippowersavetimer);
+		}
+	}
+	else
+	{
+		tls_os_timer_change(chippowersavetimer,delaytime);
+	}
+}
+
+
 int tls_cmd_ps( struct tls_cmd_ps_t *ps)
 {
 /* TODO: not just close wifi rx&tx,
@@ -243,10 +302,10 @@ int tls_cmd_ps( struct tls_cmd_ps_t *ps)
             tls_wl_if_ps(0);
         }
     } else if (ps->ps_type == 1){/*standby*/
-        tls_wl_if_standby(ps->wake_type, ps->delay_time,
+		tls_cmd_chip_low_power_function(ps->ps_type, ps->wake_type, ps->delay_time,
                 ps->wake_time);
     }else if (ps->ps_type == 2){/*sleep*/
-        tls_wl_if_sleep(ps->wake_type, ps->delay_time,
+        tls_cmd_chip_low_power_function(ps->ps_type, ps->wake_type, ps->delay_time,
                 ps->wake_time);
     }
 #endif
@@ -440,7 +499,7 @@ int tls_cmd_join( enum tls_cmd_mode mode,
             {
 	           tls_wifi_disconnect();
 	           tls_wifi_softap_destroy();
-            }       
+            }  
             ret = tls_cmd_join_net();
             break;
         
@@ -495,6 +554,12 @@ int tls_cmd_get_link_status(
     struct tls_ethif *ni;
 
     ni=tls_netif_get_ethif();
+
+	if (ni == NULL)
+	{
+		return -1;
+	}
+	
     if (ni->status)
         lks->status = 1;
     else
@@ -1119,6 +1184,10 @@ int tls_cmd_set_ip_info(
     struct tls_param_ip param_ip;
 
     ethif=tls_netif_get_ethif();
+	if (ethif == NULL)
+	{
+		return -1;
+	}
 	//if(tls_param_get_updp_mode() == 0)
 	if (WM_WIFI_JOINED == tls_wifi_get_state())
 	{
@@ -1805,6 +1874,9 @@ int tls_cmd_get_softap_link_status(struct tls_cmd_link_status_t *lks)
     struct netif *netif;
 
     netif = tls_get_netif();
+	if (netif == NULL)
+		return -1;
+	
     netif = netif->next;
 
     if (netif_is_up(netif))

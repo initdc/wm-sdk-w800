@@ -288,7 +288,10 @@ int tls_ethernet_init()
 
 void tls_netif_set_status(u8 status)
 {
-    ethif->status = status;
+    if (ethif)
+    {
+        ethif->status = status;
+    }
 
     return;
 }
@@ -300,6 +303,8 @@ struct tls_ethif * tls_netif_get_ethif(void)
 #endif    
 	ip_addr_t * addr = NULL;
     ip_addr_t dns1,dns2;
+    if (nif && ethif)
+    {
 //    MEMCPY((char *)&ethif->ip_addr.addr, &nif->ip_addr.addr, 4);
     ip_addr_copy(ethif->ip_addr, nif->ip_addr);
    // MEMCPY((char *)&ethif->netmask.addr, &nif->netmask.addr, 4);
@@ -328,6 +333,7 @@ struct tls_ethif * tls_netif_get_ethif(void)
     	ethif->ipv6_status[i] = (nif->ip6_addr_state[i] == IP6_ADDR_PREFERRED ? 1 : 0);
 	}
 #endif	
+    }
     return ethif;
 }
 
@@ -337,13 +343,20 @@ err_t tls_dhcp_start(void)
 	if (nif->flags & NETIF_FLAG_UP) 
 	  nif->flags &= ~NETIF_FLAG_UP;
 #endif
-
-    return netifapi_dhcp_start(nif);
+	if (nif)
+	{
+        return netifapi_dhcp_start(nif);
+	}
+	return -1;
 }
 
 err_t tls_dhcp_stop(void)
 {
-    return netifapi_dhcp_stop(nif);
+	if (nif)
+	{
+        return netifapi_dhcp_stop(nif);
+	}
+	return -1;	
 }
 
 err_t tls_netif_set_addr(ip_addr_t *ipaddr,
@@ -369,16 +382,19 @@ err_t tls_netif_add_status_event(tls_netif_status_event_fn event_fn)
 {
     u32 cpu_sr;
     struct tls_netif_status_event *evt;
-    //if exist, remove from event list first.
-    tls_netif_remove_status_event(event_fn);
-    evt = tls_mem_alloc(sizeof(struct tls_netif_status_event));
-    if(evt==NULL)
-        return -1;
-    memset(evt, 0, sizeof(struct tls_netif_status_event));
-    evt->status_callback = event_fn;
-    cpu_sr = tls_os_set_critical();
-    dl_list_add_tail(&netif_status_event.list, &evt->list);
-    tls_os_release_critical(cpu_sr);
+	if (nif)
+	{
+	    //if exist, remove from event list first.
+	    tls_netif_remove_status_event(event_fn);
+	    evt = tls_mem_alloc(sizeof(struct tls_netif_status_event));
+	    if(evt==NULL)
+	        return -1;
+	    memset(evt, 0, sizeof(struct tls_netif_status_event));
+	    evt->status_callback = event_fn;
+	    cpu_sr = tls_os_set_critical();
+	    dl_list_add_tail(&netif_status_event.list, &evt->list);
+	    tls_os_release_critical(cpu_sr);
+	}
 
 	return 0;
 }
@@ -387,24 +403,27 @@ err_t tls_netif_remove_status_event(tls_netif_status_event_fn event_fn)
     struct tls_netif_status_event *status_event;
     bool is_exist = FALSE;
     u32 cpu_sr;
-    if(dl_list_empty(&netif_status_event.list))
-        return 0;
-    dl_list_for_each(status_event, &netif_status_event.list, struct tls_netif_status_event, list)
-    {
-        if(status_event->status_callback == event_fn)
-        {
-            is_exist = TRUE;
-            break;
-        }
-    }
-    if(is_exist)
-    {
-        cpu_sr = tls_os_set_critical();
-        dl_list_del(&status_event->list);
-        tls_os_release_critical(cpu_sr);
-        tls_mem_free(status_event);
-    }
-		return 0;
+	if (nif)
+	{
+	    if(dl_list_empty(&netif_status_event.list))
+	        return 0;
+	    dl_list_for_each(status_event, &netif_status_event.list, struct tls_netif_status_event, list)
+	    {
+	        if(status_event->status_callback == event_fn)
+	        {
+	            is_exist = TRUE;
+	            break;
+	        }
+	    }
+	    if(is_exist)
+	    {
+	        cpu_sr = tls_os_set_critical();
+	        dl_list_del(&status_event->list);
+	        tls_os_release_critical(cpu_sr);
+	        tls_mem_free(status_event);
+	    }
+	}
+	return 0;
 }
 
 #if TLS_CONFIG_RMMS

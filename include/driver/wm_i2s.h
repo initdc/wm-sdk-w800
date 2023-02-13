@@ -63,10 +63,10 @@ typedef struct _dma_handler_type
 #define I2S_Standard_PCMA		(0x2000000UL)
 #define I2S_Standard_PCMB		(0x3000000UL)
 
-#define I2S_DataFormat_8		((uint8_t)0x0)
-#define I2S_DataFormat_16		((uint8_t)0x10)
-#define I2S_DataFormat_24		((uint8_t)0x20)
-#define I2S_DataFormat_32		((uint8_t)0x30)	
+#define I2S_DataFormat_8		(8)
+#define I2S_DataFormat_16		(16)
+#define I2S_DataFormat_24		(24)
+#define I2S_DataFormat_32		(32)	
 
 #define I2S_CTRL_CHSEL_MASK		(1UL<<23)
 #define I2S_CTRL_CHSEL_LEFT		(1UL<<23)

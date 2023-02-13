@@ -549,9 +549,30 @@ cleanup_client(struct iperf_test *test)
 void
 cleanup_server(struct iperf_test *test)
 {
+	int  i = 0;
     /* Close open test sockets */
     close(test->ctrl_sck);
     close(test->listener);
+	if (test->prot_listener >= 0)
+	{
+		if (test->ctrl_sck > test->listener)
+		{
+			for (i = test->ctrl_sck+1; i <= test->prot_listener; i++)
+			{
+				close(i);
+			}
+		}
+		else
+		{
+			for (i = test->listener+1; i <= test->prot_listener; i++)
+			{
+				close(i);
+			}
+		}
+	}
+	test->prot_listener = -1;
+	test->ctrl_sck = -1;
+	test->listener = -1;
 
     /* Cancel any remaining timers. */
     if (test->stats_timer != NULL) {

@@ -3,11 +3,13 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#include "wm_config.h"
+
+#include "wm_bt_config.h"
+
+#if (WM_BLE_INCLUDED == CFG_ON)
+
 #include "wm_mem.h"
 #include "list.h"
-
-#if (TLS_CONFIG_BLE == CFG_ON)
 #include "wm_bt_def.h"
 #include "wm_ble_dm.h"
 #include "wm_bt_util.h"
@@ -48,7 +50,7 @@ static report_evt_t report_evt_list;
 
 static void tls_ble_dm_event_handler(tls_ble_dm_evt_t evt, tls_ble_dm_msg_t *msg)
 {
-	TLS_BT_APPL_TRACE_EVENT("%s, event:%s,%d\r\n", __FUNCTION__, tls_dm_evt_2_str(evt), evt);
+	//TLS_BT_APPL_TRACE_EVENT("%s, event:%s,%d\r\n", __FUNCTION__, tls_dm_evt_2_str(evt), evt);
 	uint32_t cpu_sr;
 	switch(evt)
 	{

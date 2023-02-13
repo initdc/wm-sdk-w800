@@ -1858,10 +1858,10 @@ static UINT32 HTTPIntrnConnectionOpen (P_HTTP_SESSION pHTTPSession)
             nRetCode = connect(pHTTPSession->HttpConnection.HttpSocket,	// Socket
                 (HTTP_SOCKADDR*)&ServerAddress,			                // Server address    
                 sizeof(HTTP_SOCKADDR));		                    // Length of server address structure
+	        // The socket was set to be asyn so we should check the error being returned from connect()
+	        nRetCode = SocketGetErr(pHTTPSession->HttpConnection.HttpSocket);
         }
         
-        // The socket was set to be asyn so we should check the error being returned from connect()
-        nRetCode = SocketGetErr(pHTTPSession->HttpConnection.HttpSocket);
         if(nRetCode == 0 || nRetCode == HTTP_EWOULDBLOCK || nRetCode == HTTP_EINPROGRESS)
         {      
             // Set TLS Nego flag to flase

@@ -258,9 +258,9 @@ int rsa_private( rsa_context *ctx,
                  const unsigned char *input,
                  unsigned char *output );
 #else
-extern int32 psRsaEncryptPriv(psPool_t *pool, psRsaKey_t *key,
+/*extern int32 psRsaEncryptPriv(psPool_t *pool, psRsaKey_t *key,
 						 unsigned char *in, uint32 inlen,
-						 unsigned char *out, uint32 outlen, void *data);
+						 unsigned char *out, uint32 outlen, void *data);*/
 #define  rsa_public(ctx, input, output)  (psRsaDecryptPub(NULL, ctx, input, ((rsa_context *)ctx)->size, output, ((rsa_context *)ctx)->size, NULL) == ((rsa_context *)ctx)->size ? 0 : 1)
 #define  rsa_private(ctx, input, output)  (psRsaEncryptPriv(NULL, ctx, input, ((rsa_context *)ctx)->size, output, ((rsa_context *)ctx)->size, NULL) == ((rsa_context *)ctx)->size ? 0 : 1)
 #endif

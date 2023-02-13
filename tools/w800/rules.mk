@@ -15,12 +15,14 @@ endif
 CSRCS ?= $(wildcard *.c)
 ASRCS ?= $(wildcard *.S)
 
+subdir_path := $(subst $(abspath $(TOP_DIR))/,,$(shell pwd))
+
 SUBDIRS ?= $(patsubst %/,%,$(dir $(wildcard */Makefile)))
 
-OBJS := $(CSRCS:%.c=$(OBJODIR)/$(notdir $(shell pwd))/%.o) \
-        $(ASRCS:%.S=$(OBJODIR)/$(notdir $(shell pwd))/%.o)
+OBJS := $(CSRCS:%.c=$(OBJODIR)/$(subdir_path)/%.o) \
+        $(ASRCS:%.S=$(OBJODIR)/$(subdir_path)/%.o)
 
-OBJS-DEPS := $(patsubst %.c, $(OBJODIR)/$(notdir $(shell pwd))/%.o.d, $(CSRCS))
+OBJS-DEPS := $(patsubst %.c, $(OBJODIR)/$(subdir_path)/%.o.d, $(CSRCS))
 
 OLIBS := $(GEN_LIBS:%=$(LIBODIR)/%)
 
@@ -78,6 +80,9 @@ else
 	@$(WM_TOOL) -b $(FIRMWAREDIR)/$(TARGET)/$(TARGET).bin -fc 0 -it $(IMG_TYPE) -ih $(IMG_HEADER) -ra $(RUN_ADDRESS) -ua $(UPD_ADDRESS) -nh 0 -un 0 -vs $(shell $(VER_TOOL) $(TOP_DIR)/platform/sys/wm_main.c) -o $(FIRMWAREDIR)/$(TARGET)/$(TARGET)
 endif
 	@cp $(IMAGEODIR)/$(TARGET).map $(FIRMWAREDIR)/$(TARGET)/$(TARGET).map
+
+	@$(WM_TOOL) -b  $(SEC_BOOT_BIN) -fc 0 -it 0 -ih $(SECBOOT_HEADER_POS) -ra $(SECBOOT_ADDRESS_POS) -ua $(UPD_ADDRESS) -nh $(IMG_HEADER) -un 0 -o $(SEC_BOOT_IMG)
+
 ifeq ($(SIGNATURE),1)
 	@openssl dgst -sign $(CA_PATH)/cakey.pem -sha1 -out $(FIRMWAREDIR)/$(TARGET)/$(TARGET)_sign.dat $(FIRMWAREDIR)/$(TARGET)/$(TARGET).img
 	@cat $(FIRMWAREDIR)/$(TARGET)/$(TARGET).img $(FIRMWAREDIR)/$(TARGET)/$(TARGET)_sign.dat > $(FIRMWAREDIR)/$(TARGET)/$(TARGET)_sign.img
@@ -168,12 +173,12 @@ endif
 endif
 endif
 
-$(OBJODIR)/$(notdir $(shell pwd))/%.o: %.c
-	@mkdir -p $(OBJODIR)/$(notdir $(shell pwd))
-	$(CC) $(if $(findstring $<,$(DSRCS)),$(DFLAGS),$(CFLAGS)) $(COPTS_$(*F)) $(INCLUDES) $(CMACRO) -c "$<" -o "$@" -MMD -MD -MF "$(@:$(OBJODIR)/$(notdir $(shell pwd))/%.o=$(OBJODIR)/$(notdir $(shell pwd))/%.o.d)" -MT "$(@)"
+$(OBJODIR)/$(subdir_path)/%.o: %.c
+	@mkdir -p $(OBJODIR)/$(subdir_path)
+	$(CC) $(if $(findstring $<,$(DSRCS)),$(DFLAGS),$(CFLAGS)) $(COPTS_$(*F)) $(INCLUDES) $(CMACRO) -c "$<" -o "$@" -MMD -MD -MF "$(@:$(OBJODIR)/$(subdir_path)/%.o=$(OBJODIR)/$(subdir_path)/%.o.d)" -MT "$(@)"
 
-$(OBJODIR)/$(notdir $(shell pwd))/%.o: %.S
-	@mkdir -p $(OBJODIR)/$(notdir $(shell pwd))
+$(OBJODIR)/$(subdir_path)/%.o: %.S
+	@mkdir -p $(OBJODIR)/$(subdir_path)
 	$(ASM) $(ASMFLAGS) $(INCLUDES) $(CMACRO) -c "$<" -o "$@"
 
 $(foreach lib,$(GEN_LIBS),$(eval $(call ShortcutRule,$(lib),$(LIBODIR))))

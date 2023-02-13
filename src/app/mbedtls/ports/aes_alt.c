@@ -75,7 +75,7 @@ int mbedtls_aes_setkey_enc(mbedtls_aes_context *ctx, const unsigned char *key,
     if (ctx)
     {
         pctx = (psCipherContext_t *)*ctx;
-        memcpy(pctx->aes.key.eK, key, 16);
+        memcpy(pctx->aes.key.skey, key, keybits/8);
     }
     return 0;
 }
@@ -93,7 +93,7 @@ int mbedtls_aes_setkey_dec(mbedtls_aes_context *ctx, const unsigned char *key,
     if (ctx)
     {
         pctx = (psCipherContext_t *)*ctx;
-        memcpy(pctx->aes.key.eK, key, 16);
+        memcpy(pctx->aes.key.skey, key, keybits/8);
     }
     return 0;
 }
@@ -154,7 +154,7 @@ int mbedtls_aes_crypt_ecb(mbedtls_aes_context *ctx,
     if (ctx)
     {
         pctx = (psCipherContext_t *)*ctx;
-        pctx->aes.key.Nr = CRYPTO_MODE_ECB;
+        pctx->aes.key.type = CRYPTO_MODE_ECB;
 
         tls_crypto_aes_encrypt_decrypt(pctx, (unsigned char *)input, output, 16, 
         mode == MBEDTLS_AES_ENCRYPT ? CRYPTO_WAY_ENCRYPT : CRYPTO_WAY_DECRYPT);
@@ -173,39 +173,61 @@ int mbedtls_aes_crypt_cbc(mbedtls_aes_context *ctx,
                           unsigned char iv[16],
                           const unsigned char *input,
                           unsigned char *output)
-{
+{	
     int i;
-    psCipherContext_t *pctx;
     unsigned char temp[16];
+    unsigned char ctt[16];
 
-    if (ctx)
+    if( length % 16 )
+        return( MBEDTLS_ERR_AES_INVALID_INPUT_LENGTH );
+
+#if defined(MBEDTLS_PADLOCK_C) && defined(MBEDTLS_HAVE_X86)
+    if( aes_padlock_ace )
     {
-        pctx = (psCipherContext_t *)*ctx;
-        pctx->aes.key.Nr = CRYPTO_MODE_CBC;
+        if( mbedtls_padlock_xcryptcbc( ctx, mode, length, iv, input, output ) == 0 )
+            return( 0 );
 
-        for (i = 0; i < 16; i++) {
-		    pctx->aes.IV[i] = iv[i];
-	    }
+        // If padlock data misaligned, we just fall back to
+        // unaccelerated mode
+        //
+    }
+#endif
 
-	    if (mode == MBEDTLS_AES_DECRYPT)
-    	{
-    		memcpy(temp, &input[length - 16], 16);
-    	}
+    if( mode == MBEDTLS_AES_DECRYPT )
+    {
+        while( length > 0 )
+        {
+            memcpy( temp, input, 16 );
+            mbedtls_aes_crypt_ecb( ctx, mode, input, ctt );
 
-	    tls_crypto_aes_encrypt_decrypt(pctx, (unsigned char *)input, output, length, 
-        mode == MBEDTLS_AES_ENCRYPT ? CRYPTO_WAY_ENCRYPT : CRYPTO_WAY_DECRYPT);
+            for( i = 0; i < 16; i++ )
+                output[i] = (unsigned char)( ctt[i] ^ iv[i] );
 
-        if (mode == MBEDTLS_AES_DECRYPT)
-		{
-			memcpy(iv, temp, 16);
-		}
-		else if (mode == MBEDTLS_AES_ENCRYPT)
-		{
-			memcpy(iv, &output[length - 16], 16);
-		}
+            memcpy( iv, temp, 16 );
+
+            input  += 16;
+            output += 16;
+            length -= 16;
+        }
+    }
+    else
+    {
+        while( length > 0 )
+        {
+            for( i = 0; i < 16; i++ )
+                temp[i] = (unsigned char)( input[i] ^ iv[i] );
+
+            mbedtls_aes_crypt_ecb( ctx, mode, temp, ctt );
+			memcpy( output, ctt, 16);
+            memcpy( iv, ctt, 16 );
+
+            input  += 16;
+            output += 16;
+            length -= 16;
+        }
     }
 
-    return 0;
+    return( 0 );
 }
 #endif /* MBEDTLS_CIPHER_MODE_CBC */
 
@@ -276,7 +298,7 @@ int mbedtls_aes_crypt_ctr(mbedtls_aes_context *ctx,
     if (ctx)
     {
         pctx = (psCipherContext_t *)*ctx;
-        pctx->aes.key.Nr = CRYPTO_MODE_CTR;
+        pctx->aes.key.type = CRYPTO_MODE_CTR;
 
         if (*nc_off == 0)
         {

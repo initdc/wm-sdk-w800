@@ -3,9 +3,9 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#include "wm_config.h"
+#include "wm_bt_config.h"
 
-#if (TLS_CONFIG_BLE == CFG_ON)
+#if (WM_BLE_INCLUDED == CFG_ON)
 
 #include "wm_ble_gatt.h"
 #include "wm_ble_server.h"
@@ -138,10 +138,16 @@ void btgatts_deregister_app_cb(int status, int server_if)
 	TLS_HAL_CBACK(app_env[index].ps_callbak, deregister_server_cb, status, server_if);
 }
 
-void btgatts_connection_cb(int conn_id, int server_if, int connected, tls_bt_addr_t *bda)
+void btgatts_connection_cb(int conn_id, int server_if, int connected, tls_bt_addr_t *bda, uint16_t reason)
 {
     int index = -1;
-    TLS_BT_APPL_TRACE_VERBOSE("%s, server_if=%d, connected = %d, conn_id=%d\r\n", __FUNCTION__, server_if, connected, conn_id);
+    if(connected)
+    {
+        TLS_BT_APPL_TRACE_VERBOSE("%s, server_if=%d, connected = %d, conn_id=%d\r\n", __FUNCTION__, server_if, connected, conn_id);  
+    }else
+    {
+        TLS_BT_APPL_TRACE_VERBOSE("%s, server_if=%d, connected = %d, conn_id=%d, reason=0x%04x\r\n", __FUNCTION__, server_if, connected, conn_id, reason);
+    }
     index = get_app_env_index_by_server_if(server_if);
     if(index<0)
     {
@@ -152,7 +158,7 @@ void btgatts_connection_cb(int conn_id, int server_if, int connected, tls_bt_add
     app_env[index].connected = connected;
     app_env[index].connect_id = conn_id;
     memcpy(&app_env[index].addr, bda, sizeof(tls_bt_addr_t));
-    TLS_HAL_CBACK(app_env[index].ps_callbak, connection_cb, conn_id, server_if, connected, bda);
+    TLS_HAL_CBACK(app_env[index].ps_callbak, connection_cb, conn_id, server_if, connected, bda, reason);
 }
 
 void btgatts_service_added_cb(int status, int server_if, uint8_t inst_id, uint8_t is_primary, tls_bt_uuid_t * uuid,  int srvc_handle)
@@ -372,7 +378,7 @@ void btgatts_mtu_changed_cb(int conn_id, int mtu)
 
 static void tls_ble_server_event_handler(tls_ble_evt_t evt, tls_ble_msg_t *msg)
 {
-	TLS_BT_APPL_TRACE_EVENT("%s, event:%s,%d\r\n", __FUNCTION__, tls_gatt_evt_2_str(evt), evt);
+	//TLS_BT_APPL_TRACE_EVENT("%s, event:%s,%d\r\n", __FUNCTION__, tls_gatt_evt_2_str(evt), evt);
 	tls_bt_addr_t addr;
 	switch(evt)
 	{
@@ -384,11 +390,11 @@ static void tls_ble_server_event_handler(tls_ble_evt_t evt, tls_ble_msg_t *msg)
 			break;
 		case WM_BLE_SE_CONNECT_EVT:
 			memcpy(addr.address, msg->ser_connect.addr, 6);
-			btgatts_connection_cb(msg->ser_connect.conn_id, msg->ser_connect.server_if, msg->ser_connect.connected, &addr);
+			btgatts_connection_cb(msg->ser_connect.conn_id, msg->ser_connect.server_if, msg->ser_connect.connected, &addr, msg->ser_connect.reason);
 			break;
 		case WM_BLE_SE_DISCONNECT_EVT:
 			memcpy(addr.address, msg->ser_disconnect.addr, 6);
-			btgatts_connection_cb(msg->ser_disconnect.conn_id, msg->ser_disconnect.server_if, msg->ser_disconnect.connected, &addr);
+			btgatts_connection_cb(msg->ser_disconnect.conn_id, msg->ser_disconnect.server_if, msg->ser_disconnect.connected, &addr, msg->ser_disconnect.reason);
 			break;
 		case WM_BLE_SE_CREATE_EVT:
 			btgatts_service_added_cb(msg->ser_create.status,msg->ser_create.server_if, msg->ser_create.inst_id, msg->ser_create.is_primary, &msg->ser_create.uuid, msg->ser_create.service_id);

@@ -217,12 +217,13 @@ tls_bt_status_t tls_ble_client_execute_write(uint16_t conn_id, int execute);
  * @param[in]      client_if        gatt client access interface
  * @param[in]      *bd_addr         the target server address
  * @param[in]      handle           the attribute handle of characteristic
+ * @param[in]     conn_id          the connection id 
  *
  * @retval         @ref tls_bt_status_t
  *
  * @note           None
  */
-tls_bt_status_t tls_ble_client_register_for_notification(int client_if, const tls_bt_addr_t *bd_addr, uint16_t handle);
+tls_bt_status_t tls_ble_client_register_for_notification(int client_if, const tls_bt_addr_t *bd_addr, uint16_t handle, uint16_t conn_id);
 
 /**
  * @brief          deregister a previous request for notifications/indications
@@ -235,7 +236,7 @@ tls_bt_status_t tls_ble_client_register_for_notification(int client_if, const tl
  *
  * @note           None
  */
-tls_bt_status_t tls_ble_client_deregister_for_notification(int client_if, const tls_bt_addr_t *bd_addr, uint16_t handle);
+tls_bt_status_t tls_ble_client_deregister_for_notification(int client_if, const tls_bt_addr_t *bd_addr, uint16_t handle,uint16_t conn_id);
 
 /**
  * @brief          configure the MTU for a given connection

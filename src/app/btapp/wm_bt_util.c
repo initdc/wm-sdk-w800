@@ -45,28 +45,36 @@ tls_bt_uuid_t * app_uuid16_to_uuid128(uint16_t uuid16)
 
 void tls_bt_log(uint32_t level, const char *fmt_str, ...)
 {
-    char buffer[256] = {0};
 
-	u32 time = tls_os_get_time();					  
+	u32 time = tls_os_get_time();
+    u32 hour,min,second,ms = 0;
+
+    second = time/HZ;
+    ms = (time%HZ)*2;
+    hour = second/3600;
+    min = (second%3600)/60;
+    second = (second%3600)%60;
 
     if(level==TLS_TRACE_TYPE_ERROR)
     {
-    	printf("[WM_E] <%d.%02d> ",(time/100), (time%100));
+    	printf("[WM_E] <%d:%02d:%02d.%03d> ",hour,min, second, ms);
 		
     }else if(level==TLS_TRACE_TYPE_WARNING)
     {
-    	printf("[WM_W] <%d.%02d> ",(time/100), (time%100));
+    	printf("[WM_W] <%d:%02d:%02d.%03d> ",hour,min, second, ms);
     }else
     {
-    	printf("[WM_I] <%d.%02d> ",(time/100), (time%100));
+    	printf("[WM_I] <%d:%02d:%02d.%03d> ",hour,min, second, ms);
     }
+
     if(1)
     {
-        va_list ap;
-        va_start(ap, fmt_str);
-		vsnprintf(&buffer[0], 256, fmt_str, ap);
-        va_end(ap);
-        printf("%s\r\n", buffer);
+        va_list args;
+        /* printf args */
+        va_start(args, fmt_str);
+        vprintf(fmt_str, args);
+        va_end(args);
+
     }
     else
     {
@@ -187,6 +195,25 @@ const char *tls_gatt_evt_2_str(uint32_t event)
 		default: 
 			return "unknown gatt evt";
 
+    }
+}
+
+const char *tls_spp_evt_2_str(uint32_t event)
+{
+    switch(event)
+    {
+        CASE_RETURN_STR(WM_SPP_INIT_EVT)
+        CASE_RETURN_STR(WM_SPP_DISCOVERY_COMP_EVT)
+        CASE_RETURN_STR(WM_SPP_OPEN_EVT)
+        CASE_RETURN_STR(WM_SPP_CLOSE_EVT)
+        CASE_RETURN_STR(WM_SPP_START_EVT)
+        CASE_RETURN_STR(WM_SPP_CL_INIT_EVT)
+        CASE_RETURN_STR(WM_SPP_DATA_IND_EVT)
+        CASE_RETURN_STR(WM_SPP_CONG_EVT)
+        CASE_RETURN_STR(WM_SPP_WRITE_EVT)
+		CASE_RETURN_STR(WM_SPP_SRV_OPEN_EVT)
+        default:
+        	return "unknown spp evt";
     }
 }
 

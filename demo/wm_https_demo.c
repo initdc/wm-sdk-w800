@@ -26,7 +26,7 @@
 #if DEMO_HTTPS
 
 #define HTTPS_DEMO_TASK_PRIO             38
-#define HTTPS_DEMO_TASK_SIZE             1024
+#define HTTPS_DEMO_TASK_SIZE             2048 //1024
 #define HTTPS_DEMO_QUEUE_SIZE            4
 
 #define HTTPS_RECV_BUF_LEN_MAX           1024

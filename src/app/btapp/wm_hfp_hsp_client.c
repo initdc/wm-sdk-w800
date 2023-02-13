@@ -11,9 +11,10 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#include "wm_config.h"
+#include "wm_bt_config.h"
 
-#if (TLS_CONFIG_BR_EDR == CFG_ON)
+#if (WM_BTA_HFP_HSP_INCLUDED == CFG_ON)
+
 #include "wm_bt_hf_client.h"
 #include "wm_hfp_hsp_client.h"
 #include "wm_bt_util.h"
@@ -279,6 +280,11 @@ tls_bt_status_t tls_bt_disable_hfp_client()
 	return status;
 }
 
+tls_bt_status_t tls_bt_dial_number(const char* number)
+{
+    TLS_BT_APPL_TRACE_DEBUG("tls_bt_dial_number:%s\r\n", number);
+    return tls_bt_hf_client_dial(number);
+}
 
 #ifndef CASE_RETURN_STR
 #define CASE_RETURN_STR(const) case const: return #const;

@@ -19,7 +19,7 @@ extern "C" {
 	 Platform independent socket defines for convenience
  */
 #ifndef SOCKET
-	typedef int32 SOCKET;
+typedef int32 SOCKET;
 #endif
 #ifndef INVALID_SOCKET
 #define INVALID_SOCKET	-1
@@ -34,6 +34,8 @@ extern "C" {
 #define HTTPS_PORT		4433	/* Port to run the server/client on */
 
 /******************************************************************************/
+
+#if !TLS_CONFIG_USE_MBEDTLS
 /*
 	Protocol specific defines
  */
@@ -61,6 +63,8 @@ typedef struct {
 
 static int32 httpBasicParse(httpConn_t *cp, unsigned char *buf, uint32 len,
 	int32 trace);
+
+#endif
 
 /******************************************************************************/
 

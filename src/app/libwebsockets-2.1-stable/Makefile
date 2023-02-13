@@ -1,9 +1,7 @@
 TOP_DIR = ../../..
 sinclude $(TOP_DIR)/tools/w800/conf.mk
 
-EXCLUDES = lws-plat-unix.c \
-			lws-plat-win.c \
-			minihuf.c \
+EXCLUDES = minihuf.c \
 			minilex.c \
 			rewrite.c \
 			server.c \
@@ -23,7 +21,6 @@ EXCLUDES = lws-plat-unix.c \
 			lejp-conf.c \
 			libev.c \
 			libuv.c \
-			lws-plat-esp8266.c \
 			lws-plat-mbed3.c			
 
 CSRCS = $(filter-out $(EXCLUDES), $(wildcard *.c))

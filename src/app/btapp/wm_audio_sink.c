@@ -11,12 +11,20 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#include "wm_config.h"
+#include "wm_bt_config.h"
 
-#if (TLS_CONFIG_BR_EDR == CFG_ON)
+#if (WM_BTA_AV_SINK_INCLUDED == CFG_ON)
+
 #include "wm_bt_av.h"
 #include "wm_audio_sink.h"
 #include "wm_bt_util.h"
+
+/**This function is the pcm output function, type is 0(PCM)*/
+int btif_co_avk_data_incoming(uint8_t type, uint8_t *p_data,uint16_t length)
+{
+
+    
+}
 
 static void bta2dp_connection_state_callback(tls_btav_connection_state_t state, tls_bt_addr_t *bd_addr)
 {

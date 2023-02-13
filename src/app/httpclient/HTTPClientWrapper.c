@@ -12,10 +12,9 @@
 #include "polarssl/certs.h"
 #include "polarssl/x509.h"
 #include "polarssl/error.h"
-#else
-#include "matrixsslApi.h"
 #endif
 #include "HTTPClient.h"
+#include "wm_crypto_hard.h"
 #endif
 #if TLS_CONFIG_HTTP_CLIENT
 
@@ -759,7 +758,296 @@ int HTTPWrapperSSLClose(tls_ssl_t *ssl, int s)
 		return 0;
 	return platform_ssl_close(ssl);
 }
+#elif TLS_CONFIG_USE_MBEDTLS
 
+static bool mbedtls_demo_inited = FALSE;
+
+#if MBEDTLS_DEMO_USE_CERT
+static const char mbedtls_demos_pem[] =                                 \
+"-----BEGIN CERTIFICATE-----\r\n"                                       \
+"MIIDhzCCAm+gAwIBAgIBADANBgkqhkiG9w0BAQUFADA7MQswCQYDVQQGEwJOTDER\r\n"  \
+"MA8GA1UEChMIUG9sYXJTU0wxGTAXBgNVBAMTEFBvbGFyU1NMIFRlc3QgQ0EwHhcN\r\n"  \
+"MTEwMjEyMTQ0NDAwWhcNMjEwMjEyMTQ0NDAwWjA7MQswCQYDVQQGEwJOTDERMA8G\r\n"  \
+"A1UEChMIUG9sYXJTU0wxGTAXBgNVBAMTEFBvbGFyU1NMIFRlc3QgQ0EwggEiMA0G\r\n"  \
+"CSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDA3zf8F7vglp0/ht6WMn1EpRagzSHx\r\n"  \
+"mdTs6st8GFgIlKXsm8WL3xoemTiZhx57wI053zhdcHgH057Zk+i5clHFzqMwUqny\r\n"  \
+"50BwFMtEonILwuVA+T7lpg6z+exKY8C4KQB0nFc7qKUEkHHxvYPZP9al4jwqj+8n\r\n"  \
+"YMPGn8u67GB9t+aEMr5P+1gmIgNb1LTV+/Xjli5wwOQuvfwu7uJBVcA0Ln0kcmnL\r\n"  \
+"R7EUQIN9Z/SG9jGr8XmksrUuEvmEF/Bibyc+E1ixVA0hmnM3oTDPb5Lc9un8rNsu\r\n"  \
+"KNF+AksjoBXyOGVkCeoMbo4bF6BxyLObyavpw/LPh5aPgAIynplYb6LVAgMBAAGj\r\n"  \
+"gZUwgZIwDAYDVR0TBAUwAwEB/zAdBgNVHQ4EFgQUtFrkpbPe0lL2udWmlQ/rPrzH\r\n"  \
+"/f8wYwYDVR0jBFwwWoAUtFrkpbPe0lL2udWmlQ/rPrzH/f+hP6Q9MDsxCzAJBgNV\r\n"  \
+"BAYTAk5MMREwDwYDVQQKEwhQb2xhclNTTDEZMBcGA1UEAxMQUG9sYXJTU0wgVGVz\r\n"  \
+"dCBDQYIBADANBgkqhkiG9w0BAQUFAAOCAQEAuP1U2ABUkIslsCfdlc2i94QHHYeJ\r\n"  \
+"SsR4EdgHtdciUI5I62J6Mom+Y0dT/7a+8S6MVMCZP6C5NyNyXw1GWY/YR82XTJ8H\r\n"  \
+"DBJiCTok5DbZ6SzaONBzdWHXwWwmi5vg1dxn7YxrM9d0IjxM27WNKs4sDQhZBQkF\r\n"  \
+"pjmfs2cb4oPl4Y9T9meTx/lvdkRYEug61Jfn6cA+qHpyPYdTH+UshITnmp5/Ztkf\r\n"  \
+"m/UTSLBNFNHesiTZeH31NcxYGdHSme9Nc/gfidRa0FLOCfWxRlFqAI47zG9jAQCZ\r\n"  \
+"7Z2mCGDNMhjQc+BYcdnl0lPXjdDK6V0qCg1dVewhUBcW5gZKzV7e9+DpVA==\r\n"      \
+"-----END CERTIFICATE-----\r\n";
+#endif
+
+#if defined(MBEDTLS_DEBUG_C)
+#define DEBUG_LEVEL 3
+
+static void ssl_client_debug( void *ctx, int level,
+                              const char *file, int line,
+                              const char *str )
+{
+    ((void) level);
+
+    mbedtls_fprintf( (FILE *) ctx, "%s:%04d: %s", file, line, str );
+    fflush(  (FILE *) ctx  );
+}
+#endif
+
+int HTTPWrapperSSLConnect(tls_ssl_t **ssl_p,int fd,const struct sockaddr *name,int namelen,char *hostname)
+{
+	int ret = MBEDTLS_EXIT_SUCCESS, len;
+	const char *pers = "ssl_client";
+	tls_ssl_t *ssl = NULL;
+
+	*ssl_p = NULL;
+
+	ssl = tls_mem_alloc(sizeof(tls_ssl_t));
+	if(!ssl)
+	{
+		return -1;
+	}
+
+#if defined(MBEDTLS_DEBUG_C)
+	mbedtls_debug_set_threshold( DEBUG_LEVEL );
+#endif
+
+	/*
+	 * 0. Initialize the RNG and the session data
+	 */
+	mbedtls_net_init( &ssl->server_fd );
+	mbedtls_ssl_init( &ssl->ssl );
+	mbedtls_ssl_config_init( &ssl->conf );
+#if MBEDTLS_DEMO_USE_CERT
+	mbedtls_x509_crt_init( &ssl->cacert );
+#endif
+	mbedtls_ctr_drbg_init( &ssl->ctr_drbg );
+
+	mbedtls_printf( "\n  . Seeding the random number generator..." );
+	fflush( stdout );
+
+	mbedtls_entropy_init( &ssl->entropy );
+	if( ( ret = mbedtls_ctr_drbg_seed( &ssl->ctr_drbg, mbedtls_entropy_func, &ssl->entropy,
+							   (const unsigned char *) pers,
+							   strlen( pers ) ) ) != 0 )
+	{
+		mbedtls_printf( " failed\n	! mbedtls_ctr_drbg_seed returned %d\n", ret );
+		goto exit;
+	}
+
+	mbedtls_printf( " ok\n" );
+
+#if MBEDTLS_DEMO_USE_CERT
+	/*
+	 * 0. Initialize certificates
+	 */
+	mbedtls_printf( "  . Loading the CA root certificate ..." );
+	fflush( stdout );
+
+	ret = mbedtls_x509_crt_parse( &ssl->cacert, (const unsigned char *) mbedtls_demos_pem,
+						  sizeof(mbedtls_demos_pem) );
+	if( ret < 0 )
+	{
+		mbedtls_printf( " failed\n	!  mbedtls_x509_crt_parse returned -0x%x\n\n", -ret );
+		goto exit;
+	}
+
+	mbedtls_printf( " ok (%d skipped)\n", ret );
+#endif
+
+	/*
+	 * 1. Start the connection
+	 */
+	mbedtls_printf( "  . Connecting to tcp...");
+	fflush( stdout );
+
+	if(name)
+	{
+		ssl->server_fd.fd = fd;
+		ret = connect(fd,	// Socket
+	                name,			                // Server address    
+	                sizeof(struct sockaddr));
+		if(ret)
+			ret = SocketGetErr(fd);
+		//TLS_DBGPRT_INFO("SocketGetErr rc %d\n", rc);
+	    if(ret == 0 || ret == HTTP_EWOULDBLOCK || ret == HTTP_EINPROGRESS)
+	    { }
+		else
+		{
+			mbedtls_printf("Connection Failed: %d.  Exiting\n", ret);
+			goto exit;
+		}
+	}
+
+	mbedtls_printf( " ok\n" );
+
+	/*
+	 * 2. Setup stuff
+	 */
+	mbedtls_printf( "  . Setting up the SSL/TLS structure..." );
+	fflush( stdout );
+
+	if( ( ret = mbedtls_ssl_config_defaults( &ssl->conf,
+					MBEDTLS_SSL_IS_CLIENT,
+					MBEDTLS_SSL_TRANSPORT_STREAM,
+					MBEDTLS_SSL_PRESET_DEFAULT ) ) != 0 )
+	{
+		mbedtls_printf( " failed\n	! mbedtls_ssl_config_defaults returned %d\n\n", ret );
+		goto exit;
+	}
+
+	mbedtls_printf( " ok\n" );
+
+	/* OPTIONAL is not optimal for security,
+	 * but makes interop easier in this simplified example */
+	mbedtls_ssl_conf_authmode( &ssl->conf, MBEDTLS_SSL_VERIFY_NONE );
+#if MBEDTLS_DEMO_USE_CERT
+	mbedtls_ssl_conf_ca_chain( &ssl->conf, &ssl->cacert, NULL );
+#endif
+	mbedtls_ssl_conf_rng( &ssl->conf, mbedtls_ctr_drbg_random, &ssl->ctr_drbg );
+
+#if defined(MBEDTLS_DEBUG_C)
+	mbedtls_ssl_conf_dbg( &ssl->conf, ssl_client_debug, stdout );
+#endif
+
+	if( ( ret = mbedtls_ssl_setup( &ssl->ssl, &ssl->conf ) ) != 0 )
+	{
+		mbedtls_printf( " failed\n	! mbedtls_ssl_setup returned %d\n\n", ret );
+		goto exit;
+	}
+
+	if( ( ret = mbedtls_ssl_set_hostname( &ssl->ssl, hostname ) ) != 0 )
+	{
+		mbedtls_printf( " failed\n	! mbedtls_ssl_set_hostname returned %d\n\n", ret );
+		goto exit;
+	}
+
+	mbedtls_ssl_set_bio( &ssl->ssl, &ssl->server_fd, mbedtls_net_send, mbedtls_net_recv, NULL );
+
+	/*
+	 * 4. Handshake
+	 */
+	mbedtls_printf( "  . Performing the SSL/TLS handshake...");
+	fflush( stdout );
+
+	while( ( ret = mbedtls_ssl_handshake( &ssl->ssl ) ) != 0 )
+	{
+		if( ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE )
+		{
+			mbedtls_printf( " failed\n	! mbedtls_ssl_handshake returned -0x%x\n\n", -ret );
+			goto exit;
+		}
+	}
+
+	mbedtls_printf( " ok\n" );
+
+	*ssl_p = ssl;
+
+	return 0;
+exit:
+
+#ifdef MBEDTLS_ERROR_C
+    if( ret != MBEDTLS_EXIT_SUCCESS )
+    {
+        char error_buf[100];
+        mbedtls_strerror( ret, error_buf, 100 );
+        mbedtls_printf("Last error was: %d - %s\n\n", ret, error_buf );
+    }
+#endif
+
+    mbedtls_net_free( &ssl->server_fd );
+#if MBEDTLS_DEMO_USE_CERT
+    mbedtls_x509_crt_free( &ssl->cacert );
+#endif
+    mbedtls_ssl_free( &ssl->ssl );
+    mbedtls_ssl_config_free( &ssl->conf );
+    mbedtls_ctr_drbg_free( &ssl->ctr_drbg );
+    mbedtls_entropy_free( &ssl->entropy );
+	mbedtls_printf("start free ssl(%x)...\n", ssl);
+	tls_mem_free(ssl);
+	mbedtls_printf("HTTPWrapperSSLConnect ret %d\n", ret);
+    return( ret );
+
+}
+int HTTPWrapperSSLSend(tls_ssl_t *ssl, int s,char *sndbuf, int len,int flags)
+{
+	int ret;
+	
+	while( ( ret = mbedtls_ssl_write( &ssl->ssl, sndbuf, len ) ) <= 0 )
+    {
+        if( ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE )
+        {
+            mbedtls_printf( " failed\n  ! mbedtls_ssl_write returned %d\n\n", ret );
+            break;
+        }
+    }
+	return ret;
+}
+int HTTPWrapperSSLRecv(tls_ssl_t *ssl,int s,char *buf, int len,int flags)
+{
+	int ret;
+	
+	do
+    {
+        ret = mbedtls_ssl_read( &ssl->ssl, buf, len );
+		//mbedtls_printf("mbedtls_ssl_read ret %d\n", ret);
+
+        if( ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE )
+            continue;
+
+        if( ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY )
+            break;
+
+        if( ret < 0 )
+        {
+            mbedtls_printf( "failed\n  ! mbedtls_ssl_read returned %d\n\n", ret );
+            break;
+        }
+
+        if( ret == 0 )
+        {
+            mbedtls_printf( "\n\nEOF\n\n" );
+            break;
+        }
+		
+    }
+    while( ret < 0 );
+	
+	if(ssl->ssl.in_msglen > 0)
+		return SOCKET_SSL_MORE_DATA;
+	
+	return ret;
+}
+int HTTPWrapperSSLRecvPending(tls_ssl_t *ssl)
+{
+	return 0;
+}
+int HTTPWrapperSSLClose(tls_ssl_t *ssl, int s)
+{
+	if(ssl)
+	{
+	    mbedtls_ssl_close_notify( &ssl->ssl );
+		
+	    mbedtls_net_free( &ssl->server_fd );
+#if MBEDTLS_DEMO_USE_CERT
+	    mbedtls_x509_crt_free( &ssl->cacert );
+#endif
+	    mbedtls_ssl_free( &ssl->ssl );
+	    mbedtls_ssl_config_free( &ssl->conf );
+	    mbedtls_ctr_drbg_free( &ssl->ctr_drbg );
+	    mbedtls_entropy_free( &ssl->entropy );
+
+		tls_mem_free(ssl);
+	}
+	return 0;
+}
 
 #else //TLS_CONFIG_USE_POLARSSL
 /******************************************************************************/
@@ -879,31 +1167,33 @@ int HTTPWrapperSSLConnect(tls_ssl_t **ssl_p,int fd,const struct sockaddr *name,i
 	int32			transferred, len, sessionFlag, SNIextLen;
 	tls_ssl_t			*ssl;
 	unsigned char	*buf, *SNIext;
-	uint32 g_cipher[16] = {4, 5, 0x002F, 0x0035};
+	uint16_t g_cipher[16] = {4, 5, 0x002F, 0x0035};
 	int g_ciphers = 4;
 	fd_set rdSet;
 	fd_set wtSet;
 //	int ret = 0;
 	struct timeval timeout;
 	char *host_ip = NULL;
+    sslSessOpts_t options;
 
 
 	timeout.tv_sec = 10;
 	timeout.tv_usec = 0;
 	
+    memset(&options, 0x0, sizeof(sslSessOpts_t));
 	TLS_DBGPRT_INFO("HTTPWrapperSSLConnect start.\n");	
 	if ((rc = matrixSslOpen()) < 0) 
 	{
 		TLS_DBGPRT_ERR("MatrixSSL library init failure.  Exiting\n");	
 		return rc;
 	}
-	if (matrixSslNewKeys(&keys) < 0) 
+	if (matrixSslNewKeys(&keys, NULL) < 0)
 	{
 		TLS_DBGPRT_ERR("MatrixSSL library key init failure.  Exiting\n");
 		return -1;
 	}
 
-	if (matrixSslNewSessionId(&sid) < 0) 
+	if (matrixSslNewSessionId(&sid, NULL) < 0)
 	{
 		TLS_DBGPRT_ERR("MatrixSSL library SessionId init failure.  Exiting\n");
 		matrixSslDeleteKeys(keys);
@@ -953,16 +1243,17 @@ int HTTPWrapperSSLConnect(tls_ssl_t **ssl_p,int fd,const struct sockaddr *name,i
 	/* MatrixSSL <= 3.4.2 don't support setting version on request */
 	sessionFlag = 0;
 #endif
+	options.versionFlag = sessionFlag;
 	if(host_ip)
 	{
-		matrixSslNewHelloExtension(&extension);
+		matrixSslNewHelloExtension(&extension, NULL);
 		matrixSslCreateSNIext(NULL, (unsigned char*)host_ip, (uint32)strlen(host_ip),
 			&SNIext, &SNIextLen);
 		matrixSslLoadHelloExtension(extension, SNIext, SNIextLen, 0);
-		psFree(SNIext);
+		psFree(SNIext, NULL);
 	}
 	rc = matrixSslNewClientSession(&ssl, keys, sid, g_cipher, g_ciphers,
-		certCb, host_ip, extension, NULL, sessionFlag);
+		certCb, host_ip, extension, NULL, &options);
 	matrixSslDeleteHelloExtension(extension);
 	if (rc != MATRIXSSL_REQUEST_SEND) {
 		TLS_DBGPRT_ERR("New Client Session Failed: %d.  Exiting\n", rc);

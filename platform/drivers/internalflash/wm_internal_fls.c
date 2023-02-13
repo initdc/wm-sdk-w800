@@ -46,7 +46,7 @@ unsigned char readRID(void)
     return read_first_value() & 0xFF;
 }
 
-void writeGDBpBit(char cmp, char bp4, char bp3, char bp2, char bp1, char bp0)
+static void writeBpBit_for_1wreg(char cmp, char bp4, char bp3, char bp2, char bp1, char bp0)
 {
     int status = 0;
     int bpstatus = 0;
@@ -71,7 +71,42 @@ void writeGDBpBit(char cmp, char bp4, char bp3, char bp2, char bp1, char bp0)
     M32(HR_FLASH_CMD_START) = CMD_START_Msk;
 }
 
-void writeESMTBpBit(char cmp, char bp4, char bp3, char bp2, char bp1, char bp0)
+static void writeBpBit_for_2wreg(char cmp, char bp4, char bp3, char bp2, char bp1, char bp0)
+{
+    int status = 0;
+    int bpstatus = 0;
+
+    M32(HR_FLASH_CMD_ADDR) = 0x0C005;
+    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
+    status =  read_first_value() & 0xFF;
+
+    M32(HR_FLASH_CMD_ADDR) = 0x0C035;
+    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
+    status  |=  (read_first_value() & 0xFF) << 8;
+
+    /*Write Enable*/
+    M32(HR_FLASH_CMD_ADDR) = 0x6;
+    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
+
+    bpstatus  = (bp4 << 6) | (bp3 << 5) | (bp2 << 4) | (bp1 << 3) | (bp0 << 2);
+    bpstatus      = (status &83) | bpstatus;
+
+    M32(RSA_BASE_ADDRESS)  = bpstatus;
+    M32(HR_FLASH_CMD_ADDR) = 0xA001;
+    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
+
+
+    M32(HR_FLASH_CMD_ADDR) = 0x6;
+    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
+
+    status      = ((status>>8) & 0xBF) | (cmp << 6);
+    M32(RSA_BASE_ADDRESS)   = status;
+    M32(HR_FLASH_CMD_ADDR)  = 0xA031;
+    M32(HR_FLASH_CMD_START) = CMD_START_Msk;	
+}
+
+
+static void writeESMTBpBit(char cmp, char bp4, char bp3, char bp2, char bp1, char bp0)
 {
     int status = 0;
     int bpstatus = 0;
@@ -113,9 +148,16 @@ static int flashunlock(void)
     switch(readRID())
     {
     case SPIFLASH_MID_GD:
-    case SPIFLASH_MID_PUYA:
-        writeGDBpBit(0, 0, 0, 0, 0, 0);
+	case SPIFLASH_MID_TSINGTENG:
+        writeBpBit_for_1wreg(0, 0, 0, 0, 0, 0);
         break;
+    case SPIFLASH_MID_PUYA:
+	case SPIFLASH_MID_XTX:
+	case SPIFLASH_MID_BOYA:
+	case SPIFLASH_MID_FUDANMICRO:
+	case SPIFLASH_MID_XMC:
+		writeBpBit_for_2wreg(0, 0, 0, 0, 0, 0);
+		break;
     case SPIFLASH_MID_ESMT:
         writeESMTBpBit(0, 0, 0, 0, 0, 0);
         break;
@@ -130,8 +172,15 @@ static int flashlock(void)
     switch(readRID())
     {
     case SPIFLASH_MID_GD:
+	case SPIFLASH_MID_TSINGTENG:		
+        writeBpBit_for_1wreg(0, 1, 1, 0, 1, 0);
+		break;
     case SPIFLASH_MID_PUYA:
-        writeGDBpBit(0, 1, 1, 0, 1, 0);
+	case SPIFLASH_MID_XTX:
+	case SPIFLASH_MID_BOYA:
+	case SPIFLASH_MID_FUDANMICRO:
+	case SPIFLASH_MID_XMC:
+		writeBpBit_for_2wreg(0, 1, 1, 0, 1, 0);
         break;
     case SPIFLASH_MID_ESMT:
         writeESMTBpBit(0, 1, 1, 0, 1, 0);
@@ -454,7 +503,7 @@ int flashRead(unsigned long addr, unsigned char *buf, unsigned long sz)
         return TLS_FLS_STATUS_ENOMEM;
     }
     flash_addr = addr & ~(INSIDE_FLS_PAGE_SIZE - 1);
-    readByCMD(0x0B, flash_addr, (unsigned char *)cache, INSIDE_FLS_PAGE_SIZE);
+    readByCMD(0xEB, flash_addr, (unsigned char *)cache, INSIDE_FLS_PAGE_SIZE);
     if (sz > INSIDE_FLS_PAGE_SIZE - page_offset)
     {
         MEMCPY(buf, cache + page_offset, INSIDE_FLS_PAGE_SIZE - page_offset);
@@ -466,7 +515,7 @@ int flashRead(unsigned long addr, unsigned char *buf, unsigned long sz)
         for (i = 0; i < sz_pagenum; i++)
         {
 
-            readByCMD(0x0B, flash_addr, (unsigned char *)cache, INSIDE_FLS_PAGE_SIZE);
+            readByCMD(0xEB, flash_addr, (unsigned char *)cache, INSIDE_FLS_PAGE_SIZE);
             MEMCPY(buf, cache, INSIDE_FLS_PAGE_SIZE);
             buf 		+= INSIDE_FLS_PAGE_SIZE;
             flash_addr 	+= INSIDE_FLS_PAGE_SIZE;
@@ -474,7 +523,7 @@ int flashRead(unsigned long addr, unsigned char *buf, unsigned long sz)
 
         if (sz_remain)
         {
-            readByCMD(0x0B, flash_addr, (unsigned char *)cache, sz_remain);
+            readByCMD(0xEB, flash_addr, (unsigned char *)cache, sz_remain);
             MEMCPY(buf, cache, sz_remain);
         }
     }

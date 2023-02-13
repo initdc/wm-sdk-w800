@@ -564,6 +564,7 @@ ATTRIBUTE_ISR void UART0_IRQHandler(void)
     u32 fifos;
     u8 ch;
     u32 rxlen = 0;
+    csi_kernel_intrpt_enter();
 
 /* check interrupt status */
     intr_src = port->regs->UR_INTS;
@@ -615,6 +616,7 @@ ATTRIBUTE_ISR void UART0_IRQHandler(void)
         fifos = port->regs->UR_FIFOS;
         uart_handle_cts_change(port, fifos & UFS_CST_STS);
     }
+    csi_kernel_intrpt_exit();
 }
 
 
@@ -641,6 +643,7 @@ ATTRIBUTE_ISR void UART1_IRQHandler(void)
     u8 ch = 0;
     u8 escapefifocnt = 0;
     u32 rxlen = 0;
+    csi_kernel_intrpt_enter();
 
     intr_src = port->regs->UR_INTS;
     port->regs->UR_INTS = intr_src;
@@ -711,6 +714,7 @@ ATTRIBUTE_ISR void UART1_IRQHandler(void)
         fifos = port->regs->UR_FIFOS;
         uart_handle_cts_change(port, fifos & UFS_CST_STS);
     }
+    csi_kernel_intrpt_exit();	
 }
 
 static int findOutIntUart(void)
@@ -737,7 +741,8 @@ ATTRIBUTE_ISR void UART2_4_IRQHandler(void)
     u32 rx_fifocnt;
     u32 fifos;
     u32 rxlen = 0;
-	u8 ch;
+    u8 ch;
+    csi_kernel_intrpt_enter();
 
     intr_src = port->regs->UR_INTS;
 
@@ -793,7 +798,8 @@ ATTRIBUTE_ISR void UART2_4_IRQHandler(void)
         fifos = port->regs->UR_FIFOS;
         uart_handle_cts_change(port, fifos & UFS_CST_STS);
     }
-	port->regs->UR_INTS = intr_src;
+    port->regs->UR_INTS = intr_src;
+    csi_kernel_intrpt_exit();	
 }
 
 /**
@@ -920,7 +926,7 @@ void tls_uart_tx_sent_callback_register(u16 uart_no, s16(*tx_callback) (struct t
 }
 
 
-int tls_uart_try_read(u16 uart_no)
+int tls_uart_try_read(u16 uart_no, int32_t read_size)
 {
     int data_cnt = 0;
     struct tls_uart_port *port = NULL;
@@ -929,9 +935,13 @@ int tls_uart_try_read(u16 uart_no)
 	port = &uart_port[uart_no];
     recv = &port->recv;
     data_cnt = CIRC_CNT(recv->head, recv->tail, TLS_UART_RX_BUF_SIZE);
-
-    return data_cnt;
-
+    if(data_cnt >= read_size)
+    {
+        return read_size;
+    }else
+    {
+        return 0;
+    }
 }
 
 /**
@@ -1002,7 +1012,7 @@ int tls_uart_dma_write(char *buf, u16 writesize, void (*cmpl_callback) (void *p)
 
     /* Request DMA Channel */
     dmaCh = tls_dma_request(2, TLS_DMA_FLAGS_CHANNEL_SEL(TLS_DMA_SEL_UART_TX) | TLS_DMA_FLAGS_HARD_MODE);
-    if (dmaCh != 2)
+    if (dmaCh == 0xFF)
     {
         TLS_DBGPRT_ERR("dma request err\n");
         return WM_FAILED;

@@ -31,6 +31,18 @@
  */
 
 
+/**
+ * @brief  config the pins used for highspeed spi
+ * @param  numsel: config highspeed spi pins multiplex relation,valid para 0,1
+ *			 0: hspi0
+ *			    hspi_ck  PB06
+ *			    hspi_int PB07
+ *				hspi_cs  PB09
+ *			    hspi_di  PB10
+ *				hspi_do	 PB11
+ * @return None
+ */
+void wm_hspi_gpio_config(uint8_t numsel);
 
 /**
  * @brief  config the pins used for spi ck
@@ -72,6 +84,49 @@ void wm_spi_di_config(enum tls_io_name io_name);
  */
 void wm_spi_do_config(enum tls_io_name io_name);
 
+/**
+ * @brief  config the pins used for sdio host ck dat0 dat1 dat2 dat3
+ * @param  numsel: config sdio ck cmd dat0 dat1 dat2 dat3 pins multiplex relation,valid para 0,1
+ *			0: 
+ *			  sdio_ck   PB06
+ *            sdio_cmd  PB07
+ *			  sdio_dat0 PB08
+ *			  sdio_dat1 PB09
+ *			  sdio_dat2 PB10
+ *			  sdio_dat3 PB11
+ *				
+ * @return None
+ */
+void wm_sdio_host_config(uint8_t numsel);
+
+/**
+ * @brief  config the pins used for sdio slave ck dat0 dat1 dat2 dat3
+ * @param  numsel: config sdio ck cmd dat0 dat1 dat2 dat3 pins multiplex relation,valid para 0
+ *			0: 
+ *			  sdio_ck   PB06
+ *            sdio_cmd  PB07
+ *			  sdio_dat0 PB08
+ *			  sdio_dat1 PB09
+ *			  sdio_dat2 PB10
+ *			  sdio_dat3 PB11
+ *				
+ * @return None
+ */
+void wm_sdio_slave_config(uint8_t numsel);
+
+/**
+ * @brief  config the pins used for psram ck cs dat0 dat1 dat2 dat3
+ * @param  numsel: config psram ck cs dat0 dat1 dat2 dat3 pins multiplex relation,valid para 0,1
+ *			0: 
+ *			  psram_ck   PB00
+ *            psram_cs   PB01
+ *			  psram_dat0 PB02
+ *			  psram_dat1 PB03
+ *			  psram_dat2 PB04
+ *			  psram_dat3 PB05
+ * @return None
+ */
+void wm_psram_config(uint8_t numsel);
 
 /**
  * @brief  config the pins used for uart0 tx

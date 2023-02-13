@@ -23,8 +23,10 @@ static pwm_irq_callback pwm_callback;
 
 ATTRIBUTE_ISR void PWM_IRQHandler(void)
 {
+    csi_kernel_intrpt_enter();
     if (pwm_callback)
         pwm_callback();
+    csi_kernel_intrpt_exit();
 }
 
 /**
@@ -61,6 +63,12 @@ int tls_pwm_duty_config(u8 channel, u8 duty)
 	{
 		TLS_DBGPRT_ERR("duty param err\n");
 		return WM_FAILED;
+	}
+
+	if (duty == 0)
+	{
+		tls_pwm_stop(channel);
+		return WM_SUCCESS;
 	}
 
     if (4 == channel)
@@ -821,9 +829,17 @@ void tls_pwm_duty_set(u8 channel, u8 duty)
 {
     if(channel > (PWM_CHANNEL_MAX_NUM - 1))
 		return;
-
-    tls_pwm_duty_config(channel, duty);
+	if (duty == 0)
+	{
+		tls_pwm_stop(channel);
+	}
+	else
+	{
+    	tls_pwm_duty_config(channel, duty);
+		tls_pwm_start(channel);
+	}
 }
+
 
 /**
  * @brief          This function is used to initial pwm

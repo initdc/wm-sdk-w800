@@ -29,6 +29,11 @@ tls_bt_uuid_t * app_uuid16_to_uuid128(uint16_t uuid16);
 #define TLS_BT_APPL_TRACE_VERBOSE(...)
 
 #endif
+
+#ifndef MIN
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
 extern tls_bt_log_level_t tls_appl_trace_level;
 
 void tls_bt_log(uint32_t trace_set_mask, const char *fmt_str, ...);
@@ -36,7 +41,7 @@ const char *tls_bt_host_evt_2_str(uint32_t event);
 const char *tls_dm_evt_2_str(uint32_t event);
 const char *tls_bt_status_2_str(uint32_t event);
 const char *tls_gatt_evt_2_str(uint32_t event);
-
+const char *tls_spp_evt_2_str(uint32_t event);
 
 
 

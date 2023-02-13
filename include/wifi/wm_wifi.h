@@ -307,6 +307,16 @@ struct tls_wifi_scan_param_t{
 /** callback function of receive Wi-Fi data */
 typedef void (*tls_wifi_data_recv_callback)(u8* data, u32 data_len);
 
+/** callback function of Wi-Fi PSMode Preprocess when enter chipsleep function */
+typedef void (*tls_wifi_psm_prechipsleep_callback)(void);
+
+/** callback function of Wi-Fi PSMode Using chipsleep function */
+typedef void (*tls_wifi_psm_chipsleep_callback)(u32 sleeptime);
+
+/** callback function of Wi-Fi PSMode Postprocess after chip wakeup */
+typedef void (*tls_wifi_psm_postchipsleep_callback)(void);
+
+
 /** callback function of receive ETHERNET data */
 typedef int (*net_rx_data_cb)(const u8 *bssid, u8 *buf, u32 buf_len);
 
@@ -407,6 +417,58 @@ void tls_wifi_data_recv_cb_register(tls_wifi_data_recv_callback callback);
  * @note           None
  */
 void tls_wifi_data_ext_recv_cb_register(tls_wifi_data_ext_recv_callback callback);
+
+
+/**
+ * @brief	  This function is used to register recv wifi management frame
+ *				   callback function
+ *
+ * @param[in]	   callback   point to receive Wi-Fi management frame function
+ *
+ * @return	  None
+ *
+ * @note		   None
+ */
+void tls_wifi_mgmt_ext_recv_cb_register(tls_wifi_data_ext_recv_callback callback);
+
+/**
+ * @brief	   This function is used to register chipsleep callback function
+ *				   when using chip sleep for powersaving
+ *
+ * @param[in]	   sleepcallback: pointer to function when enter to chipsleep
+ * @param[in]	   precallback: pointer to function before enter to chipsleep
+ * @param[in]	   postcallback: pointer to function after leave chipsleep
+ *
+ * @return	   None
+ *
+ * @note		   None
+ */
+void tls_wifi_psm_chipsleep_cb_register(tls_wifi_psm_chipsleep_callback sleepcallback,
+	tls_wifi_psm_prechipsleep_callback precallback,
+	tls_wifi_psm_postchipsleep_callback postcallback);
+
+/**
+ * @brief	   This function is used to set chipsleep valid flag
+ *
+ * @param[in]	   flag: use chipsleep when psm using.0:using normal wifi sleep, non-zero:using chipsleep
+ *
+ * @return	   None
+ *
+ * @note		   None
+ */
+void tls_wifi_set_psm_chipsleep_flag(u32 flag);
+
+/**
+ * @brief	   This function is used to get chipsleep valid flag
+ *
+ * @param[in]	   None
+ *
+ * @return	   None
+ *
+ * @note		   None
+ */
+u32 tls_wifi_get_psm_chipsleep_flag(void);
+
 
 /**
  * @brief          This function is used to set oneshot config flag

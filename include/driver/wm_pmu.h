@@ -29,12 +29,15 @@ typedef enum {
     TLS_PERIPHERAL_TYPE_GPIO  = (1 << 11), /**< peripheral type : GPIO */
     TLS_PERIPHERAL_TYPE_SDADC = (1 << 12), /**< peripheral type : SDADC */
     TLS_PERIPHERAL_TYPE_PWM   = (1 << 13), /**< peripheral type : PWM */
-
+    TLS_PERIPHERAL_TYPE_LCD   = (1 << 14), /**< peripheral type : LCD */
     TLS_PERIPHERAL_TYPE_I2S   = (1 << 15), /**< peripheral type : I2S */
     TLS_PERIPHERAL_TYPE_RSA   = (1 << 16), /**< peripheral type : RSA */
     TLS_PERIPHERAL_TYPE_GPSEC = (1 << 17), /**< peripheral type : GPSEC */
 
+    TLS_PERIPHERAL_TYPE_SDIO_MASTER = (1<<18), /**< peripheral type : SDIO */
+    TLS_PERIPHERAL_TYPE_PSRAM = (1<<19), /**< peripheral type : PSRAM */
     TLS_PERIPHERAL_TYPE_BT    = (1<<20), /**< peripheral type : BT */
+    TLS_PERIPHERAL_TYPE_TOUCH_SENSOR  = (1 << 21) /**< peripheral type : TOUCH */
 }tls_peripheral_type_s;
 
 /** callback function of PMU interrupt */

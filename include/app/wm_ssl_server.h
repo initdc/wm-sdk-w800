@@ -12,9 +12,12 @@
 #include "polarssl/ssl.h"
 
 #error "PolaSSL does not support ssl server now!"
+#elif TLS_CONFIG_USE_MBEDTLS
+typedef void tls_ssl_key_t;
 #else
-#include "matrixsslApi.h"
-typedef ssl_t   tls_ssl_t;
+#include "core/coreApi.h"
+#include "matrixssl/matrixsslApi.h"
+//typedef ssl_t   tls_ssl_t;
 typedef sslKeys_t   tls_ssl_key_t;
 #endif
 //key type for tls_ssl_server_init

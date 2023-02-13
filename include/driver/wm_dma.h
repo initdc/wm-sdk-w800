@@ -20,13 +20,9 @@
 #define TLS_DMA_SEL_SDADC_CH1      7
 #define TLS_DMA_SEL_SDADC_CH2      8
 #define TLS_DMA_SEL_SDADC_CH3      9
-#define TLS_DMA_SEL_SDADC_CH4      10
-#define TLS_DMA_SEL_SDADC_CH5      11
-#define TLS_DMA_SEL_SDADC_CH6      12
-#define TLS_DMA_SEL_SDADC_CH7      13
-#define TLS_DMA_SEL_I2S_RX         14
-#define TLS_DMA_SEL_I2S_TX         15
-
+#define TLS_DMA_SEL_I2S_RX         10
+#define TLS_DMA_SEL_I2S_TX         11
+#define TLS_DMA_SEL_SDIO_HOST      12
 
 #define TLS_DMA_FLAGS_HARD_MODE                 (1   << 0)
 #define TLS_DMA_FLAGS_CHAIN_MODE                (1   << 1)
@@ -186,17 +182,18 @@ unsigned char tls_dma_start(unsigned char ch, struct tls_dma_descriptor *dma_des
 unsigned char tls_dma_stop(unsigned char ch);
 
 
-/**
- * @brief          	This function is used to Request a free dma channel.
- *				If ch is 0, the function will select a random free channel,
- *		         	else return the selected channel no. if free.
+ /**
+ * @brief        This function is used to Request a free dma channel
+ *				If ch is out of range [0,7] or valid but used, the function will select another free channel.
+ *		         else return the selected channel no.
+ * @param[in]    ch       specified channel when ch is valid and not used.
+ * @param[in]    flags    flags setted to selected channel
  *
- * @param[in]      ch       channel no.
- * @param[in]      flags    flags setted to selected channel
+ * @return       Real DMA Channel No: if there is free dma channel.
+ *               0xFF: when DMA channels are all used. 
  *
- * @return         Channel no. that is free now
- *
- * @note           	 Channel no. that is free now
+ * @note         If ch is invalid or valid but used, the function will select another free channel.
+ *               else return the selected channel no.
  */
 unsigned char tls_dma_request(unsigned char ch, unsigned char flags);
 

@@ -24,9 +24,10 @@ static struct gpio_irq_context gpio_context[WM_IO_PB_31 - WM_IO_PA_00 + 1] = {{0
 
 ATTRIBUTE_ISR void GPIOA_IRQHandler(void)
 {
-	u8  i     = 0;
-	u8  found = 0;
-	u32 reg   = 0;
+    u8  i     = 0;
+    u8  found = 0;
+    u32 reg   = 0;
+    csi_kernel_intrpt_enter();
 
     reg = tls_reg_read32(HR_GPIO_MIS);
 
@@ -44,14 +45,15 @@ ATTRIBUTE_ISR void GPIOA_IRQHandler(void)
         if (NULL != gpio_context[i].callback)
             gpio_context[i].callback(gpio_context[i].arg);
     }
+    csi_kernel_intrpt_exit();
 }
 
 ATTRIBUTE_ISR void GPIOB_IRQHandler(void)
 {
-	u8  i     = 0;
-	u8  found = 0;
+    u8  i     = 0;
+    u8  found = 0;
     u32 reg   = 0;
-	
+    csi_kernel_intrpt_enter();
     reg = tls_reg_read32(HR_GPIO_MIS + TLS_IO_AB_OFFSET);
 
 
@@ -69,6 +71,7 @@ ATTRIBUTE_ISR void GPIOB_IRQHandler(void)
         if (NULL != gpio_context[i].callback)
             gpio_context[i].callback(gpio_context[i].arg);
     }
+    csi_kernel_intrpt_exit();
 }
 
 /**

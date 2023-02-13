@@ -127,7 +127,7 @@ static void demo_uart_task(void *sdata)
                 rx_len -= ret;
                 uart->rx_data_len -= ret;
 
-                tls_uart_write(TLS_UART_1, uart->rx_buf, len);  /* output */
+                tls_uart_write(TLS_UART_1, uart->rx_buf, ret);  /* output */
                 //tls_uart_dma_write(uart->rx_buf, len, uart_dma_done, TLS_UART_1);
             }
             if (uart->rx_msg_num > 0)

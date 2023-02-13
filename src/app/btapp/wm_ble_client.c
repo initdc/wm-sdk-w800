@@ -3,9 +3,10 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#include "wm_config.h"
+#include "wm_bt_config.h"
 
-#if (TLS_CONFIG_BLE == CFG_ON)
+#if (WM_BLE_INCLUDED == CFG_ON)
+
 
 #include "wm_ble_gatt.h"
 #include "wm_ble_client.h"
@@ -198,13 +199,15 @@ void btgattc_register_for_notification_callback(int conn_id,
         int registered, int status, uint16_t handle)
 {
     int index = -1;
-    TLS_BT_APPL_TRACE_VERBOSE("%s, status=%d, conn_id=%d,registered=%d, handle\r\n", __FUNCTION__, status,  conn_id,registered, handle);
+
+    TLS_BT_APPL_TRACE_VERBOSE("%s, status=%d, conn_id=%d,registered=%d, handle=%d\r\n", __FUNCTION__, status,  conn_id,registered, handle);
+
     index = get_app_env_index_by_conn_id(conn_id);
 	if(index<0)
 	{
-		TLS_BT_APPL_TRACE_ERROR("%s, status=%d, conn_id=%d,registered=%d, handle\r\n", __FUNCTION__, status,  conn_id,registered, handle);
+		TLS_BT_APPL_TRACE_ERROR("%s, status=%d, conn_id=%d,registered=%d, handle=%d\r\n", __FUNCTION__, status,  conn_id,registered, handle);
 		return;
-	}
+	}   
 
     TLS_HAL_CBACK(app_env[index].ps_callbak, register_for_notification_cb, conn_id, registered, status, handle);
 }
@@ -406,7 +409,7 @@ void btgattc_services_added_callback(int conn_id, tls_btgatt_db_element_t *added
 
 static void tls_ble_client_event_handler(tls_ble_evt_t evt, tls_ble_msg_t *msg)
 {
-	TLS_BT_APPL_TRACE_EVENT("%s, event:%s,%d\r\n", __FUNCTION__, tls_gatt_evt_2_str(evt), evt);
+	//TLS_BT_APPL_TRACE_EVENT("%s, event:%s,%d\r\n", __FUNCTION__, tls_gatt_evt_2_str(evt), evt);
 
 	tls_bt_addr_t addr;
 	switch(evt)

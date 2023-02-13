@@ -40,6 +40,7 @@ static i2c_desc i2c_transfer;
 ATTRIBUTE_ISR void i2c_I2C_IRQHandler(void)
 {
 	int i2c_sr;
+	csi_kernel_intrpt_enter();	
 	i2c_sr = I2C->CR_SR;	
 	I2C->CR_SR = 1;
 	if (i2c_sr & 0x20)
@@ -133,6 +134,7 @@ ATTRIBUTE_ISR void i2c_I2C_IRQHandler(void)
 //	{
 //		i2c_transfer.state = IDLE;
 //	}
+	csi_kernel_intrpt_exit();
 }
 
 void tls_i2c_init(u32 freq)

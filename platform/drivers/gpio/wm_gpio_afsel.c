@@ -19,6 +19,24 @@
 #ifndef WM_SWD_ENABLE
 #define WM_SWD_ENABLE   1
 #endif
+void wm_hspi_gpio_config(uint8_t numsel)
+{
+    switch(numsel)
+    {
+		case 0:
+			tls_io_cfg_set(WM_IO_PB_06, WM_IO_OPTION3);
+			tls_io_cfg_set(WM_IO_PB_07, WM_IO_OPTION3);
+			tls_io_cfg_set(WM_IO_PB_09, WM_IO_OPTION3);
+			tls_io_cfg_set(WM_IO_PB_10, WM_IO_OPTION3);
+			tls_io_cfg_set(WM_IO_PB_11, WM_IO_OPTION3);
+			break;
+			
+		
+		default:
+			TLS_DBGPRT_ERR("highspeed spi gpio config error!");
+			break;
+    }
+}
 
 void wm_spi_ck_config(enum tls_io_name io_name)
 {
@@ -94,7 +112,66 @@ void wm_spi_do_config(enum tls_io_name io_name)
     }
 }
 
+void wm_sdio_host_config(uint8_t numsel)
+{
+	switch(numsel)
+	{
+		case 0:
+			tls_io_cfg_set(WM_IO_PB_06, WM_IO_OPTION2);
+			tls_io_cfg_set(WM_IO_PB_07, WM_IO_OPTION2);
+			tls_io_cfg_set(WM_IO_PB_08, WM_IO_OPTION2);
+			tls_io_cfg_set(WM_IO_PB_09, WM_IO_OPTION2);
+			tls_io_cfg_set(WM_IO_PB_10, WM_IO_OPTION2);
+			tls_io_cfg_set(WM_IO_PB_11, WM_IO_OPTION2);
+			tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_SDIO_MASTER);
+			break;
 
+
+
+		default:
+			TLS_DBGPRT_ERR("sdio host afsel config error!");
+			break;
+	}
+}
+
+void wm_sdio_slave_config(uint8_t numsel)
+{
+	switch(numsel)
+	{
+		case 0:
+			tls_io_cfg_set(WM_IO_PB_06, WM_IO_OPTION4);
+			tls_io_cfg_set(WM_IO_PB_07, WM_IO_OPTION4);
+			tls_io_cfg_set(WM_IO_PB_08, WM_IO_OPTION4);
+			tls_io_cfg_set(WM_IO_PB_09, WM_IO_OPTION4);
+			tls_io_cfg_set(WM_IO_PB_10, WM_IO_OPTION4);
+			tls_io_cfg_set(WM_IO_PB_11, WM_IO_OPTION4);
+			break;
+
+		default:
+			TLS_DBGPRT_ERR("sdio slave afsel config error!");
+			break;
+	}
+}
+
+void wm_psram_config(uint8_t numsel)
+{
+	switch(numsel)
+	{
+		case 0:
+			tls_io_cfg_set(WM_IO_PB_00, WM_IO_OPTION4);
+			tls_io_cfg_set(WM_IO_PB_01, WM_IO_OPTION4);
+			tls_io_cfg_set(WM_IO_PB_02, WM_IO_OPTION4);
+			tls_io_cfg_set(WM_IO_PB_03, WM_IO_OPTION4);
+			tls_io_cfg_set(WM_IO_PB_04, WM_IO_OPTION4);
+			tls_io_cfg_set(WM_IO_PB_05, WM_IO_OPTION4);
+			tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_PSRAM);			
+			break;
+
+		default:
+			TLS_DBGPRT_ERR("psram afsel config error!");
+			break;
+	}
+}
 void wm_uart0_tx_config(enum tls_io_name io_name)
 {
     switch(io_name)

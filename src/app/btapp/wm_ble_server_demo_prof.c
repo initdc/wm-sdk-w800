@@ -3,10 +3,9 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#include "wm_config.h"
+#include "wm_bt_config.h"
 
-
-#if (TLS_CONFIG_BLE == CFG_ON)
+#if (WM_BLE_INCLUDED == CFG_ON)
 
 #include "wm_ble_server.h"
 #include "wm_ble_gatt.h"
@@ -48,15 +47,16 @@ void ble_demo_server_deregister_app_cb(int status, int server_if)
 	tls_demo_at_cb_ptr = NULL;
 }
 
-void ble_demo_server_connection_cb(int conn_id, int server_if, int connected, tls_bt_addr_t *bda)
+void ble_demo_server_connection_cb(int conn_id, int server_if, int connected, tls_bt_addr_t *bda, uint16_t reason)
 {
-	TLS_BT_APPL_TRACE_DEBUG("%s...conn_id=%d, server_if=%d, connected=%d\r\n",__FUNCTION__, conn_id, server_if, connected);
+	TLS_BT_APPL_TRACE_DEBUG("%s...conn_id=%d, server_if=%d, connected=%d, reason=%d\r\n",__FUNCTION__, conn_id, server_if, connected, reason);
 
 	tls_ble_msg_t msg;
 	memcpy(msg.ser_connect.addr, bda->address, 6);
 	msg.ser_connect.connected = connected;
 	msg.ser_connect.conn_id = conn_id;
 	msg.ser_connect.server_if = server_if;
+    msg.ser_connect.reason = reason;
 	g_server_if = server_if;
 	
 	if(connected)

@@ -49,7 +49,7 @@ int adc_input_voltage_demo(u8 chan)
 int adc_chip_temperature_demo(void)
 {
     char temperature[8] = {0};
-    u32 temp;
+    int temp;
     
     temp = adc_temp();
 	if (temp < 0)

@@ -247,13 +247,13 @@ tls_bt_status_t tls_bt_ctrl_disable(void);
  * @brief          configure the ble emit power of different ble handle type
  *
  * @param[in]      power_type     @ref tls_ble_power_type_t
- * @param[in]      power_level    [-12, 9]db, step length 3
+ * @param[in]      power_level_index    [1,2,3,4,5] map to[1,4,7,10,13]dBm
  *
  * @retval         @ref tls_bt_status_t
  *
- * @note           None
+ * @note           power_type, supports TLS_BLE_PWR_TYPE_DEFAULT only. 
  */
-tls_bt_status_t tls_ble_set_tx_power(tls_ble_power_type_t power_type, int8_t power_level);
+tls_bt_status_t tls_ble_set_tx_power(tls_ble_power_type_t power_type, int8_t power_level_index);
 
 /**
  * @brief          get the ble emit power of different ble handle type
@@ -262,15 +262,15 @@ tls_bt_status_t tls_ble_set_tx_power(tls_ble_power_type_t power_type, int8_t pow
  *
  * @retval         power value db
  *
- * @note           None
+ * @note           power_type, supports TLS_BLE_PWR_TYPE_DEFAULT only. 
  */
 int8_t  tls_ble_get_tx_power(tls_ble_power_type_t power_type);
 
 /**
  * @brief          configure the classic/enhanced bluetooth transmit power
  *
- * @param[in]      min_power_level    power level[-12, 9]db
- * @param[in]      max_power_level    power level[-12, 9]db
+ * @param[in]      min_power_level    power level[1,13]dBm
+ * @param[in]      max_power_level    power level[1,13]dBm
  *
  * @retval         @ref tls_bt_status_t
  *
@@ -397,6 +397,40 @@ tls_bt_status_t tls_bt_ctrl_wakeup(void);
 
 bool tls_bt_vuart_host_check_send_available();
 
+/**
+ * @brief          this function exit bluetooth test mode
+ *
+ * @param          None
+ *
+ * @retval         @ref tls_bt_ctrl_status_t
+ *
+ * @note           None
+ */
+tls_bt_status_t exit_bt_test_mode();
+
+/**
+ * @brief          this function enable bluetooth test mode
+ *
+ * @param[in]       p_hci_if, specific the uart port property
+ *
+ * @retval         @ref tls_bt_ctrl_status_t
+ *
+ * @note           None
+ */
+
+tls_bt_status_t enable_bt_test_mode(tls_bt_hci_if_t *p_hci_if);
+
+/**
+ * @brief          this function enable rf to bluetooth mode
+ *
+ * @param[in]       1, bluetooth mode, 0 wifi/bluetooth mode
+ *
+ * @retval         None
+ *
+ * @note           None
+ */
+
+void tls_rf_bt_mode(uint8_t enable);
 
 /**
  * @}

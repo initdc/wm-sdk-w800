@@ -138,8 +138,8 @@ static void io_cfg_option6(enum tls_io_name name)
 
 	if (name >=WM_IO_PA_01 && name <= WM_IO_PA_04) /*pulldown for adc*/
 	{
-		tls_reg_write32(HR_GPIO_PULLUP_EN + offset, tls_reg_read32(HR_GPIO_PULLUP_EN + offset) | (BIT(pin)));
-		tls_reg_write32(HR_GPIO_PULLDOWN_EN + offset, tls_reg_read32(HR_GPIO_PULLDOWN_EN + offset) | (BIT(pin)));			
+		//tls_reg_write32(HR_GPIO_PULLUP_EN + offset, tls_reg_read32(HR_GPIO_PULLUP_EN + offset) | (BIT(pin)));
+		//tls_reg_write32(HR_GPIO_PULLDOWN_EN + offset, tls_reg_read32(HR_GPIO_PULLDOWN_EN + offset) | (BIT(pin)));			
 	}
 	else /*pullup for lcd*/
 	{

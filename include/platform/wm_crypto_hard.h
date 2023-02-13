@@ -12,11 +12,11 @@
 #define WM_CRYPTO_HARD_H
 
 #include "wm_type_def.h"
-#include "cryptoConfig.h"
-#include "digest/digest.h"
-#include "math/pstm.h"
-#include "symmetric/symmetric.h"
-#include "cryptolib.h"
+//#include "cryptoConfig.h"
+//#include "digest/digest.h"
+//#include "math/pstm.h"
+//#include "symmetric/symmetric.h"
+//#include "cryptolib.h"
 
 #include "cryptoApi.h"
 
@@ -71,7 +71,8 @@
 #define HR_CRYPTO_SHA1_DIGEST4     (HR_CRYPTO_BASE_ADDR + 0x44) 
 /** The address of the RNG RESULT register. */
 #define HR_CRYPTO_RNG_RESULT     (HR_CRYPTO_BASE_ADDR + 0x48) 
-
+/** The address of the TRNG CR register. */
+#define HR_CRYPTO_TRNG_CR        (HR_CRYPTO_BASE_ADDR + 0x54)
 
 /** The address of the CRC in register. */
 #define HR_CRYPTO_CRC_KEY   HR_CRYPTO_SHA1_DIGEST4
@@ -527,11 +528,12 @@ int tls_crypto_exptmod(pstm_int *a, pstm_int *e, pstm_int *n, pstm_int *res);
  *
  * @param		None
  *
- * @return  		None
+ * @retval  		0  		success 
+ * @retval  		other   	failed  
  *
  * @note			None
  */
-void tls_crypto_init(void);
+int tls_crypto_init(void);
 
 /**
  * @}

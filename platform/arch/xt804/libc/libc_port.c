@@ -98,8 +98,6 @@ int _write_r(void *r, int file, const void *ptr, size_t len)
 }
 #endif
 
-#define WM_CONSOLEBUF_SIZE      128
-
 static int __ip2str(unsigned char v4v6, unsigned int *inuint, char *outtxt)
 {
     unsigned char i;
@@ -672,6 +670,11 @@ static inline void _out_buffer(char character, void* buffer, size_t idx, size_t 
   if (idx < maxlen) {
     ((char*)buffer)[idx] = character;
   }
+}
+
+static inline void _out_uart(char character, void* buffer, size_t idx, size_t maxlen)
+{
+  _write_r(NULL, 0, &character, 1);
 }
 
 // internal null output
@@ -1457,29 +1460,21 @@ int wm_printf(const char *fmt,...)
 {
     va_list args;
     size_t length;
-    static char log_buf[WM_CONSOLEBUF_SIZE];
 
 	va_start(args, fmt);
-	length = wm_vsnprintf(log_buf, sizeof(log_buf) - 1, fmt, args);
+	length = _vsnprintf(_out_uart, (char*)fmt, (size_t) - 1, fmt, args);
 	va_end(args);
 
-	if (length > WM_CONSOLEBUF_SIZE - 1)
-        length = WM_CONSOLEBUF_SIZE - 1;
-
-	return _write_r(NULL, 0, log_buf, length);
+	return length;
 }
 
 int wm_vprintf(const char *fmt, va_list arg_ptr)
 {
     size_t length;
-    static char log_buf[WM_CONSOLEBUF_SIZE];
 
-	length = wm_vsnprintf(log_buf, sizeof(log_buf) - 1, fmt, arg_ptr);
+	length = _vsnprintf(_out_uart, (char*)fmt, (size_t) - 1, fmt, arg_ptr);
 
-	if (length > WM_CONSOLEBUF_SIZE - 1)
-        length = WM_CONSOLEBUF_SIZE - 1;
-
-	return _write_r(NULL, 0, log_buf, length);
+	return length;
 }
 
 #if 1//defined(_NEWLIB_VERSION_H__)

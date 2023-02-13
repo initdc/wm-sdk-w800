@@ -46,7 +46,7 @@ typedef struct
 }
 sha1_context;
 #else
-#if TLS_CONFIG_HARD_CRYPTO
+#if 1//TLS_CONFIG_HARD_CRYPTO
 typedef struct SHA1Context {
 	unsigned int state[5];
 	unsigned int count[2];

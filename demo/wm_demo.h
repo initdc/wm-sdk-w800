@@ -69,6 +69,9 @@
 //adc demo
 #define DEMO_ADC					(DEMO_OFF && DEMO_CONSOLE)
 
+//slave spi demo
+#define DEMO_SLAVE_SPI				(DEMO_OFF && DEMO_CONSOLE)
+
 //ssl server demo
 #define DEMO_SSL_SERVER				(DEMO_OFF && DEMO_CONSOLE)
 
@@ -81,6 +84,8 @@
 #define DEMO_SCAN					(DEMO_OFF && DEMO_CONSOLE)
 #define DEMO_HTTPS                  (DEMO_OFF && DEMO_CONSOLE)
 #define DEMO_MQTT                   (DEMO_OFF && DEMO_CONSOLE)
+#define DEMO_SDIO_HOST              (DEMO_OFF && DEMO_CONSOLE)
+#define DEMO_FATFS                  (DEMO_OFF && DEMO_CONSOLE)
 #define DEMO_MBEDTLS                (DEMO_OFF && DEMO_CONSOLE)
 
 

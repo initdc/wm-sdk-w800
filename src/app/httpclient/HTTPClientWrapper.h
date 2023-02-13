@@ -9,8 +9,22 @@
 #if TLS_CONFIG_USE_POLARSSL
 #include "polarssl/config.h"
 #include "polarssl/ssl.h"
+#elif TLS_CONFIG_USE_MBEDTLS
+
+#include "mbedtls/platform.h"
+#include "mbedtls/net_sockets.h"
+#include "mbedtls/debug.h"
+#include "mbedtls/ssl.h"
+#include "mbedtls/entropy.h"
+#include "mbedtls/ctr_drbg.h"
+#include "mbedtls/error.h"
+#include "mbedtls/certs.h"
+
 #else
-#include "matrixsslApi.h"
+//#include "cryptoApi.h"
+#include "core/coreApi.h"
+#include "matrixssl/matrixsslApi.h"
+#include "matrixssl/matrixssllib.h"
 #endif
 #endif
 // Compilation mode
@@ -64,6 +78,19 @@ extern "C" {
 #if TLS_CONFIG_HTTP_CLIENT_SECURE
 #if TLS_CONFIG_USE_POLARSSL
 typedef ssl_context   tls_ssl_t;
+#elif TLS_CONFIG_USE_MBEDTLS
+#define MBEDTLS_DEMO_USE_CERT                    0
+typedef struct _ssl_t
+{
+	mbedtls_ssl_context ssl;
+	mbedtls_net_context server_fd;
+	mbedtls_entropy_context entropy;
+	mbedtls_ctr_drbg_context ctr_drbg;
+	mbedtls_ssl_config conf;
+#if MBEDTLS_DEMO_USE_CERT
+	mbedtls_x509_crt cacert;
+#endif
+}tls_ssl_t;
 #else
 typedef ssl_t   tls_ssl_t;
 #endif

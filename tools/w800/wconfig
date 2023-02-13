@@ -6,25 +6,25 @@ menu "Firmware Configuration"
         string "target name"
         default w800
         help
-            w80 firmware name.
+            w800 firmware name.
 
     config W800_IMAGE_TYPE
         int "image type"
         default 1
         help
-            w80 image type.
+            w800 image type.
 
     config W800_IMAGE_HEADER
         hex "image header address"
         default 80D0000
         help
-            w80 image header address.
+            w800 image header address.
 
     config W800_RUN_ADDRESS
         hex "image run address"
         default 80D0400
         help
-            w80 image run address.
+            w800 image run address.
 
     config W800_UPDATE_ADDRESS
         hex "image update address"

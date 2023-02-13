@@ -46,7 +46,7 @@ typedef struct
 }
 md5_context;
 #else
-#if TLS_CONFIG_HARD_CRYPTO
+#if 1// TLS_CONFIG_HARD_CRYPTO
 typedef struct MD5Context {
 	unsigned int buf[4];
 	unsigned int bits[2];

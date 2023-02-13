@@ -11,7 +11,7 @@ typedef void (*wm_ble_server_deregister_server_callback)(int status, int server_
 
 /** Callback indicating that a remote device has connected or been disconnected */
 typedef void (*wm_ble_server_connection_callback)(int conn_id, int server_if, int connected,
-        tls_bt_addr_t *bda);
+        tls_bt_addr_t *bda, uint16_t reason);
 
 /** Callback invoked in response to create_service */
 typedef void (*wm_ble_server_service_added_callback)(int status, int server_if,

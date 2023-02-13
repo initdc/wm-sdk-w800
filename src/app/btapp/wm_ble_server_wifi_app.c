@@ -12,7 +12,10 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#include "wm_config.h"
+#include "wm_bt_config.h"
+
+#if (WM_BLE_INCLUDED == CFG_ON)
+
 #include "cryptoApi.h"
 #include "wm_crypto_hard.h"
 #include "wm_debug.h"
@@ -20,9 +23,6 @@
 #include "wm_mem.h"
 #include "utils.h"
 #include "list.h"
-
-
-#if (TLS_CONFIG_BLE == CFG_ON)
 
 
 #include "wm_ble_server_wifi_app.h"
@@ -211,9 +211,9 @@ static int bt_rsa_encrypt(uint8_t *pub_key, int pubkey_size, uint8_t *src_ptr, i
     u8 *p = NULL, *end = NULL;
     TLS_DBGPRT_INFO("pub_key:");
     TLS_DBGPRT_DUMP(pub_key, pubkey_size);
-    pubKey = psNewPubKey(NULL);
+    ret = psNewPubKey(NULL, PS_RSA, &pubKey);
 
-    if(pubKey == NULL)
+    if(ret)
     {
         ret = -1;
         goto out;
@@ -234,18 +234,18 @@ static int bt_rsa_encrypt(uint8_t *pub_key, int pubkey_size, uint8_t *src_ptr, i
         goto out;
     }
 
-    if((ret = getAsnRsaPubKey(NULL, &p, (uint32)(end - p), &pubKey->key->rsa)) < 0)
+    if((ret = getAsnRsaPubKey(NULL, &p, (uint32)(end - p), &pubKey->key.rsa)) < 0)
     {
         printf("getAsnRsaPubKey err\n");
         goto out;
     }
 
     pubKey->type = PS_RSA;
-    pubKey->keysize = pubKey->key->rsa.size;
+    pubKey->keysize = pubKey->key.rsa.size;
     TLS_DBGPRT_INFO("aes key:");
     TLS_DBGPRT_DUMP(src_ptr, length);
 
-    if(psRsaEncryptPub(NULL, &pubKey->key->rsa, src_ptr, length, dest_ptr, 128, NULL) < 0)
+    if(psRsaEncryptPub(NULL, &pubKey->key.rsa, src_ptr, (psSize_t)length, dest_ptr, 128, NULL) < 0)
     {
         printf("psRsaEncryptPub err\n");
         goto out;
@@ -258,7 +258,7 @@ out:
 
     if(pubKey)
     {
-        psFreePubKey(pubKey);
+        psDeletePubKey(&pubKey);
     }
 
     return ret;

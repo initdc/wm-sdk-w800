@@ -13,6 +13,7 @@
 #include <string.h>
 #include "wm_include.h"
 #include "wm_watchdog.h"
+#include "wm_config.h"
 
 /*****************************************************************
 	EXTERN FUNC
@@ -86,9 +87,21 @@ extern int dsp_demo(void *,...);
 #if DEMO_BT
 extern int demo_bt_enable(void *, ...);
 extern int demo_bt_destroy(void *, ...);
-
+#if (TLS_CONFIG_BLE == CFG_ON)
 extern int demo_ble_server_on(void *, ...);
 extern int demo_ble_server_off(void *, ...);
+extern int demo_ble_client_on(void *, ...);
+extern int demo_ble_client_off(void *, ...);
+
+extern int demo_ble_scan(void *,...);
+extern int demo_ble_adv(void *,...);
+#endif
+
+#if (TLS_CONFIG_BR_EDR== CFG_ON)
+extern int demo_bt_app_on(void *, ...);
+extern int demo_bt_app_off(void *, ...);
+#endif
+
 #endif
 
 /*****************************************************************
@@ -302,8 +315,20 @@ struct demo_console_info_t  console_tbl[] =
 #if DEMO_BT
     {"t-bt-on",	demo_bt_enable,	0x0,	0,                  "Test enable bt system"},
     {"t-bt-off",	demo_bt_destroy,	0x0,	0,          "Test destroy bt system"},
-    {"t-ble-demo-on",	demo_ble_server_on,	0x0,	0,      "Test enable ble server"},
-    {"t-ble-demo-off",	demo_ble_server_off,	0x0,	0,  "Test disable ble server"},
+#if (TLS_CONFIG_BLE == CFG_ON)    
+    {"t-ble-server-on",	demo_ble_server_on,	0x0,	0,      "Test enable ble server"},
+    {"t-ble-server-off",	demo_ble_server_off,	0x0,	0,  "Test disable ble server"},
+    {"t-ble-client-on",	demo_ble_client_on,	0x0,	0,      "Test enable ble client"},
+    {"t-ble-client-off",	demo_ble_client_off,	0x0,	0,  "Test disable ble client"},
+    {"t-ble-adv", demo_ble_adv, 0x01, 1, "Test start connectable/unconnectable/stop ble advertisement,eg: t-ble-adv=(1/2/0)"},
+    {"t-ble-scan",demo_ble_scan, 0x01, 1, "Test start/stop ble scan,eg: t-ble-scan=(1/0)"},
+#endif  
+
+#if (TLS_CONFIG_BR_EDR == CFG_ON)    
+    {"t-bt-demo-on",	demo_bt_app_on,	0x0,	0,      "Test enable bt app on"},
+    {"t-bt-demo-off",	demo_bt_app_off,	0x0,	0,  "Test disable bt app off"},
+#endif 
+
 #endif
 
     //控制台上显示的最后一个命令，如果要让命令显示在控制台上，需要放在该行的上面

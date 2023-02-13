@@ -19,6 +19,7 @@
 #include "list.h"
 #include "wm_internal_flash.h"
 #include "wm_crypto_hard.h"
+#include "wm_mem.h"
 
 #define USE_OTA_FT_PARAM  0
 #include "wm_flash_map.h"
@@ -89,6 +90,8 @@ int tls_ft_param_init(void)
 	}
 	tls_mem_free(pft);
 
+	/*lock parameter*/
+	tls_flash_lock();
 	return TRUE;
 }
 
@@ -108,17 +111,22 @@ int tls_ft_param_get(unsigned int opnum, void *data, unsigned int rdlen)
 			}
 		break;
 		case CMD_BT_MAC:	/*MAC*/
-			if ((gftParam.bt_mac_addr[0]&0x1)
-				||(0 == (gftParam.bt_mac_addr[0]|gftParam.bt_mac_addr[1]|gftParam.bt_mac_addr[2]|gftParam.bt_mac_addr[3]|gftParam.bt_mac_addr[4]|gftParam.bt_mac_addr[5])))		
-			{
-				default_mac[0] += 2;
-				memcpy(data, default_mac, rdlen);
-			}
-			else
-			{
-				memcpy(data, gftParam.bt_mac_addr, rdlen);
-			}
+            {
+                u8 invalid_bt_mac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+                u8 invalid_bt_mac1[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+			    if ((memcmp(gftParam.bt_mac_addr, invalid_bt_mac, 6) == 0)||(memcmp(gftParam.bt_mac_addr, invalid_bt_mac1, 6) == 0))     
+			    {
+				    memcpy(data, default_mac, rdlen);
+                    *((u8*)data+5) +=1;      /*defalut plus 1*/
+                    *((u8*)data) |= 0xC0;    /*defalut public static type*/
+			    }
+			    else
+			    {
+				    memcpy(data, gftParam.bt_mac_addr, rdlen);
+			    }
+           }
 		break;
+
 
 		
 		case CMD_TX_DC: /*tx_dcoffset*/
@@ -260,6 +268,32 @@ int tls_get_mac_addr(u8 *mac)
 int tls_set_mac_addr(u8 *mac)
 {
 	return tls_ft_param_set(CMD_WIFI_MAC, mac, 6);
+}
+
+/**********************************************************************************************************
+* Description: 	This function is used to get bluetooth mac addr.
+*
+* Arguments  : 	mac		mac addr,6 byte
+*
+* Returns    : 	TLS_EFUSE_STATUS_OK			get success
+* 			TLS_EFUSE_STATUS_EIO		get failed
+**********************************************************************************************************/
+int tls_get_bt_mac_addr(u8 *mac)
+{
+	return tls_ft_param_get(CMD_BT_MAC, mac, 6);
+}
+
+/**********************************************************************************************************
+* Description: 	This function is used to set bluetooth mac addr.
+*
+* Arguments  : 	mac		mac addr,6 byte
+*
+* Returns    : 	TLS_EFUSE_STATUS_OK			get success
+* 			TLS_EFUSE_STATUS_EIO		get failed
+**********************************************************************************************************/
+int tls_set_bt_mac_addr(u8 *mac)
+{
+	return tls_ft_param_set(CMD_BT_MAC, mac, 6);
 }
 
 

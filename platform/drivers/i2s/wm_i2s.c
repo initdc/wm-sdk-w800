@@ -283,8 +283,8 @@ static void wm_i2s_dma_stop(uint8_t ch)
 
 static void wm_i2s_module_reset(void)
 {
-	tls_bitband_write(HR_CLK_GATE_EN, 24, 0);
-	while(tls_bitband_read(HR_CLK_GATE_EN, 24) == 0);
+	tls_bitband_write(HR_CLK_RST_CTL, 24, 0);
+	tls_bitband_write(HR_CLK_RST_CTL, 24, 1);
 }
 
 static void wm_i2s_dma_tx_init(uint8_t ch, uint32_t count, int16_t *buf)
@@ -316,7 +316,7 @@ ATTRIBUTE_ISR void i2s_I2S_IRQHandler(void)
 {	
 	volatile uint32_t temp;
 	volatile uint8_t fifo_level, cnt;	
-
+	csi_kernel_intrpt_enter();
 	/* TxTH*/
 	if ((M32(HR_I2S_INT_SRC) >> 6) & 0x1)
 	{	
@@ -396,6 +396,7 @@ ATTRIBUTE_ISR void i2s_I2S_IRQHandler(void)
 	{
         tls_reg_write32(HR_I2S_INT_SRC, 0x01);
 	}
+	csi_kernel_intrpt_exit();
 }
 
 void i2s_DMA_TX_Channel_IRQHandler(void *p)
@@ -759,7 +760,7 @@ int wm_i2s_receive_dma(wm_dma_handler_type *hdma, uint16_t *data, uint16_t len)
 	}
 
 	wm_i2s_buf->rxdata_ready = 0;
-	wm_i2s_set_mode(I2S_MODE_SLAVE);
+	//wm_i2s_set_mode(I2S_MODE_SLAVE);
 
 	if(rx_channel)
 	{
@@ -768,7 +769,7 @@ int wm_i2s_receive_dma(wm_dma_handler_type *hdma, uint16_t *data, uint16_t len)
 
 	rx_channel = tls_dma_request(WM_I2S_RX_DMA_CHANNEL, TLS_DMA_FLAGS_CHANNEL_SEL(TLS_DMA_SEL_I2S_RX) | TLS_DMA_FLAGS_HARD_MODE);
 
-	if (rx_channel == 0)
+	if (rx_channel == 0xFF)
 	{
 		return WM_FAILED;
 	}
@@ -816,7 +817,7 @@ int wm_i2s_transmit_dma(wm_dma_handler_type *hdma, uint16_t *data, uint16_t len)
 	}
 
 	wm_i2s_buf->txdata_done = 0;
-	wm_i2s_set_mode(I2S_MODE_MASTER);
+	//wm_i2s_set_mode(I2S_MODE_MASTER);
 
 	if(tx_channel)
 	{
@@ -825,7 +826,7 @@ int wm_i2s_transmit_dma(wm_dma_handler_type *hdma, uint16_t *data, uint16_t len)
 
 	tx_channel = tls_dma_request(WM_I2S_TX_DMA_CHANNEL, TLS_DMA_FLAGS_CHANNEL_SEL(TLS_DMA_SEL_I2S_TX) | TLS_DMA_FLAGS_HARD_MODE);
 
-	if (tx_channel == 0)
+	if (tx_channel == 0xFF)
 	{
 		return WM_FAILED;
 	}
@@ -886,7 +887,7 @@ int wm_i2s_tranceive_dma(uint32_t i2s_mode, wm_dma_handler_type *hdma_tx, wm_dma
 
 	tx_channel = tls_dma_request(WM_I2S_TX_DMA_CHANNEL, TLS_DMA_FLAGS_CHANNEL_SEL(TLS_DMA_SEL_I2S_TX) | TLS_DMA_FLAGS_HARD_MODE);
 
-	if (tx_channel == 0)
+	if (tx_channel == 0xFF)
 	{
 		return WM_FAILED;
 	}
@@ -925,7 +926,7 @@ int wm_i2s_tranceive_dma(uint32_t i2s_mode, wm_dma_handler_type *hdma_tx, wm_dma
 
 	rx_channel = tls_dma_request(WM_I2S_RX_DMA_CHANNEL, TLS_DMA_FLAGS_CHANNEL_SEL(TLS_DMA_SEL_I2S_RX) | TLS_DMA_FLAGS_HARD_MODE);
 
-	if (rx_channel == 0)
+	if (rx_channel == 0xFF)
 	{
 		return WM_FAILED;
 	}

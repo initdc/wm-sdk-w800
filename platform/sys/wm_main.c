@@ -88,7 +88,7 @@ u32 TaskStartStk[TASK_START_STK_SIZE];
 
 #define FW_MAJOR_VER           0x1
 #define FW_MINOR_VER           0x0
-#define FW_PATCH_VER           0x0
+#define FW_PATCH_VER           0x1
 
 const char FirmWareVer[4] =
 {
@@ -166,6 +166,7 @@ int main(void)
     tls_os_sem_create(&libc_sem, 1);
 
     /*configure wake up source begin*/
+	csi_vic_set_wakeup_irq(SDIO_IRQn);
     csi_vic_set_wakeup_irq(MAC_IRQn);
     csi_vic_set_wakeup_irq(SEC_IRQn);
     csi_vic_set_wakeup_irq(DMA_Channel0_IRQn);
@@ -177,6 +178,7 @@ int main(void)
     csi_vic_set_wakeup_irq(I2C_IRQn);
     csi_vic_set_wakeup_irq(ADC_IRQn);
     csi_vic_set_wakeup_irq(SPI_LS_IRQn);
+	csi_vic_set_wakeup_irq(SPI_HS_IRQn);
     csi_vic_set_wakeup_irq(GPIOA_IRQn);
     csi_vic_set_wakeup_irq(GPIOB_IRQn);
     csi_vic_set_wakeup_irq(UART0_IRQn);
@@ -186,6 +188,7 @@ int main(void)
     csi_vic_set_wakeup_irq(BT_IRQn);
     csi_vic_set_wakeup_irq(PWM_IRQn);
     csi_vic_set_wakeup_irq(I2S_IRQn);
+	csi_vic_set_wakeup_irq(SIDO_HOST_IRQn);
     csi_vic_set_wakeup_irq(SYS_TICK_IRQn);
     csi_vic_set_wakeup_irq(RSA_IRQn);
     csi_vic_set_wakeup_irq(CRYPTION_IRQn);
@@ -227,6 +230,36 @@ void disp_version_info(void)
     TLS_DBGPRT_INFO("****************************************************************\n");
 }
 
+u32 total_mem_size;
+extern u32 __heap_end;
+extern u32 __heap_start;
+void tls_mem_get_init_available_size(void)
+{
+	u8 *p = NULL;
+	total_mem_size = (u32)&__heap_end - (u32)&__heap_start;
+	while(total_mem_size > 512)
+	{
+		p = malloc(total_mem_size);
+		if (p)
+		{
+			free(p);
+			p = NULL;
+			break;
+		}
+		total_mem_size = total_mem_size - 512;
+	}
+}
+
+void tls_pmu_chipsleep_callback(int sleeptime)
+{
+	//wm_printf("c:%d\r\n", sleeptime);
+	/*set wakeup time*/
+	tls_pmu_timer1_start(sleeptime);
+	/*enter chip sleep*/
+	tls_pmu_sleep_start();
+}
+
+
 /*****************************************************************************
  * Function Name        // task_start
  * Descriptor             // before create multi_task, we create a task_start task
@@ -243,6 +276,7 @@ void task_start (void *data)
     tls_wl_hw_using_24m_crystal();
 #endif
 
+	tls_mem_get_init_available_size();
     /* must call first to configure gpio Alternate functions according the hardware design */
     wm_gpio_config();
 
@@ -268,7 +302,7 @@ void task_start (void *data)
     tls_get_tx_gain(&tx_gain_group[0]);
     TLS_DBGPRT_INFO("tx gain ");
     TLS_DBGPRT_DUMP((char *)(&tx_gain_group[0]), 27);
-    if (tls_wifi_mem_cfg(WIFI_MEM_START_ADDR, 7, 7)) /*wifi tx&rx mem customized interface*/
+    if (tls_wifi_mem_cfg((u32)&__heap_end, 7, 7)) /*wifi tx&rx mem customized interface*/
     {
         TLS_DBGPRT_INFO("wl mem initial failured\n");
     }
@@ -285,8 +319,9 @@ void task_start (void *data)
         TLS_DBGPRT_INFO("supplicant initial failured\n");
     }
 	/*wifi-temperature compensation,default:open*/
-	tls_wifi_set_tempcomp_flag(1);
-	
+	tls_wifi_set_tempcomp_flag(0);
+	tls_wifi_set_psm_chipsleep_flag(0);
+	tls_wifi_psm_chipsleep_cb_register(tls_pmu_chipsleep_callback, NULL, NULL);
     tls_ethernet_init();
 
 #if TLS_CONFIG_BT
@@ -298,6 +333,10 @@ void task_start (void *data)
     /*HOSTIF&UART*/
 #if TLS_CONFIG_HOSTIF
     tls_hostif_init();
+
+#if (TLS_CONFIG_HS_SPI)
+    tls_hspi_init();
+#endif
 
 #if TLS_CONFIG_UART
     tls_uart_init();
